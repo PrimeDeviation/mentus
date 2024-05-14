@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mentus Chat</title>
+    <style>
+        body { font-family: Arial, sans-serif; }
+        #chatbox { width: 300px; height: 400px; border: 1px solid #ccc; padding: 10px; overflow-y: scroll; }
+        #user-input { width: 100%; padding: 10px; }
+    </style>
+</head>
+<body>
+    <h1>Mentus Chat</h1>
+    <div id="chatbox"></div>
+    <input type="text" id="user-input" placeholder="Type your message here...">
+    <button onclick="sendMessage()">Send</button>
+
+    <script>
+        function sendMessage() {
+            const input = document.getElementById('user-input');
+            const message = input.value;
+            input.value = '';
+
+            const chatbox = document.getElementById('chatbox');
+            const userMessage = document.createElement('div');
+            userMessage.textContent = 'You: ' + message;
+            chatbox.appendChild(userMessage);
+
+            fetch('/chat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ message: message })
+            })
+            .then(response => response.json())
+            .then(data => {
+                const agentMessage = document.createElement('div');
+                agentMessage.textContent = 'Agent: ' + data.response;
+                chatbox.appendChild(agentMessage);
+            });
+        }
+    </script>
+</body>
+</html>
