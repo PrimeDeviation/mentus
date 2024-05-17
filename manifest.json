@@ -1,0 +1,10 @@
+{
+  "manifest_version": 2,
+  "name": "Mentus Knowledge Instructor",
+  "description": "A Chrome extension to tutor students and maintain a graphical knowledge ontology.",
+  "version": "1.0",
+  "permissions": ["storage"],
+  "browser_action": {
+    "default_popup": "popup.html",
+  }
+}
