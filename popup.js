@@ -15,6 +15,40 @@ document.getElementById('sendQuery').addEventListener('click', async function() 
       <p>${claude3OpusResponse.result}</p>
     `;
   }
+document.getElementById('saveGraphDBConfig').addEventListener('click', function() {
+  const graphdbUrl = document.getElementById('graphdbUrl').value;
+  const graphdbUser = document.getElementById('graphdbUser').value;
+  const graphdbPassword = document.getElementById('graphdbPassword').value;
+
+  if (graphdbUrl && graphdbUser && graphdbPassword) {
+    const graphdbConfig = {
+      url: graphdbUrl,
+      user: graphdbUser,
+      password: graphdbPassword
+    };
+    localStorage.setItem('graphdbConfig', JSON.stringify(graphdbConfig));
+    alert('GraphDB configuration saved successfully.');
+  } else {
+    alert('Please fill in all GraphDB configuration fields.');
+  }
+});
+
+document.getElementById('saveCloudConfig').addEventListener('click', function() {
+  const cloudProvider = document.getElementById('cloudProvider').value;
+  const apiKey = document.getElementById('apiKey').value;
+  const bucketName = document.getElementById('bucketName').value;
+
+  if (cloudProvider && apiKey && bucketName) {
+    const cloudConfig = {
+      provider: cloudProvider,
+      apiKey: apiKey,
+      bucketName: bucketName
+    };
+    localStorage.setItem('cloudConfig', JSON.stringify(cloudConfig));
+    alert('Cloud file storage configuration saved successfully.');
+  } else {
+    alert('Please fill in all cloud file storage configuration fields.');
+  }
 });
 
 function initializeStorage() {
@@ -169,4 +203,8 @@ async function queryClaude3Opus(query) {
   return data;
 }
 
-initializeStorage();
+}
+
+// Run the tests
+testGraphDBConfig();
+testCloudConfig();
