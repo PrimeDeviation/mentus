@@ -1,0 +1,15 @@
+{
+  "name": "mentus",
+  "version": "1.0.0",
+  "description": "Automated testing for Mentus Knowledge Instructor",
+  "main": "index.js",
+  "scripts": {
+    "test": "jest"
+  },
+  "devDependencies": {
+    "jest": "^27.0.0",
+    "puppeteer": "^10.0.0"
+  },
+  "author": "",
+  "license": "ISC"
+}
