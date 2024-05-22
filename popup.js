@@ -15,6 +15,25 @@ document.getElementById('sendQuery').addEventListener('click', async function() 
       <p>${claude3OpusResponse.result}</p>
     `;
   }
+document.getElementById('graphdb-config-form').addEventListener('submit', function(event) {
+  event.preventDefault();
+  
+  const url = document.getElementById('graphdb-url').value;
+  const username = document.getElementById('graphdb-username').value;
+  const password = document.getElementById('graphdb-password').value;
+  
+  if (url && username && password) {
+    const graphdbConfig = {
+      url: url,
+      username: username,
+      password: password
+    };
+    
+    localStorage.setItem('graphdbConfig', JSON.stringify(graphdbConfig));
+    alert('GraphDB configuration saved successfully!');
+  } else {
+    alert('Please fill in all fields.');
+  }
 });
 
 function initializeStorage() {
