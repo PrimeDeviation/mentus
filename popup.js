@@ -169,4 +169,54 @@ async function queryClaude3Opus(query) {
   return data;
 }
 
-initializeStorage();
+document.getElementById('save-graphdb-config').addEventListener('click', function() {
+  const url = document.getElementById('graphdb-url').value;
+  const username = document.getElementById('graphdb-username').value;
+  const password = document.getElementById('graphdb-password').value;
+  if (url && username && password) {
+    saveGraphDBConfig(url, username, password);
+  } else {
+    alert('Please fill in all fields for GraphDB configuration.');
+  }
+});
+
+document.getElementById('save-cloud-config').addEventListener('click', function() {
+  const provider = document.getElementById('cloud-provider').value;
+  const apiKey = document.getElementById('api-key').value;
+  const bucketName = document.getElementById('bucket-name').value;
+  if (provider && apiKey && bucketName) {
+    saveCloudConfig(provider, apiKey, bucketName);
+  } else {
+    alert('Please fill in all fields for cloud storage configuration.');
+  }
+});
+
+function saveGraphDBConfig(url, username, password) {
+  const config = { url, username, password };
+  localStorage.setItem('graphdbConfig', JSON.stringify(config));
+  alert('GraphDB configuration saved.');
+}
+
+function saveCloudConfig(provider, apiKey, bucketName) {
+  const config = { provider, apiKey, bucketName };
+  localStorage.setItem('cloudConfig', JSON.stringify(config));
+  alert('Cloud storage configuration saved.');
+}
+
+function loadConfig() {
+  const graphdbConfig = JSON.parse(localStorage.getItem('graphdbConfig'));
+  if (graphdbConfig) {
+    document.getElementById('graphdb-url').value = graphdbConfig.url;
+    document.getElementById('graphdb-username').value = graphdbConfig.username;
+    document.getElementById('graphdb-password').value = graphdbConfig.password;
+  }
+
+  const cloudConfig = JSON.parse(localStorage.getItem('cloudConfig'));
+  if (cloudConfig) {
+    document.getElementById('cloud-provider').value = cloudConfig.provider;
+    document.getElementById('api-key').value = cloudConfig.apiKey;
+    document.getElementById('bucket-name').value = cloudConfig.bucketName;
+  }
+}
+
+document.addEventListener('DOMContentLoaded', loadConfig);

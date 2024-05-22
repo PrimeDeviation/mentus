@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Manual Test Configuration Interface</title>
+  <style>
+    body {
+      padding: 16px;
+      font-family: Arial, sans-serif;
+    }
+    #graph {
+      width: 100%;
+      height: 400px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Manual Test Configuration Interface</h1>
+  <p>Welcome to the manual test page for the configuration interface!</p>
+  <input type="text" id="subject" placeholder="Enter a subject">
+  <button id="addSubject">Add Subject</button>
+  <div id="graph"></div>
+  <hr>
+  <h2>Ask the Language Models</h2>
+  <input type="text" id="userQuery" placeholder="Enter your query">
+  <button id="sendQuery">Send Query</button>
+  <hr>
+  <h2>GraphDB Configuration</h2>
+  <form id="graphdb-config">
+    <label for="graphdb-url">GraphDB URL:</label>
+    <input type="text" id="graphdb-url" placeholder="Enter GraphDB URL">
+    <br>
+    <label for="graphdb-username">Username:</label>
+    <input type="text" id="graphdb-username" placeholder="Enter Username">
+    <br>
+    <label for="graphdb-password">Password:</label>
+    <input type="password" id="graphdb-password" placeholder="Enter Password">
+    <br>
+    <button type="button" id="save-graphdb-config">Save GraphDB Configuration</button>
+  </form>
+  <hr>
+  <h2>Cloud File Storage Configuration</h2>
+  <form id="cloud-storage-config">
+    <label for="cloud-provider">Provider:</label>
+    <input type="text" id="cloud-provider" placeholder="Enter Cloud Provider">
+    <br>
+    <label for="api-key">API Key:</label>
+    <input type="text" id="api-key" placeholder="Enter API Key">
+    <br>
+    <label for="bucket-name">Bucket Name:</label>
+    <input type="text" id="bucket-name" placeholder="Enter Bucket Name">
+    <br>
+    <button type="button" id="save-cloud-config">Save Cloud Configuration</button>
+  </form>
+  <script src="popup.js"></script>
+  <script src="test_config.js"></script>
+</body>
+</html>
