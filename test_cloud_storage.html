@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Test Cloud Storage Configuration</title>
+</head>
+<body>
+  <h2>Cloud File Storage Configuration</h2>
+  <form id="cloud-storage-config-form">
+    <label for="cloud-provider">Cloud Provider:</label>
+    <input type="text" id="cloud-provider" name="cloud-provider" placeholder="Enter Cloud Provider" required>
+    <br>
+    <label for="api-key">API Key:</label>
+    <input type="text" id="api-key" name="api-key" placeholder="Enter API Key" required>
+    <br>
+    <label for="bucket-name">Bucket Name:</label>
+    <input type="text" id="bucket-name" name="bucket-name" placeholder="Enter Bucket Name" required>
+    <br>
+    <button type="submit">Save Configuration</button>
+  </form>
+  <div id="response"></div>
+  <script>
+    document.getElementById('cloud-storage-config-form').addEventListener('submit', function(event) {
+      event.preventDefault();
+
+      const provider = document.getElementById('cloud-provider').value;
+      const apiKey = document.getElementById('api-key').value;
+      const bucketName = document.getElementById('bucket-name').value;
+
+      if (provider && apiKey && bucketName) {
+        const cloudStorageConfig = {
+          provider: provider,
+          apiKey: apiKey,
+          bucketName: bucketName
+        };
+
+        localStorage.setItem('cloudStorageConfig', JSON.stringify(cloudStorageConfig));
+        document.getElementById('response').innerText = 'Cloud storage configuration saved successfully!';
+      } else {
+        document.getElementById('response').innerText = 'Please fill in all fields.';
+      }
+    });
+  </script>
+</body>
+</html>
