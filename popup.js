@@ -34,6 +34,25 @@ document.getElementById('graphdb-config-form').addEventListener('submit', functi
   } else {
     alert('Please fill in all fields.');
   }
+document.getElementById('cloud-storage-config-form').addEventListener('submit', function(event) {
+  event.preventDefault();
+
+  const provider = document.getElementById('cloud-provider').value;
+  const apiKey = document.getElementById('api-key').value;
+  const bucketName = document.getElementById('bucket-name').value;
+
+  if (provider && apiKey && bucketName) {
+    const cloudStorageConfig = {
+      provider: provider,
+      apiKey: apiKey,
+      bucketName: bucketName
+    };
+
+    localStorage.setItem('cloudStorageConfig', JSON.stringify(cloudStorageConfig));
+    alert('Cloud storage configuration saved successfully!');
+  } else {
+    alert('Please fill in all fields.');
+  }
 });
 
 function initializeStorage() {
