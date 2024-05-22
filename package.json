@@ -3,9 +3,8 @@
   "version": "1.0.0",
   "description": "Mentus Knowledge Instructor",
   "main": "index.js",
-  "scripts": {
-    "test": "jest"
-  },
+    "test": "jest",
+    "build": "mkdir -p dist && cp -r src/* dist/"
   "devDependencies": {
     "jest": "^27.0.0",
     "puppeteer": "^10.0.0",
