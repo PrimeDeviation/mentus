@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Test GraphDB Configuration</title>
+</head>
+<body>
+  <h1>Test GraphDB Configuration</h1>
+  <div id="popup-container"></div>
+  <script>
+    // Load the popup.html content into the div
+    fetch('popup.html')
+      .then(response => response.text())
+      .then(data => {
+        document.getElementById('popup-container').innerHTML = data;
+        // Load the popup.js script
+        const script = document.createElement('script');
+        script.src = 'popup.js';
+        document.body.appendChild(script);
+      });
+  </script>
+</body>
+</html>
