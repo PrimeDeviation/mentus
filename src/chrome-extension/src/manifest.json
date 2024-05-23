@@ -8,11 +8,11 @@
     "chat-interface/*"
   ],
   "browser_action": {
-    "default_popup": "popup.html",
-    "default_icon": "icon.png"
+    "default_popup": "src/popup/popup.html",
+    "default_icon": "assets/icon.png"
   },
   "page_action": {
-    "default_popup": "chat-interface/chat.html",
-    "default_icon": "icon.png"
+    "default_popup": "src/chat-interface/chat.html",
+    "default_icon": "assets/icon.png"
   }
 }

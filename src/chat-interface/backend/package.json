@@ -1,7 +1,7 @@
 {
-  "name": "backend",
+  "name": "mentus-backend",
   "version": "1.0.0",
-  "description": "Backend for handling chat inputs and generating responses",
+  "description": "Backend for Mentus Knowledge Instructor",
   "main": "index.js",
   "scripts": {
     "start": "node index.js"
@@ -10,6 +10,6 @@
     "express": "^4.17.1",
     "body-parser": "^1.19.0"
   },
-  "author": "",
-  "license": "ISC"
+  "author": "Mentus Team",
+  "license": "MIT"
 }
