@@ -3,8 +3,16 @@
   "name": "Mentus Knowledge Instructor",
   "description": "A Chrome extension to tutor students and maintain a graphical knowledge ontology.",
   "version": "1.0",
-  "permissions": ["storage"],
+  "permissions": ["storage", "https://example.com/"],
+  "web_accessible_resources": [
+    "chat-interface/*"
+  ],
   "browser_action": {
     "default_popup": "popup.html",
+    "default_icon": "icon.png"
+  },
+  "page_action": {
+    "default_popup": "chat-interface/chat.html",
+    "default_icon": "icon.png"
   }
 }
