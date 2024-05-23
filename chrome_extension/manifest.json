@@ -11,7 +11,11 @@
       "128": "assets/icon128.png"
     }
   },
-  "permissions": [],
+  "permissions": [
+    "storage",
+    "activeTab",
+    "scripting"
+  ],
   "background": {
     "service_worker": "src/background.js"
   },
@@ -19,6 +23,15 @@
     {
       "matches": ["<all_urls>"],
       "js": ["src/content.js"]
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "chat-interface/dist/bundle.js",
+        "chat-interface/dist/bundle.css"
+      ],
+      "matches": ["<all_urls>"]
     }
   ]
 }
