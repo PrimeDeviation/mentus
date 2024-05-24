@@ -4,6 +4,8 @@ A Chrome extension to tutor students and maintain a graphical knowledge ontology
 
 ## Installation
 
+### From Source
+
 1. Clone the repository:
     ```sh
     git clone https://github.com/PrimeDeviation/mentus.git
@@ -15,6 +17,20 @@ A Chrome extension to tutor students and maintain a graphical knowledge ontology
 
 4. Click "Load unpacked" and select the cloned directory.
 
+### From Release
+
+1. Download the latest release `chrome-extension.tar.gz` from the [releases page](https://github.com/PrimeDeviation/mentus/releases).
+
+2. Extract the contents of the tar.gz file:
+    ```sh
+    tar -xzvf chrome-extension.tar.gz
+    ```
+
+3. Open Chrome and navigate to `chrome://extensions/`.
+
+4. Enable "Developer mode" by toggling the switch in the top right.
+
+5. Click "Load unpacked" and select the extracted directory.
 ## Usage
 
 - Open the extension by clicking on the icon in the Chrome toolbar.
