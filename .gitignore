@@ -133,4 +133,8 @@ Dockerfile
 docker-compose.yml
 .dockerignore
 
-# End of the .gitignore file
+# Webpack build artifacts
+dist/
+
+# Node modules
+node_modules/

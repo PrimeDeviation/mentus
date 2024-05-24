@@ -2,10 +2,12 @@
   "name": "mentus-knowledge-instructor",
   "version": "1.0.0",
   "description": "Mentus Knowledge Instructor",
-  "main": "index.js",
+  "main": "src/chat-interface/backend/index.js",
+  "scripts": {
     "test": "jest",
-    "build": "mkdir -p dist && cp -r src/* dist/"
-  ,"devDependencies": {
+    "build": "mkdir -p dist && cp -r src/chat-interface/frontend/src/* dist/"
+  },
+  "devDependencies": {
     "jest": "^27.0.0",
     "puppeteer": "^10.0.0",
     "jest-puppeteer": "^5.0.0"
