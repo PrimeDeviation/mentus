@@ -15,4 +15,39 @@ document.addEventListener("DOMContentLoaded", function() {
             }
         }
     });
+
+    // Initialize Cytoscape.js
+    const cyContainer = document.getElementById("cy");
+    const { parseMarkdownToGraph } = require('../translation_module');
+    const graphData = parseMarkdownToGraph('knowledge_ontology.md');
+
+    const cy = cytoscape({
+        container: cyContainer,
+        elements: graphData,
+        style: [
+            {
+                selector: 'node',
+                style: {
+                    'label': 'data(label)',
+                    'background-color': '#0074D9',
+                    'color': '#fff',
+                    'text-valign': 'center',
+                    'text-halign': 'center'
+                }
+            },
+            {
+                selector: 'edge',
+                style: {
+                    'width': 2,
+                    'line-color': '#ccc',
+                    'target-arrow-color': '#ccc',
+                    'target-arrow-shape': 'triangle'
+                }
+            }
+        ],
+        layout: {
+            name: 'grid',
+            rows: 1
+        }
+    });
 });
