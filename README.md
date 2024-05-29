@@ -35,7 +35,7 @@ A Chrome extension to tutor students and maintain a graphical knowledge ontology
 
 - Open the extension by clicking on the icon in the Chrome toolbar.
 - Enter a subject into the input field and click "Add Subject" to add it.
-
+- The popup files are located in the `src/chrome-extension/src/popup` directory.
 ## Contributing
 
 Contributions are welcome! Please open an issue or submit a pull request.
