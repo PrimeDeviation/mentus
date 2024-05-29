@@ -1,12 +1,28 @@
 {
   "name": "chrome-extension-boilerplate",
-  "version": "1.0.0",
-  "description": "A boilerplate for creating Chrome extensions",
-  "main": "webpack.config.js",
-  "scripts": {
-    "build": "webpack --mode production"
-  },
-  "dependencies": {},
+// Function to configure GitHub repository integration
+function configureGitHubIntegration(repoUrl, branch, token) {
+    // Load the Octokit library
+    const Octokit = require('../../libs/octokit.js');
+
+    // Initialize Octokit with the provided token
+    const octokit = new Octokit({
+        auth: token
+    });
+
+    // Test the connection to the repository
+    octokit.repos.get({
+        owner: repoUrl.split('/')[3],
+        repo: repoUrl.split('/')[4]
+    }).then(response => {
+        console.log('Repository connection successful:', response.data);
+    }).catch(error => {
+        console.error('Error connecting to repository:', error);
+    });
+}
+
+// Example usage
+configureGitHubIntegration('https://github.com/user/repo', 'main', 'your_token_here');
   "devDependencies": {
     "webpack": "^5.0.0",
     "webpack-cli": "^4.0.0",
