@@ -1,5 +1,7 @@
 chrome.runtime.onInstalled.addListener(function() {
     console.log('Background script loaded');
+});
+
 // Function to configure GitHub repository integration
 function configureGitHubIntegration(repoUrl, branch, token) {
     // Load the Octokit library
@@ -20,6 +22,3 @@ function configureGitHubIntegration(repoUrl, branch, token) {
         console.error('Error connecting to repository:', error);
     });
 }
-
-// Example usage
-configureGitHubIntegration('https://github.com/user/repo', 'main', 'your_token_here');
