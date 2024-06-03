@@ -1,1 +1,16 @@
 /* Add your chatbar styles here */
+.chatbar {
+    background-color: #f1f1f1;
+    padding: 10px;
+    border-radius: 5px;
+}
+
+.chatbar input {
+    width: 80%;
+    padding: 5px;
+    margin-right: 10px;
+}
+
+.chatbar button {
+    padding: 5px 10px;
+}

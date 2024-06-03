@@ -1,1 +1,15 @@
 /* Add your documents styles here */
+.documents {
+    background-color: #ffffff;
+    padding: 10px;
+    border-radius: 5px;
+}
+
+.documents .document-item {
+    padding: 5px;
+    border-bottom: 1px solid #ddd;
+}
+
+.documents .document-item:last-child {
+    border-bottom: none;
+}
