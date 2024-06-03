@@ -88,6 +88,34 @@ Mentus is a Chrome extension designed to curate learning content, validate user 
 - `popup/`: Directory containing files for the popup UI.
 - `src/chat-interface/`: Directory containing the chat interface implementation.
 
+## Coding Standards
+
+- Follow JavaScript ES6+ standards.
+- Use meaningful variable and function names.
+- Keep functions small and focused on a single task.
+- Use consistent indentation (2 spaces).
+- Avoid global variables; use modules and closures.
+
+## Documentation Standards
+
+- Use JSDoc comments for all functions and classes.
+- Include descriptions, parameter types, and return types in JSDoc comments.
+- Keep comments up-to-date with code changes.
+
+## Testing Guidelines
+
+- Write unit tests for all functions and components.
+- Use a testing framework like Jest.
+- Ensure tests cover edge cases and error conditions.
+- Run tests before committing code.
+
+## Performance Optimization
+
+- Minimize DOM manipulations.
+- Optimize CSS for better performance.
+- Use efficient algorithms and data structures.
+- Avoid memory leaks by cleaning up event listeners and intervals.
+
 ## Tasks
 - Verify file paths in `manifest.json`.
 - Check for missing permissions in `manifest.json`.
