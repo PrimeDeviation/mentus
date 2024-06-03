@@ -3,39 +3,63 @@
   "name": "Mentus Knowledge Instructor",
   "description": "The Mentus Knowledge Instructor is a Chrome extension designed to tutor students by interfacing with a multimodal agent (e.g., GPT-4, Claude 3 Opus). It maintains a graphical knowledge ontology with a node-based representation of the learner's journey within the knowledge graph.",
   "version": "1.1",
-"action": {
-  "default_popup": "popup/popup.html",
-  "default_icon": {
-    "16": "images/icon_16.png",
-    "48": "images/icon_48.png",
-    "128": "images/icon_128.png"
-  }
-},
-"permissions": [
-  "storage",
-  "activeTab",
-  "scripting",
-  "http://*/",
-  "https://*/"
-],
-"background": {
-  "service_worker": "background.js"
-},
-"content_scripts": [
-  {
-    "matches": ["<all_urls>"],
-    "js": ["content-scripts/content-script.js"],
-    "css": ["content-scripts/content-style.css"]
-  }
-],
-"web_accessible_resources": [
-  {
-    "resources": [
-      "components/*",
-      "popup/*",
-      "options/*"
-    ],
-    "matches": ["<all_urls>"]
-  }
-]
+  "action": {
+    "default_popup": "popup/popup.html",
+    "default_icon": {
+      "16": "images/icon_16.png",
+      "48": "images/icon_48.png",
+      "128": "images/icon_128.png"
+    }
+  },
+  "permissions": [
+    "storage",
+    "activeTab",
+    "scripting",
+    "http://*/",
+    "https://*/"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content-scripts/content-script.js"],
+      "css": ["content-scripts/content-style.css"]
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "components/navbar/navbar.js",
+        "components/graphview/graphview.html",
+        "components/documents/documents.css",
+        "components/graphview/graphview.js",
+        "components/editor/editor.html",
+        "components/navbar/navbar.css",
+        "components/chatbar/chatbar.js",
+        "popup/popup.css",
+        "options/options.html",
+        "content-scripts/content-script.js",
+        "components/navbar/navbar.html",
+        "components/documents/documents.html",
+        "popup/popup.js",
+        "content-scripts/content-style.css",
+        "components/documents/documents.js",
+        "components/editor/editor.css",
+        "components/settings/settings.html",
+        "components/graphview/graphview.css",
+        "options/options.js",
+        "components/chatbar/chatbar.css",
+        "components/settings/settings.css",
+        "components/settings/settings.js",
+        "components/editor/editor.js",
+        "options/options.css",
+        "background.js",
+        "components/chatbar/chatbar.html",
+        "popup/popup.html"
+      ],
+      "matches": ["<all_urls>"]
+    }
+  ]
 }
