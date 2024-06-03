@@ -1,0 +1,15 @@
+{
+  "name": "mentus",
+  "version": "1.0.0",
+  "description": "A web extension project",
+  "main": "background.js",
+  "scripts": {
+    "build": "echo 'Building the project...'",
+    "start": "echo 'Starting the project...'",
+    "test": "echo 'Running tests...'"
+  },
+  "author": "",
+  "license": "MIT",
+  "dependencies": {},
+  "devDependencies": {}
+}
