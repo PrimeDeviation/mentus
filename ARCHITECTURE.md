@@ -13,10 +13,6 @@ mentus/
 │   ├── options.html
 │   ├── options.js
 │   └── options.css
-├── images/
-│   ├── icon_16.png
-│   ├── icon_48.png
-│   └── icon_128.png
 ├── styles/
 │   └── main.css
 └── components/
