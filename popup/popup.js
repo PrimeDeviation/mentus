@@ -219,3 +219,6 @@ async function queryClaude3Opus(query) {
 }
 
 initializeStorage();
+document.addEventListener('DOMContentLoaded', function() {
+    // Add your popup initialization code here
+});

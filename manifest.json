@@ -19,19 +19,20 @@
     "https://*/"
   ],
   "background": {
-    "service_worker": "dist/background.bundle.js"
+    "service_worker": "background.js"
   },
   "content_scripts": [
     {
       "matches": ["<all_urls>"],
-      "js": ["dist/content.bundle.js"]
+      "js": ["content-scripts/content-script.js"],
+      "css": ["content-scripts/content-style.css"]
     }
   ],
   "web_accessible_resources": [
     {
       "resources": [
-        "chat-interface/dist/bundle.js",
-        "chat-interface/dist/bundle.css"
+        "src/chat-interface/dist/bundle.js",
+        "src/chat-interface/dist/bundle.css"
       ],
       "matches": ["<all_urls>"]
     }
