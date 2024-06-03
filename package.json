@@ -4,20 +4,13 @@
   "description": "Mentus Knowledge Instructor",
   "main": "background.js",
   "scripts": {
-    "test": "jest",
     "build": "mkdir -p dist && cp -r components/* dist/"
-  },
-  "devDependencies": {
-    "jest": "^27.0.0",
-    "puppeteer": "^10.0.0",
-    "jest-puppeteer": "^5.0.0"
   },
   "dependencies": {
     "cytoscape": "^3.21.0"
   },
   "directories": {
-    "doc": "docs",
-    "test": "__tests__"
+    "doc": "docs"
   },
   "keywords": [],
   "author": "",
