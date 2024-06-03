@@ -17,7 +17,7 @@
   },
   "directories": {
     "doc": "docs",
-    "test": "tests"
+    "test": "__tests__"
   },
   "keywords": [],
   "author": "",
