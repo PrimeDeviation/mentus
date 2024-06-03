@@ -5,7 +5,7 @@ chrome.runtime.onInstalled.addListener(function() {
 // Function to configure GitHub repository integration
 function configureGitHubIntegration(repoUrl, branch, token) {
     // Load the Octokit library
-    const Octokit = require('../../libs/octokit.js');
+    const Octokit = require('octokit');
 
     // Initialize Octokit with the provided token
     const octokit = new Octokit({
