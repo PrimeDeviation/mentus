@@ -14,5 +14,12 @@
   },
   "dependencies": {
     "cytoscape": "^3.21.0"
-  }
+  },
+  "directories": {
+    "doc": "docs",
+    "test": "tests"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
 }
