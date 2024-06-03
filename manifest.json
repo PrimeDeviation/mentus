@@ -16,6 +16,10 @@
     "activeTab",
     "scripting"
   ],
+  "host_permissions": [
+    "http://*/",
+    "https://*/"
+  ],
   "background": {
     "service_worker": "dist/background.bundle.js"
   },
