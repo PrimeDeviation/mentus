@@ -61,3 +61,6 @@ body {
 #expand-collapse-button:hover {
     background-color: #0056b3;
 }
+#central-content {
+    margin-right: 300px; /* Adjust for the chat bar width */
+}
