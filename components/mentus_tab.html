@@ -17,21 +17,6 @@
     <!-- Default to graphview, but allow switching to document view and editor view -->
     <object id="content-frame" type="text/html" data="../components/graphview/graphview.html" width="100%" height="600px"></object>
   </div>
-  <script>
-    // JavaScript to handle navigation and content switching
-    document.getElementById('navbar').addEventListener('click', function(event) {
-      if (event.target.tagName === 'A') {
-        var view = event.target.getAttribute('data-view');
-        var contentFrame = document.getElementById('content-frame');
-        if (view === 'graph') {
-          contentFrame.setAttribute('data', '../components/graphview/graphview.html');
-        } else if (view === 'documents') {
-          contentFrame.setAttribute('data', '../components/documents/documents.html');
-        } else if (view === 'editor') {
-          contentFrame.setAttribute('data', '../components/editor/editor.html');
-        }
-      }
-    });
-  </script>
+  <script src="mentus_tab.js"></script>
 </body>
 </html>
