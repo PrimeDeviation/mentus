@@ -10,8 +10,7 @@
       "48": "images/icon_48.png",
       "128": "images/icon_128.png"
     }
-    }
-  },
+    },
   "permissions": [
     "storage",
     "activeTab",
@@ -22,19 +21,29 @@
     "https://*/"
   ],
   "background": {
-    "service_worker": "dist/background.bundle.js"
+    "service_worker": "background.js"
   },
   "content_scripts": [
     {
       "matches": ["<all_urls>"],
-      "js": ["dist/content.bundle.js"]
+      "js": ["content-scripts/content-script.js"]
     }
   ],
   "web_accessible_resources": [
     {
       "resources": [
-        "chat-interface/dist/bundle.js",
-        "chat-interface/dist/bundle.css"
+        "components/chatbar/chatbar.js",
+        "components/chatbar/chatbar.css",
+        "components/documents/documents.js",
+        "components/documents/documents.css",
+        "components/editor/editor.js",
+        "components/editor/editor.css",
+        "components/graphview/graphview.js",
+        "components/graphview/graphview.css",
+        "components/navbar/navbar.js",
+        "components/navbar/navbar.css",
+        "components/settings/settings.js",
+        "components/settings/settings.css"
       ],
       "matches": ["<all_urls>"]
     }

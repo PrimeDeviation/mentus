@@ -1,6 +1,6 @@
 import json
 
-with open('package.json', 'r') as file:
+with open('manifest.json', 'r') as file:
     try:
         data = json.load(file)
         print("JSON is valid.")
