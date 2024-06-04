@@ -7,7 +7,7 @@
     "build": "echo 'Building the project...'",
     "start": "echo 'Starting the project...'",
     "test": "echo 'Running tests...'"
-    }
+    },
   "license": "MIT",
   "dependencies": {},
   "devDependencies": {}
