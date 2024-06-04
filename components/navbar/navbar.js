@@ -15,11 +15,19 @@ document.addEventListener('DOMContentLoaded', function() {
         loadSection('settings');
     });
 
-    function loadSection(section) {
-        const sections = ['graphview', 'documents', 'editor', 'settings'];
-        sections.forEach(function(sec) {
-            document.getElementById(sec).style.display = 'none';
-        });
-        document.getElementById(section).style.display = 'block';
+function loadSection(section) {
+    const sections = ['graphview', 'documents', 'editor', 'settings'];
+    sections.forEach(function(sec) {
+        document.getElementById(sec).style.display = 'none';
+    });
+    document.getElementById(section).style.display = 'block';
+
+    if (section === 'settings') {
+        fetch('components/settings/settings.html')
+            .then(response => response.text())
+            .then(data => {
+                document.getElementById('settings').innerHTML = data;
+            });
     }
+}
 });
