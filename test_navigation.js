@@ -1,4 +1,7 @@
-<!DOCTYPE html>
+const jsdom = require("jsdom");
+const { JSDOM } = jsdom;
+
+const dom = new JSDOM(`<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -27,4 +30,21 @@
     </div>
     <script src="../components/navbar/navbar.js"></script>
 </body>
-</html>
+</html>`, { runScripts: "dangerously", resources: "usable" });
+
+const { window } = dom;
+const { document } = window;
+
+window.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('graph-view').click();
+    console.log(document.getElementById('graphview').style.display); // should be 'block'
+
+    document.getElementById('documents').click();
+    console.log(document.getElementById('documents').style.display); // should be 'block'
+
+    document.getElementById('editor').click();
+    console.log(document.getElementById('editor').style.display); // should be 'block'
+
+    document.getElementById('settings').click();
+    console.log(document.getElementById('settings').style.display); // should be 'block'
+});

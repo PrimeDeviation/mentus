@@ -1,0 +1,48 @@
+body {
+    margin: 0;
+    display: flex;
+}
+
+.navbar {
+    width: 200px;
+    background-color: #333;
+    position: fixed;
+    height: 100%;
+    overflow: auto;
+}
+
+.navbar ul {
+    list-style-type: none;
+    padding: 0;
+}
+
+.navbar ul li {
+    text-align: center;
+    padding: 16px;
+    text-decoration: none;
+}
+
+.navbar ul li a {
+    display: block;
+    color: white;
+    text-decoration: none;
+}
+
+.navbar ul li a:hover {
+    background-color: #575757;
+}
+
+@media screen and (max-width: 600px) {
+    .navbar {
+        width: 100%;
+        height: auto;
+        position: relative;
+    }
+    .navbar ul li {
+        float: left;
+    }
+    .navbar ul li a {
+        text-align: center;
+        float: none;
+    }
+}
