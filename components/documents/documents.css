@@ -1,0 +1,36 @@
+#documents-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+}
+
+#upload-section {
+    margin-bottom: 20px;
+}
+
+#documents-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: center;
+}
+
+.document-item {
+    background-color: #f0f0f0;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    width: 200px;
+    text-align: center;
+}
+
+@media (max-width: 600px) {
+    #documents-container {
+        padding: 10px;
+    }
+
+    .document-item {
+        width: 100%;
+    }
+}
