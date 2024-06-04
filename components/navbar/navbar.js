@@ -8,8 +8,8 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     document.getElementById('editor').addEventListener('click', function() {
+        console.log("Editor section loaded");
         loadSection('editor');
-    });
 
     document.getElementById('settings').addEventListener('click', function() {
         loadSection('settings');
