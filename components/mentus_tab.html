@@ -5,19 +5,23 @@
   <link rel="stylesheet" type="text/css" href="../styles/main.css">
 </head>
 <body>
-  <div id="navbar" class="navbar">
-    <!-- Include the navbar component -->
-    <div id="navbar-content"></div>
-  </div>
-  <div id="divider-left" class="divider"></div>
-  <div id="main-content" class="main-content">
-    <!-- Default to graphview, but allow switching to document view and editor view -->
-    <div id="content-frame"></div>
-  </div>
-  <div id="divider-right" class="divider"></div>
-  <div id="chatbar" class="chatbar">
-    <!-- Include the chatbar component -->
-    <div id="chatbar-content"></div>
+  <div class="container">
+    <div id="chatbar" class="chatbar">
+      <!-- Include the chatbar component -->
+      <div id="chatbar-content"></div>
+    </div>
+    <div id="main-content" class="main-content">
+      <div class="tabs">
+        <button class="tab-button" onclick="showTab('graph')">Graph</button>
+        <button class="tab-button" onclick="showTab('docs')">Docs</button>
+        <button class="tab-button" onclick="showTab('editor')">Editor</button>
+      </div>
+      <div id="tab-content">
+        <div id="graph" class="tab-content">Graph Content</div>
+        <div id="docs" class="tab-content" style="display:none;">Docs Content</div>
+        <div id="editor" class="tab-content" style="display:none;">Editor Content</div>
+      </div>
+    </div>
   </div>
     <script src="mentus_tab.js"></script>
 </body>
