@@ -3,6 +3,7 @@ body {
   height: 100vh;
   margin: 0;
   overflow: hidden;
+  background-color: #2F3136;
 }
 
 .container {
@@ -14,39 +15,40 @@ body {
 .chatbar {
   width: 300px;
   height: 100%;
-  background-color: #333;
-  color: #fff;
+  background-color: #202225;
+  color: #DCDDDE;
 }
 
 .main-content {
   flex: 1;
   height: 100%;
-  background-color: #222;
-  color: #fff;
+  background-color: #2F3136;
+  color: #DCDDDE;
 }
 
 .tabs {
   display: flex;
-  background-color: #444;
+  background-color: #36393F;
   padding: 10px;
 }
 
 .tab-button {
-  background-color: #555;
-  color: #fff;
+  background-color: #36393F;
+  color: #DCDDDE;
   border: none;
   padding: 10px 20px;
   cursor: pointer;
+  margin-right: 5px;
 }
 
 .tab-button:hover {
-  background-color: #666;
+  background-color: #484C52;
 }
 
 .tab-content {
   display: none;
   padding: 20px;
-  background-color: #222;
+  background-color: #2F3136;
 }
 
 #graph, #docs, #editor {
