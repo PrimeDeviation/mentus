@@ -8,24 +8,46 @@
     <link rel="stylesheet" href="styles/main.css">
 </head>
 <body>
-    <div class="container">
-        <nav class="navbar">
-            <ul>
-                <li><a href="#" id="graph-view" data-view="graphview">Graph View</a></li>
-                <li><a href="#" id="documents" data-view="documents">Documents/Files</a></li>
-                <li><a href="#" id="editor" data-view="editor">Editor</a></li>
-                <li><a href="#" id="settings" data-view="settings">Settings</a></li>
-            </ul>
-        </nav>
-        <div id="content">
-            <div id="graphview" style="display: none;">Graph View Content</div>
-            <div id="documents" style="display: none;">Documents Content</div>
-            <div id="editor" style="display: none;">
-                <iframe src="components/editor/editor.html" style="width: 100%; height: 100%; border: none;"></iframe>
-            </div>
-            <div id="settings" style="display: none;">Settings Content</div>
-        </div>
+<div class="container">
+  <div class="header">
+    <h1>Mentus Knowledge Instructor</h1>
+  </div>
+  <div class="main-content">
+    <div class="navbar">
+      <div class="nav-item">
+        <img src="icons/graph-view.png" alt="Graph View">
+        <span>Graph View</span>
+      </div>
+      <div class="nav-item">
+        <img src="icons/documents.png" alt="Documents">
+        <span>Documents</span>
+      </div>
+      <div class="nav-item">
+        <img src="icons/editor.png" alt="Editor">
+        <span>Editor</span>
+      </div>
+      <div class="nav-item">
+        <img src="icons/settings.png" alt="Settings">
+        <span>Settings</span>
+      </div>
     </div>
+    <div class="content-area">
+      <!-- Content will be dynamically loaded here -->
+    </div>
+    <div class="chatbar">
+      <div class="chat-history">
+        <!-- Chat messages will be appended here -->
+      </div>
+      <div class="chat-input">
+        <input type="text" placeholder="Type a message...">
+        <button>Send</button>
+      </div>
+    </div>
+  </div>
+  <div class="footer">
+    <!-- Additional controls or information can be added here -->
+  </div>
+</div>
     <script src="components/navbar/navbar.js"></script>
 </body>
 </html>
