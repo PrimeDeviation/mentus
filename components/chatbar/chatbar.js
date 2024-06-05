@@ -13,30 +13,36 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    function sendMessage() {
         const message = chatInput.value.trim();
         if (message !== '') {
             displayMessage('You', message);
             chatInput.value = '';
-            // Simulate receiving a response
-            setTimeout(function() {
-                displayMessage('Bot', 'This is a response message.');
-            }, 1000);
+            showLoadingIndicator();
+            fetch('https://api.example.com/gpt', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ message: message })
+            })
+            .then(response => response.json())
+            .then(data => {
+                hideLoadingIndicator();
+                displayMessage('Bot', data.response);
+            })
+            .catch(error => {
+                hideLoadingIndicator();
+                displayMessage('Error', 'Failed to get a response from the server.');
+            });
+        } else {
+            alert('Message cannot be empty.');
         }
     }
 
-    function displayMessage(sender, message) {
-        const messageElement = document.createElement('div');
-        messageElement.classList.add('message');
-        
-        // Parse markdown-like syntax
-        message = message
-            .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')  // Bold
-            .replace(/_(.*?)_/g, '<em>$1</em>')                // Italics
-            .replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2">$1</a>');  // Links
-
-        messageElement.innerHTML = `<strong>${sender}:</strong> ${message}`;
-        chatMessages.appendChild(messageElement);
-        chatMessages.scrollTop = chatMessages.scrollHeight;
+    function showLoadingIndicator() {
+        document.getElementById('loading-indicator').style.display = 'block';
     }
-});
+
+    function hideLoadingIndicator() {
+        document.getElementById('loading-indicator').style.display = 'none';
+    }
