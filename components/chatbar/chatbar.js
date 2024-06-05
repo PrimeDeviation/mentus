@@ -1,5 +1,18 @@
 document.addEventListener('DOMContentLoaded', function() {
-    const chatInput = document.getElementById('chat-input');
+  const messageContainer = document.getElementById('messageContainer');
+  
+  // Sample messages to demonstrate functionality
+  const messages = [
+    "Hello, how can I assist you today?",
+    "What are your learning goals?",
+    "Let's explore some educational concepts together."
+  ];
+
+  messages.forEach(message => {
+    const messageElement = document.createElement('div');
+    messageElement.textContent = message;
+    messageContainer.appendChild(messageElement);
+  });
     const sendButton = document.getElementById('send-button');
     const chatMessages = document.getElementById('chat-messages');
 
