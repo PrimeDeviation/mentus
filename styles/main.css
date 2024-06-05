@@ -1,26 +1,39 @@
-.container {
+body {
   display: flex;
-  flex-direction: column;
   height: 100vh;
+  margin: 0;
 }
 
-.header {
-  height: 60px;
-  background-color: #34495e;
-  color: #ecf0f1;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 20px;
+.navbar {
+  width: 20%;
+  height: 100%;
 }
 
-.header h1 {
-  font-size: 24px;
+.chatbar {
+  width: 20%;
+  height: 100%;
 }
 
 .main-content {
-  display: flex;
-  flex-grow: 1;
+  flex: 1;
+  height: 100%;
+  overflow: auto;
+}
+
+.divider {
+  width: 5px;
+  cursor: ew-resize;
+  background-color: #ccc;
+}
+
+#navbar-content, #chatbar-content, #content-frame {
+  height: 100%;
+}
+
+object {
+  width: 100%;
+  height: 100%;
+  border: none;
 }
 
 .navbar {
