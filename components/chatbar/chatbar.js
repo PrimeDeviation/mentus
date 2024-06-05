@@ -28,6 +28,13 @@ document.addEventListener('DOMContentLoaded', function() {
     function displayMessage(sender, message) {
         const messageElement = document.createElement('div');
         messageElement.classList.add('message');
+        
+        // Parse markdown-like syntax
+        message = message
+            .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')  // Bold
+            .replace(/_(.*?)_/g, '<em>$1</em>')                // Italics
+            .replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2">$1</a>');  // Links
+
         messageElement.innerHTML = `<strong>${sender}:</strong> ${message}`;
         chatMessages.appendChild(messageElement);
         chatMessages.scrollTop = chatMessages.scrollHeight;
