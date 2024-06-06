@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', function() {
-  const messageContainer = document.getElementById('messageContainer');
+  const chatInput = document.getElementById('chat-input'); // Ensure this matches the ID in your HTML
   
   // Sample messages to demonstrate functionality
   const messages = [
