@@ -12,7 +12,7 @@ document.addEventListener("DOMContentLoaded", () => {
       showTab(tabName);
     });
   });
-});
+  showTab('settings');
 
 function showTab(tabName) {
   const tabs = document.getElementsByClassName('tab-content');
