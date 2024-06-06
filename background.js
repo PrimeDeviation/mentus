@@ -1,6 +1,9 @@
 chrome.runtime.onInstalled.addListener(function() {
     console.log('Background script loaded');
 });
+chrome.action.onClicked.addListener(() => {
+    chrome.tabs.create({ url: chrome.runtime.getURL("components/mentus_tab.html") });
+});
 
 // Function to configure GitHub repository integration
 function configureGitHubIntegration(repoUrl, branch, token) {
