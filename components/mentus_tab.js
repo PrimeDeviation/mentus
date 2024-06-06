@@ -4,6 +4,14 @@ document.addEventListener("DOMContentLoaded", () => {
   document.getElementById('docs').innerHTML = '<object type="text/html" data="../components/tabs/documents/documents.html" width="100%" height="100%"></object>';
   document.getElementById('editor').innerHTML = '<object type="text/html" data="../components/tabs/editor/editor.html" width="100%" height="100%"></object>';
   document.getElementById('settings').innerHTML = '<object type="text/html" data="../components/tabs/settings/settings.html" width="100%" height="100%"></object>';
+
+  const tabButtons = document.querySelectorAll('.tab-button');
+  tabButtons.forEach(button => {
+    button.addEventListener('click', (event) => {
+      const tabName = event.target.getAttribute('data-tab');
+      showTab(tabName);
+    });
+  });
 });
 
 function showTab(tabName) {
