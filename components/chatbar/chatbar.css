@@ -1,6 +1,8 @@
 .chatbar {
   width: 300px;
-  background-color: #ecf0f1;
+  height: 100%;
+  background-color: #202225;
+  color: #DCDDDE;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -19,7 +21,6 @@
   padding: 10px;
   background-color: #202225;
   color: #DCDDDE;
-}
 }
 
 .chat-input {

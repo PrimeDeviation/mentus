@@ -30,6 +30,7 @@ body {
   display: flex;
   background-color: #36393F;
   padding: 10px;
+  justify-content: space-around;
 }
 
 .tab-button {
@@ -38,7 +39,8 @@ body {
   border: none;
   padding: 10px 20px;
   cursor: pointer;
-  margin-right: 5px;
+  flex: 1;
+  text-align: center;
 }
 
 .tab-button:hover {
