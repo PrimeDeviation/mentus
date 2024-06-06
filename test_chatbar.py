@@ -4,7 +4,7 @@ from selenium.webdriver.common.keys import Keys
 import time
 
 # Set up the WebDriver (assuming you have ChromeDriver installed and in your PATH)
-driver = webdriver.Chrome()
+driver = webdriver.Firefox()
 
 # Open the test HTML file
 driver.get("file:///PrimeDeviation__mentus/test_chatbar.html")
