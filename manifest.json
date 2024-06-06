@@ -4,13 +4,13 @@
   "description": "The Mentus Knowledge Instructor is a Chrome extension designed to tutor students by interfacing with a multimodal agent (e.g., GPT-4, Claude 3 Opus). It maintains a graphical knowledge ontology with a node-based representation of the learner's journey within the knowledge graph.",
   "version": "1.1",
   "action": {
-    "default_popup": "popup/popup.html",
+    "default_popup": "tab/tab.html",
     "default_icon": {
       "16": "images/icon_16.png",
       "48": "images/icon_48.png",
       "128": "images/icon_128.png"
     }
-    },
+  },
   "permissions": [
     "storage",
     "activeTab",
@@ -34,16 +34,14 @@
       "resources": [
         "components/chatbar/chatbar.js",
         "components/chatbar/chatbar.css",
-        "components/documents/documents.js",
-        "components/documents/documents.css",
-        "components/editor/editor.js",
-        "components/editor/editor.css",
-        "components/graphview/graphview.js",
-        "components/graphview/graphview.css",
-        "components/navbar/navbar.js",
-        "components/navbar/navbar.css",
-        "components/settings/settings.js",
-        "components/settings/settings.css"
+        "components/tabs/documents/documents.js",
+        "components/tabs/documents/documents.css",
+        "components/tabs/editor/editor.js",
+        "components/tabs/editor/editor.css",
+        "components/tabs/graphview/graphview.js",
+        "components/tabs/graphview/graphview.css",
+        "components/tabs/settings/settings.js",
+        "components/tabs/settings/settings.css"
       ],
       "matches": ["<all_urls>"]
     }
