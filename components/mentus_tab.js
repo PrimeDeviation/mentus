@@ -17,7 +17,7 @@ document.addEventListener("DOMContentLoaded", () => {
 function showTab(tabName) {
   const tabs = document.getElementsByClassName('tab-content');
   for (let i = 0; i < tabs.length; i++) {
-    tabs[i].style.display = 'none';
+    tabs[i].classList.remove('active');
   }
-  document.getElementById(tabName).style.display = 'block';
+  document.getElementById(tabName).classList.add('active');
 }
