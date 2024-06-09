@@ -75,7 +75,7 @@ body {
   padding: 10px;
   background-color: #333;
   border: 1px solid #444;
-  color: #fff;
+  color: #444;
   cursor: pointer;
   text-align: center;
 }
@@ -89,12 +89,9 @@ body {
 .tab-content.active {
   display: block;
 }
-  cursor: pointer;
-  flex: 1;
-  text-align: center;
-}
 
 .tab-button:hover {
+  color: #fff;
   background-color: #484C52;
 }
 
