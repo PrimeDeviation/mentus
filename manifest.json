@@ -39,14 +39,14 @@
       "resources": [
         "components/chatbar/chatbar.js",
         "components/chatbar/chatbar.css",
-        "components/tabs/documents/documents.js",
-        "components/tabs/documents/documents.css",
-        "components/tabs/editor/editor.js",
-        "components/tabs/editor/editor.css",
-        "components/tabs/graphview/graphview.js",
-        "components/tabs/graphview/graphview.css",
-        "components/tabs/settings/settings.js",
-        "components/tabs/settings/settings.css"
+        "components/documents/documents.js",
+        "components/documents/documents.css",
+        "components/editor/editor.js",
+        "components/editor/editor.css",
+        "components/graphview/graphview.js",
+        "components/graphview/graphview.css",
+        "components/settings/settings.js",
+        "components/settings/settings.css"
       ],
       "matches": [
         "<all_urls>"

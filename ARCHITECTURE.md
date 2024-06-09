@@ -168,21 +168,6 @@ mentus/
 │ │ └── header.js
 │ ├── mentus_tab.html
 │ ├── mentus_tab.js
-│ ├── navbar/
-│ │ ├── navbar.css
-│ │ ├── navbar.html
-│ │ ├── navbar.js
 ├── index.html
 ├── package.json
-├── test/
-│ ├── test_chatbar.html
-│ ├── test_documents_view.py
-│ ├── test_formatting.js
-│ ├── test_graphview.html
-│ ├── test_graphview.js
-│ ├── test_mentus_tab.html
-│ ├── test_navigation.html
-│ ├── test_navigation.js
-│ ├── test_settings_integration.py
-│ ├── validate_json.py
-│ ├── verify_chatbar.py
+
