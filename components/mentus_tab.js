@@ -20,4 +20,14 @@ function showTab(tabName) {
     tabs[i].classList.remove('active');
   }
   document.getElementById(tabName).classList.add('active');
+
+  // Update the active class on the tab buttons
+  const tabButtons = document.querySelectorAll('.tab-button');
+  tabButtons.forEach(button => {
+    if (button.getAttribute('data-tab') === tabName) {
+      button.classList.add('active');
+    } else {
+      button.classList.remove('active');
+    }
+  });
 }
