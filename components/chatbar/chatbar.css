@@ -29,6 +29,14 @@
   align-items: center;
 }
 
+.chat-input select {
+  padding: 10px;
+  margin-right: 10px;
+  border: 1px solid #202225;
+  border-radius: 4px;
+  background-color: #36393F;
+  color: #34495e;
+}
 .chat-input input {
   flex-grow: 1;
   padding: 10px;

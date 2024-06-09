@@ -9,6 +9,8 @@
     "test": "echo 'Running tests...'"
     },
   "license": "MIT",
-  "dependencies": {},
+  "dependencies": {
+    "langchain": "^1.0.0"
+  },
   "devDependencies": {}
 }
