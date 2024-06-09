@@ -24,6 +24,10 @@ form {
     flex-direction: column;
 }
 
+.form-group {
+    margin-bottom: 15px;
+}
+
 label {
     margin-bottom: 5px;
 }
