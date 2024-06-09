@@ -93,6 +93,9 @@ body {
 .tab-button:hover {
   color: #fff;
   background-color: #484C52;
+.tab-button.active {
+  color: #fff;
+  background-color: #484C52;
 }
 
 .tab-content {
