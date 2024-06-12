@@ -38,11 +38,14 @@ form {
 label {
     flex: 1;
     margin-bottom: 0;
+    padding-right: 10px; /* Add padding to the right of the label for better spacing */
+    text-align: right; /* Align text to the right for better alignment with input fields */
 }
 
 input[type="text"] {
     flex: 2;
     margin-bottom: 0;
+    width: 100%; /* Ensure input fields take up the full width available */
 }
 
 label {
