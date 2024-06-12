@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulate Test</title>
+    <link rel="stylesheet" href="components/settings/settings.css">
+</head>
+<body>
+    <div class="settings-container">
+        <h1>Simulate Test</h1>
+        <form id="settings-form">
+            <div class="form-group">
+                <label for="openai-api-key">OpenAI API Key:</label>
+                <input type="text" id="openai-api-key" placeholder="Enter OpenAI API Key">
+            </div>
+            <div class="form-group">
+                <label for="anthropic-api-key">Anthropic API Key:</label>
+                <input type="text" id="anthropic-api-key" placeholder="Enter Anthropic API Key">
+            </div>
+            <div class="form-group">
+                <label for="chat-models">Chat Models:</label>
+                <select id="chat-models">
+                    <option value="">Select a model</option>
+                </select>
+            </div>
+            <button type="button" id="save-settings">Save</button>
+        </form>
+    </div>
+    <script src="simulate_test.js"></script>
+</body>
+</html>
