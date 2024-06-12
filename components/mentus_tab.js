@@ -22,5 +22,36 @@ document.addEventListener("DOMContentLoaded", () => {
     activeTab.style.height = '100vh';
     activeTab.style.width = '100%';
   }
+  loadChatModels();
 
+  function loadChatModels() {
+    const openaiApiKey = localStorage.getItem('openaiApiKey');
+    const anthropicApiKey = localStorage.getItem('anthropicApiKey');
+    const chatModelsDropdown = document.getElementById('chat-models');
+
+    // Clear existing options
+    chatModelsDropdown.innerHTML = '<option value="">Select a model</option>';
+
+    if (openaiApiKey) {
+        // Fetch OpenAI models (mocked for this example)
+        const openaiModels = ['text-davinci-003', 'text-curie-001'];
+        openaiModels.forEach(model => {
+            const option = document.createElement('option');
+            option.value = model;
+            option.textContent = model;
+            chatModelsDropdown.appendChild(option);
+        });
+    }
+
+    if (anthropicApiKey) {
+        // Fetch Anthropic models (mocked for this example)
+        const anthropicModels = ['claude-v1', 'claude-v2'];
+        anthropicModels.forEach(model => {
+            const option = document.createElement('option');
+            option.value = model;
+            option.textContent = model;
+            chatModelsDropdown.appendChild(option);
+        });
+    }
+  }
 })
