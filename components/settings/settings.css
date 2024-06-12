@@ -25,7 +25,19 @@ form {
 }
 
 .form-group {
+    display: flex;
+    align-items: center;
     margin-bottom: 15px;
+}
+
+label {
+    flex: 1;
+    margin-bottom: 0;
+}
+
+input[type="text"] {
+    flex: 2;
+    margin-bottom: 0;
 }
 
 label {
