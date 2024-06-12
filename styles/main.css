@@ -3,8 +3,10 @@ body {
   margin: 0;
   padding: 0;
   font-family: Arial, sans-serif;
-  background-color: #2e2e2e; /* Dark background color */
-  color: #fff; /* Light text color */
+  background-color: #2e2e2e;
+  /* Dark background color */
+  color: #fff;
+  /* Light text color */
 }
 
 .container {
@@ -14,7 +16,8 @@ body {
 
 /* Chatbar Styles */
 .chatbar {
-  background-color: #1e1e1e; /* Matching the darker background */
+  background-color: #1e1e1e;
+  /* Matching the darker background */
   width: 20%;
   display: flex;
   flex-direction: column;
@@ -80,19 +83,17 @@ body {
   text-align: center;
 }
 
-.tab-content {
-  display: none;
-  padding: 20px;
-  background-color: #2e2e2e;
-}
-
 .tab-content.active {
+  width: 100%;
+  height: 100%;
   display: block;
 }
 
 .tab-button:hover {
   color: #fff;
   background-color: #484C52;
+}
+
 .tab-button.active {
   color: #fff;
   background-color: #484C52;
@@ -100,15 +101,20 @@ body {
 
 .tab-content {
   display: none;
+  height: 100vh;
+  width: 100%;
+  height: 100%;
+  border: none;
   padding: 20px;
   background-color: #2F3136;
 }
 
-#graph,
+/* Removed empty ruleset for #graph */
+
 #docs,
 #editor,
 #settings {
-  display: none;
+  display: settings;
 }
 
 /* Divider Styles */
@@ -136,25 +142,6 @@ object {
   padding: 0 20px;
 }
 
-/* Popup Container Styles */
-#popup-container {
-  border: 1px solid #ccc;
-  border-radius: 5px;
-  padding: 10px;
-  background-color: #fff;
-  transition: width 0.3s, height 0.3s;
-}
-
-#popup-container.compact {
-  width: 300px;
-  height: 200px;
-}
-
-#popup-container.expanded {
-  width: 600px;
-  height: 400px;
-}
-
 #tab-buttons {
   display: flex;
   justify-content: space-around;
@@ -174,14 +161,6 @@ object {
   background-color: #ddd;
 }
 
-.tab-content {
-  display: none;
-}
-
-.tab-content.active {
-  display: block;
-}
-
 #expand-collapse-button {
   margin-top: 10px;
   padding: 5px 10px;
@@ -198,5 +177,6 @@ object {
 }
 
 #central-content {
-  margin-right: 300px; /* Adjust for the chat bar width */
+  margin-right: 300px;
+  /* Adjust for the chat bar width */
 }

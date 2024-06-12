@@ -1,49 +1,3 @@
-mentus/
-├── manifest.json
-├── background.js
-├── service-worker.js
-├── content-scripts/
-│   ├── content-script.js
-│   └── content-style.css
-├── popup/
-│   ├── popup.html
-│   ├── popup.js
-│   └── popup.css
-├── options/
-│   ├── options.html
-│   ├── options.js
-│   └── options.css
-├── images/
-│   ├── icon_16.png
-│   ├── icon_48.png
-│   └── icon_128.png
-├── styles/
-│   └── main.css
-└── components/
-    ├── navbar/
-    │   ├── navbar.html
-    │   ├── navbar.js
-    │   └── navbar.css
-    ├── chatbar/
-    │   ├── chatbar.html
-    │   ├── chatbar.js
-    │   └── chatbar.css
-    ├── graphview/
-    │   ├── graphview.html
-    │   ├── graphview.js
-    │   └── graphview.css
-    ├── documents/
-    │   ├── documents.html
-    │   ├── documents.js
-    │   └── documents.css
-    ├── editor/
-    │   ├── editor.html
-    │   ├── editor.js
-    │   └── editor.css
-    └── settings/
-        ├── settings.html
-        ├── settings.js
-        └── settings.css
 
 # Mentus Knowledge Instructor Architecture
 
@@ -120,54 +74,34 @@ mentus/
 ├── background.js
 ├── service-worker.js
 ├── content-scripts/
-│ ├── content-script.js
-│ └── content-style.css
-├── popup/
-│ ├── popup.html
-│ ├── popup.js
-│ └── popup.css
-├── options/
-│ ├── options.html
-│ ├── options.js
-│ └── options.css
+│   ├── content-script.js
+│   └── content-style.css
 ├── images/
-│ ├── icon_16.png
-│ ├── icon_48.png
-│ └── icon_128.png
+│   ├── icon_16.png
+│   ├── icon_48.png
+│   └── icon_128.png
 ├── styles/
-│ └── main.css
-├── components/
-│ ├── chatbar/
-│ │ ├── chatbar.css
-│ │ ├── chatbar.html
-│ │ ├── chatbar.js
-│ │ ├── test_chatbar.js
-│ │ └── test_chatbar.py
-│ ├── tabs/
-│ │ ├── documents/
-│ │ │ ├── documents.css
-│ │ │ ├── documents.html
-│ │ │ ├── documents.js
-│ │ ├── editor/
-│ │ │ ├── editor.css
-│ │ │ ├── editor.html
-│ │ │ ├── editor.js
-│ │ ├── graphview/
-│ │ │ ├── graphview.css
-│ │ │ ├── graphview.html
-│ │ │ ├── graphview.js
-│ │ ├── settings/
-│ │ │ ├── settings.css
-│ │ │ ├── settings.html
-│ │ │ ├── settings.js
-│ ├── footer/
-│ │ ├── footer.css
-│ │ └── footer.js
-│ ├── header/
-│ │ ├── header.css
-│ │ └── header.js
-│ ├── mentus_tab.html
-│ ├── mentus_tab.js
-├── index.html
-├── package.json
+│   └── main.css
+└── components/
+    ├── chatbar/
+    │   ├── chatbar.html
+    │   ├── chatbar.js
+    │   └── chatbar.css
+    ├── graphview/
+    │   ├── graphview.html
+    │   ├── graphview.js
+    │   └── graphview.css
+    ├── documents/
+    │   ├── documents.html
+    │   ├── documents.js
+    │   └── documents.css
+    ├── editor/
+    │   ├── editor.html
+    │   ├── editor.js
+    │   └── editor.css
+    └── settings/
+        ├── settings.html
+        ├── settings.js
+        └── settings.css
+
 
