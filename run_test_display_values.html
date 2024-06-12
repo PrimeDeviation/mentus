@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Run Test Display Values</title>
+    <link rel="stylesheet" href="components/settings/settings.css">
+</head>
+<body>
+    <div class="settings-container">
+        <h1>Run Test Display Values</h1>
+        <form id="settings-form">
+            <div class="form-group">
+                <label for="openai-api-key">OpenAI API Key:</label>
+                <input type="text" id="openai-api-key" placeholder="Enter OpenAI API Key">
+                <span id="openai-api-key-value"></span>
+            </div>
+            <div class="form-group">
+                <label for="anthropic-api-key">Anthropic API Key:</label>
+                <input type="text" id="anthropic-api-key" placeholder="Enter Anthropic API Key">
+                <span id="anthropic-api-key-value"></span>
+            </div>
+            <div class="form-group">
+                <label for="graphdb-endpoint">GraphDB Endpoint:</label>
+                <input type="text" id="graphdb-endpoint" placeholder="Enter GraphDB Endpoint">
+                <span id="graphdb-endpoint-value"></span>
+            </div>
+            <div class="form-group">
+                <label for="graphdb-creds">GraphDB Credentials:</label>
+                <input type="text" id="graphdb-creds" placeholder="Enter GraphDB Credentials">
+                <span id="graphdb-creds-value"></span>
+            </div>
+            <div class="form-group">
+                <label for="local-storage-location">Local Storage Location:</label>
+                <input type="text" id="local-storage-location" placeholder="Enter Local Storage Location">
+                <span id="local-storage-location-value"></span>
+            </div>
+            <div class="form-group">
+                <label for="cloud-storage-endpoint">Cloud Storage Endpoint:</label>
+                <input type="text" id="cloud-storage-endpoint" placeholder="Enter Cloud Storage Endpoint">
+                <span id="cloud-storage-endpoint-value"></span>
+            </div>
+            <div class="form-group">
+                <label for="cloud-storage-creds">Cloud Storage Credentials:</label>
+                <input type="text" id="cloud-storage-creds" placeholder="Enter Cloud Storage Credentials">
+                <span id="cloud-storage-creds-value"></span>
+            </div>
+            <div class="form-group">
+                <label for="graph-source">Graph Source:</label>
+                <input type="text" id="graph-source" placeholder="Enter Graph Source">
+                <span id="graph-source-value"></span>
+            </div>
+            <div class="form-group">
+                <label for="graph-type">Graph Type:</label>
+                <input type="text" id="graph-type" placeholder="Enter Graph Type (e.g., Neo4j, ArangoDB)">
+                <span id="graph-type-value"></span>
+            </div>
+            <div class="form-group">
+                <label for="editor-settings">Default Editor Settings:</label>
+                <input type="text" id="editor-settings" placeholder="Enter Default Editor Settings">
+                <span id="editor-settings-value"></span>
+            </div>
+            <div class="form-group">
+                <label for="code-repo-integration">External Code Repository Integration:</label>
+                <input type="text" id="code-repo-integration" placeholder="Enter Code Repository Integration (e.g., GitHub, GitLab)">
+                <span id="code-repo-integration-value"></span>
+            </div>
+            <div class="form-group">
+                <label for="obsidian-vault-path">Obsidian Vault Path:</label>
+                <input type="text" id="obsidian-vault-path" placeholder="Enter Obsidian Vault Path">
+                <span id="obsidian-vault-path-value"></span>
+            </div>
+            <div class="form-group">
+                <label for="logseq-repo-path">Logseq Repository Path:</label>
+                <input type="text" id="logseq-repo-path" placeholder="Enter Logseq Repository Path">
+                <span id="logseq-repo-path-value"></span>
+            </div>
+        </form>
+    </div>
+    <script src="components/settings/settings.js"></script>
+    <script src="test_display_values.js"></script>
+</body>
+</html>
