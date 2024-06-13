@@ -49,18 +49,46 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function loadSettings() {
-        document.getElementById('openai-api-key').value = localStorage.getItem('openaiApiKey') || '';
-        document.getElementById('anthropic-api-key').value = localStorage.getItem('anthropicApiKey') || '';
-        document.getElementById('graphdb-endpoint').value = localStorage.getItem('graphdbEndpoint') || '';
-        document.getElementById('graphdb-creds').value = localStorage.getItem('graphdbCreds') || '';
-        document.getElementById('local-storage-location').value = localStorage.getItem('localStorageLocation') || '';
-        document.getElementById('cloud-storage-endpoint').value = localStorage.getItem('cloudStorageEndpoint') || '';
-        document.getElementById('cloud-storage-creds').value = localStorage.getItem('cloudStorageCreds') || '';
-        document.getElementById('graph-source').value = localStorage.getItem('graphSource') || '';
-        document.getElementById('graph-type').value = localStorage.getItem('graphType') || '';
-        document.getElementById('editor-settings').value = localStorage.getItem('editorSettings') || '';
-        document.getElementById('code-repo-integration').value = localStorage.getItem('codeRepoIntegration') || '';
-        document.getElementById('obsidian-vault-path').value = localStorage.getItem('obsidianVaultPath') || '';
-        document.getElementById('logseq-repo-path').value = localStorage.getItem('logseqRepoPath') || '';
+        const openaiApiKey = localStorage.getItem('openaiApiKey') || '';
+        const anthropicApiKey = localStorage.getItem('anthropicApiKey') || '';
+        const graphdbEndpoint = localStorage.getItem('graphdbEndpoint') || '';
+        const graphdbCreds = localStorage.getItem('graphdbCreds') || '';
+        const localStorageLocation = localStorage.getItem('localStorageLocation') || '';
+        const cloudStorageEndpoint = localStorage.getItem('cloudStorageEndpoint') || '';
+        const cloudStorageCreds = localStorage.getItem('cloudStorageCreds') || '';
+        const graphSource = localStorage.getItem('graphSource') || '';
+        const graphType = localStorage.getItem('graphType') || '';
+        const editorSettings = localStorage.getItem('editorSettings') || '';
+        const codeRepoIntegration = localStorage.getItem('codeRepoIntegration') || '';
+        const obsidianVaultPath = localStorage.getItem('obsidianVaultPath') || '';
+        const logseqRepoPath = localStorage.getItem('logseqRepoPath') || '';
+
+        document.getElementById('openai-api-key').value = openaiApiKey;
+        document.getElementById('anthropic-api-key').value = anthropicApiKey;
+        document.getElementById('graphdb-endpoint').value = graphdbEndpoint;
+        document.getElementById('graphdb-creds').value = graphdbCreds;
+        document.getElementById('local-storage-location').value = localStorageLocation;
+        document.getElementById('cloud-storage-endpoint').value = cloudStorageEndpoint;
+        document.getElementById('cloud-storage-creds').value = cloudStorageCreds;
+        document.getElementById('graph-source').value = graphSource;
+        document.getElementById('graph-type').value = graphType;
+        document.getElementById('editor-settings').value = editorSettings;
+        document.getElementById('code-repo-integration').value = codeRepoIntegration;
+        document.getElementById('obsidian-vault-path').value = obsidianVaultPath;
+        document.getElementById('logseq-repo-path').value = logseqRepoPath;
+
+        document.getElementById('current-openai-api-key').textContent = openaiApiKey ? '****' + openaiApiKey.slice(-4) : '';
+        document.getElementById('current-anthropic-api-key').textContent = anthropicApiKey ? '****' + anthropicApiKey.slice(-4) : '';
+        document.getElementById('current-graphdb-endpoint').textContent = graphdbEndpoint;
+        document.getElementById('current-graphdb-creds').textContent = graphdbCreds ? '****' + graphdbCreds.slice(-4) : '';
+        document.getElementById('current-local-storage-location').textContent = localStorageLocation;
+        document.getElementById('current-cloud-storage-endpoint').textContent = cloudStorageEndpoint;
+        document.getElementById('current-cloud-storage-creds').textContent = cloudStorageCreds ? '****' + cloudStorageCreds.slice(-4) : '';
+        document.getElementById('current-graph-source').textContent = graphSource;
+        document.getElementById('current-graph-type').textContent = graphType;
+        document.getElementById('current-editor-settings').textContent = editorSettings;
+        document.getElementById('current-code-repo-integration').textContent = codeRepoIntegration;
+        document.getElementById('current-obsidian-vault-path').textContent = obsidianVaultPath;
+        document.getElementById('current-logseq-repo-path').textContent = logseqRepoPath;
     }
 });
