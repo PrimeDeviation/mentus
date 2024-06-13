@@ -42,7 +42,8 @@ label {
     text-align: right; /* Align text to the right for better alignment with input fields */
 }
 
-input[type="text"] {
+input[type="text"],
+input[type="password"] {
     flex: 2;
     margin-bottom: 0;
     width: 100%; /* Ensure input fields take up the full width available */
@@ -53,6 +54,7 @@ label {
 }
 
 input[type="text"],
+input[type="password"],
 input[type="checkbox"] {
     margin-bottom: 15px;
     padding: 10px;
