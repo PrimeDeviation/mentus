@@ -17,14 +17,15 @@
     "tabs"
   ],
   "host_permissions": [
-    "http://*/",
-    "https://*/"
+    "http://*/""https://*/"
   ],
   "background": {
-    "scripts": ["background.js"],
+    "scripts": [
+      "background.js"
+    ],
     "persistent": true
-  },
   }
+}
   "content_scripts": [
     {
       "matches": [
