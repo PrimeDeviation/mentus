@@ -1,5 +1,5 @@
 {
-  "manifest_version": 3,
+  "manifest_version": 2,
   "name": "Mentus Knowledge Instructor",
   "description": "The Mentus Knowledge Instructor is a Chrome extension designed to tutor students by interfacing with a multimodal agent (e.g., GPT-4, Claude 3 Opus). It maintains a graphical knowledge ontology with a node-based representation of the learner's journey within the knowledge graph.",
   "version": "1.1",
@@ -21,8 +21,9 @@
     "https://*/"
   ],
   "background": {
-    "service_worker": "background.js",
+    "scripts": ["background.js"],
     "persistent": true
+  },
   },
   "content_scripts": [
     {
