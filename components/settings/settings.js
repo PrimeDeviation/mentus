@@ -22,7 +22,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const editorSettings = document.getElementById('editor-settings').value.trim();
         const codeRepoIntegration = document.getElementById('code-repo-integration').value.trim();
         const obsidianVaultPath = document.getElementById('obsidian-vault-path').value.trim();
-        const logseqRepoPath = document.getElementById('logseq-repo-path').value.trim();
+        const githubRepo = document.getElementById('github-repo').value.trim();
 
         // Validate input values
         if (!openaiApiKey || !anthropicApiKey || !graphdbEndpoint || !graphdbCreds || !localStorageLocation || !cloudStorageEndpoint || !cloudStorageCreds || !graphSource || !graphType || !editorSettings || !codeRepoIntegration || !obsidianVaultPath || !logseqRepoPath) {
@@ -44,7 +44,7 @@ document.addEventListener('DOMContentLoaded', function() {
         localStorage.setItem('codeRepoIntegration', codeRepoIntegration);
         localStorage.setItem('obsidianVaultPath', obsidianVaultPath);
         localStorage.setItem('logseqRepoPath', logseqRepoPath);
-
+        localStorage.setItem('githubRepo', githubRepo);
         alert('Settings saved successfully.');
     }
 
@@ -62,5 +62,5 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('code-repo-integration').value = localStorage.getItem('codeRepoIntegration') || '';
         document.getElementById('obsidian-vault-path').value = localStorage.getItem('obsidianVaultPath') || '';
         document.getElementById('logseq-repo-path').value = localStorage.getItem('logseqRepoPath') || '';
-    }
+        document.getElementById('github-repo').value = localStorage.getItem('githubRepo') || '';
 });

@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test GitHub Setting</title>
+    <link rel="stylesheet" href="components/settings/settings.css">
+</head>
+<body>
+    <div class="settings-container">
+        <form id="settings-form">
+            <div class="form-group">
+                <label for="github-repo">GitHub Repository:</label>
+                <input type="text" id="github-repo" placeholder="Enter GitHub Repository URL">
+            </div>
+            <button type="button" id="save-settings">Save</button>
+        </form>
+    </div>
+    <script src="components/settings/settings.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Set a test value for the GitHub repository
+            const testGithubRepo = 'https://github.com/test/repo';
+            document.getElementById('github-repo').value = testGithubRepo;
+
+            // Save the settings
+            document.getElementById('save-settings').click();
+
+            // Load the settings
+            loadSettings();
+
+            // Check if the loaded value matches the test value
+            const loadedGithubRepo = document.getElementById('github-repo').value;
+            if (loadedGithubRepo === testGithubRepo) {
+                console.log('Test passed: GitHub repository setting saved and loaded correctly.');
+            } else {
+                console.log('Test failed: GitHub repository setting not saved or loaded correctly.');
+            }
+        });
+    </script>
+</body>
+</html>
