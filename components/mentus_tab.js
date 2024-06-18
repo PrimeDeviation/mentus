@@ -53,6 +53,14 @@ document.addEventListener("DOMContentLoaded", () => {
             chatModelsDropdown.appendChild(option);
         });
     }
+
+    // Add event listener to update the selected model with "(active)"
+    chatModelsDropdown.addEventListener('change', function() {
+        const selectedOption = chatModelsDropdown.options[chatModelsDropdown.selectedIndex];
+        if (selectedOption.value) {
+            selectedOption.textContent = `${selectedOption.value} (active)`;
+        }
+    });
   }
 
   // Chat bar functionality
