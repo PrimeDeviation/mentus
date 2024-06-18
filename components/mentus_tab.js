@@ -64,6 +64,15 @@ document.addEventListener("DOMContentLoaded", () => {
         updateDropdown(validatedModels);
     }
 
+    if (anthropicApiKey) {
+        // Fetch Anthropic models (mocked for this example)
+        const anthropicModels = ['claude-v1', 'claude-v2'];
+        validatedModels.push(...anthropicModels);
+        updateDropdown(validatedModels);
+    } else {
+        updateDropdown(validatedModels);
+    }
+
     function updateDropdown(models) {
         chatModelsDropdown.innerHTML = '';
         if (models.length > 0) {
