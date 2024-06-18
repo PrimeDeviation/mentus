@@ -30,28 +30,35 @@ document.addEventListener("DOMContentLoaded", () => {
     const chatModelsDropdown = document.getElementById('chat-models');
 
     // Clear existing options
-    chatModelsDropdown.innerHTML = '<option value="">Select a model</option>';
+    chatModelsDropdown.innerHTML = '';
+
+    const validatedModels = [];
 
     if (openaiApiKey) {
         // Fetch OpenAI models (mocked for this example)
         const openaiModels = ['text-davinci-003', 'text-curie-001'];
-        openaiModels.forEach(model => {
-            const option = document.createElement('option');
-            option.value = model;
-            option.textContent = model;
-            chatModelsDropdown.appendChild(option);
-        });
+        validatedModels.push(...openaiModels);
     }
 
     if (anthropicApiKey) {
         // Fetch Anthropic models (mocked for this example)
         const anthropicModels = ['claude-v1', 'claude-v2'];
-        anthropicModels.forEach(model => {
+        validatedModels.push(...anthropicModels);
+    }
+
+    if (validatedModels.length > 0) {
+        validatedModels.forEach(model => {
             const option = document.createElement('option');
             option.value = model;
             option.textContent = model;
             chatModelsDropdown.appendChild(option);
         });
+    } else {
+        const noModelsOption = document.createElement('option');
+        noModelsOption.value = '';
+        noModelsOption.textContent = 'No validated models';
+        noModelsOption.disabled = true;
+        chatModelsDropdown.appendChild(noModelsOption);
     }
 
     // Add event listener to update the selected model with "(active)"
