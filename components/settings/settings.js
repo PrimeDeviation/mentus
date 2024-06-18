@@ -25,7 +25,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const githubRepo = document.getElementById('github-repo').value.trim();
 
         // Validate input values
-        if (!openaiApiKey || !anthropicApiKey || !graphdbEndpoint || !graphdbCreds || !localStorageLocation || !cloudStorageEndpoint || !cloudStorageCreds || !graphSource || !graphType || !editorSettings || !codeRepoIntegration || !obsidianVaultPath || !logseqRepoPath) {
+        if (!openaiApiKey || !anthropicApiKey || !graphdbEndpoint || !graphdbCreds || !localStorageLocation || !cloudStorageEndpoint || !cloudStorageCreds || !graphSource || !graphType || !editorSettings || !codeRepoIntegration || !obsidianVaultPath) {
             alert('Please fill in all fields.');
             return;
         }
@@ -43,7 +43,6 @@ document.addEventListener('DOMContentLoaded', function() {
         localStorage.setItem('editorSettings', editorSettings);
         localStorage.setItem('codeRepoIntegration', codeRepoIntegration);
         localStorage.setItem('obsidianVaultPath', obsidianVaultPath);
-        localStorage.setItem('logseqRepoPath', logseqRepoPath);
         localStorage.setItem('githubRepo', githubRepo);
         alert('Settings saved successfully.');
     }
@@ -61,7 +60,6 @@ function loadSettings() {
     document.getElementById('editor-settings').value = localStorage.getItem('editorSettings') || '';
     document.getElementById('code-repo-integration').value = localStorage.getItem('codeRepoIntegration') || '';
     document.getElementById('obsidian-vault-path').value = localStorage.getItem('obsidianVaultPath') || '';
-    document.getElementById('logseq-repo-path').value = localStorage.getItem('logseqRepoPath') || '';
     document.getElementById('github-repo').value = localStorage.getItem('githubRepo') || '';
 
     document.getElementById('openai-api-key-value').textContent = obfuscate(localStorage.getItem('openaiApiKey')) || '';
@@ -76,7 +74,6 @@ function loadSettings() {
     document.getElementById('editor-settings-value').textContent = localStorage.getItem('editorSettings') || '';
     document.getElementById('code-repo-integration-value').textContent = localStorage.getItem('codeRepoIntegration') || '';
     document.getElementById('obsidian-vault-path-value').textContent = localStorage.getItem('obsidianVaultPath') || '';
-    document.getElementById('logseq-repo-path-value').textContent = localStorage.getItem('logseqRepoPath') || '';
     document.getElementById('github-repo-value').textContent = localStorage.getItem('githubRepo') || '';
 }
 
