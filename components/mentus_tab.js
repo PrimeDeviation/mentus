@@ -35,30 +35,51 @@ document.addEventListener("DOMContentLoaded", () => {
     const validatedModels = [];
 
     if (openaiApiKey) {
-        // Fetch OpenAI models (mocked for this example)
-        const openaiModels = ['text-davinci-003', 'text-curie-001'];
-        validatedModels.push(...openaiModels);
+        // Fetch OpenAI models
+        fetch('https://api.openai.com/v1/models', {
+            headers: {
+                'Authorization': `Bearer ${openaiApiKey}`
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            const openaiModels = data.data.map(model => model.id);
+            validatedModels.push(...openaiModels);
+            updateDropdown(validatedModels);
+        })
+        .catch(error => {
+            console.error('Error fetching OpenAI models:', error);
+            updateDropdown(validatedModels);
+        });
+    } else {
+        updateDropdown(validatedModels);
     }
 
     if (anthropicApiKey) {
         // Fetch Anthropic models (mocked for this example)
         const anthropicModels = ['claude-v1', 'claude-v2'];
         validatedModels.push(...anthropicModels);
+        updateDropdown(validatedModels);
+    } else {
+        updateDropdown(validatedModels);
     }
 
-    if (validatedModels.length > 0) {
-        validatedModels.forEach(model => {
-            const option = document.createElement('option');
-            option.value = model;
-            option.textContent = model;
-            chatModelsDropdown.appendChild(option);
-        });
-    } else {
-        const noModelsOption = document.createElement('option');
-        noModelsOption.value = '';
-        noModelsOption.textContent = 'No validated models';
-        noModelsOption.disabled = true;
-        chatModelsDropdown.appendChild(noModelsOption);
+    function updateDropdown(models) {
+        chatModelsDropdown.innerHTML = '';
+        if (models.length > 0) {
+            models.forEach(model => {
+                const option = document.createElement('option');
+                option.value = model;
+                option.textContent = model;
+                chatModelsDropdown.appendChild(option);
+            });
+        } else {
+            const noModelsOption = document.createElement('option');
+            noModelsOption.value = '';
+            noModelsOption.textContent = 'No validated models';
+            noModelsOption.disabled = true;
+            chatModelsDropdown.appendChild(noModelsOption);
+        }
     }
 
     // Add event listener to update the selected model with "(active)"
