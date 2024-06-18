@@ -54,4 +54,27 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
   }
-})
+
+  // Chat bar functionality
+  const chatInput = document.getElementById('chat-input');
+  const sendButton = document.getElementById('send-button');
+  const chatMessages = document.getElementById('chat-messages');
+
+  sendButton.addEventListener('click', () => {
+    const message = chatInput.value.trim();
+    if (message) {
+      const messageElement = document.createElement('div');
+      messageElement.className = 'chat-message';
+      messageElement.textContent = message;
+      chatMessages.appendChild(messageElement);
+      chatInput.value = '';
+      chatMessages.scrollTop = chatMessages.scrollHeight; // Scroll to the bottom
+    }
+  });
+
+  chatInput.addEventListener('keypress', (event) => {
+    if (event.key === 'Enter') {
+      sendButton.click();
+    }
+  });
+});
