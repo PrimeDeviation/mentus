@@ -64,16 +64,8 @@ function loadSettings() {
 
     document.getElementById('openai-api-key-value').textContent = obfuscate(localStorage.getItem('openaiApiKey')) || '';
     document.getElementById('anthropic-api-key-value').textContent = obfuscate(localStorage.getItem('anthropicApiKey')) || '';
-    document.getElementById('graphdb-endpoint-value').textContent = localStorage.getItem('graphdbEndpoint') || '';
-    document.getElementById('graphdb-creds-value').textContent = localStorage.getItem('graphdbCreds') || '';
     document.getElementById('local-storage-location-value').textContent = localStorage.getItem('localStorageLocation') || '';
-    document.getElementById('cloud-storage-endpoint-value').textContent = localStorage.getItem('cloudStorageEndpoint') || '';
-    document.getElementById('cloud-storage-creds-value').textContent = localStorage.getItem('cloudStorageCreds') || '';
     document.getElementById('graph-source-value').textContent = localStorage.getItem('graphSource') || '';
-    document.getElementById('graph-type-value').textContent = localStorage.getItem('graphType') || '';
-    document.getElementById('editor-settings-value').textContent = localStorage.getItem('editorSettings') || '';
-    document.getElementById('code-repo-integration-value').textContent = localStorage.getItem('codeRepoIntegration') || '';
-    document.getElementById('obsidian-vault-path-value').textContent = localStorage.getItem('obsidianVaultPath') || '';
     document.getElementById('github-repo-value').textContent = localStorage.getItem('githubRepo') || '';
 }
 
