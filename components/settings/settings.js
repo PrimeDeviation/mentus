@@ -38,6 +38,7 @@ document.addEventListener('DOMContentLoaded', function() {
         saveToLocalFile('githubRepo', githubRepo);
         alert('Settings saved successfully.');
         loadChatModels(); // Call loadChatModels after saving settings
+        loadChatModels(); // Call loadChatModels after saving settings
     }
 
 function loadSettings() {
