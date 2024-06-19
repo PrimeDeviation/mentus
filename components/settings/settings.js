@@ -37,6 +37,7 @@ document.addEventListener('DOMContentLoaded', function() {
         saveToLocalFile('obsidianVaultPath', obsidianVaultPath);
         saveToLocalFile('githubRepo', githubRepo);
         alert('Settings saved successfully.');
+        loadChatModels(); // Call loadChatModels after saving settings
     }
 
 function loadSettings() {

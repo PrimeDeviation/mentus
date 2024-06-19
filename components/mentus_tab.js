@@ -32,80 +32,46 @@ document.addEventListener("DOMContentLoaded", () => {
     // Clear existing options
     chatModelsDropdown.innerHTML = '';
 
-    const validatedModels = [];
-
     if (openaiApiKey) {
-        // Fetch OpenAI models
-        fetch('https://api.openai.com/v1/models', {
-            headers: {
-                'Authorization': `Bearer ${openaiApiKey}`
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            const openaiModels = data.data.map(model => model.id);
-            validatedModels.push(...openaiModels);
-            updateDropdown(validatedModels);
-        })
-        .catch(error => {
-            console.error('Error fetching OpenAI models:', error);
-            updateDropdown(validatedModels);
-        });
-    } else {
-        updateDropdown(validatedModels);
+      const openaiGroup = document.createElement('optgroup');
+      openaiGroup.label = 'GPT Models';
+      const openaiModels = ['gpt-4o']; // Representative model
+      openaiModels.forEach(model => {
+        const option = document.createElement('option');
+        option.value = model;
+        option.textContent = model;
+        openaiGroup.appendChild(option);
+      });
+      chatModelsDropdown.appendChild(openaiGroup);
     }
 
     if (anthropicApiKey) {
-        // Fetch Anthropic models (mocked for this example)
-        const anthropicModels = ['claude-v1', 'claude-v2'];
-        validatedModels.push(...anthropicModels);
-        updateDropdown(validatedModels);
-    } else {
-        updateDropdown(validatedModels);
+      const anthropicGroup = document.createElement('optgroup');
+      anthropicGroup.label = 'Anthropic Models';
+      const anthropicModels = ['claude-3-opus-20240229']; // Representative model
+      anthropicModels.forEach(model => {
+        const option = document.createElement('option');
+        option.value = model;
+        option.textContent = model;
+        anthropicGroup.appendChild(option);
+      });
+      chatModelsDropdown.appendChild(anthropicGroup);
     }
 
-    if (anthropicApiKey) {
-        // Fetch Anthropic models (mocked for this example)
-        const anthropicModels = ['claude-v1', 'claude-v2'];
-        validatedModels.push(...anthropicModels);
-        updateDropdown(validatedModels);
-    } else {
-        updateDropdown(validatedModels);
-    }
-
-    if (anthropicApiKey) {
-        // Fetch Anthropic models (mocked for this example)
-        const anthropicModels = ['claude-v1', 'claude-v2'];
-        validatedModels.push(...anthropicModels);
-        updateDropdown(validatedModels);
-    } else {
-        updateDropdown(validatedModels);
-    }
-
-    function updateDropdown(models) {
-        chatModelsDropdown.innerHTML = '';
-        if (models.length > 0) {
-            models.forEach(model => {
-                const option = document.createElement('option');
-                option.value = model;
-                option.textContent = model;
-                chatModelsDropdown.appendChild(option);
-            });
-        } else {
-            const noModelsOption = document.createElement('option');
-            noModelsOption.value = '';
-            noModelsOption.textContent = 'No validated models';
-            noModelsOption.disabled = true;
-            chatModelsDropdown.appendChild(noModelsOption);
-        }
+    if (!openaiApiKey && !anthropicApiKey) {
+      const noModelsOption = document.createElement('option');
+      noModelsOption.value = '';
+      noModelsOption.textContent = 'No validated models';
+      noModelsOption.disabled = true;
+      chatModelsDropdown.appendChild(noModelsOption);
     }
 
     // Add event listener to update the selected model with "(active)"
     chatModelsDropdown.addEventListener('change', function() {
-        const selectedOption = chatModelsDropdown.options[chatModelsDropdown.selectedIndex];
-        if (selectedOption.value) {
-            selectedOption.textContent = `${selectedOption.value} (active)`;
-        }
+      const selectedOption = chatModelsDropdown.options[chatModelsDropdown.selectedIndex];
+      if (selectedOption.value) {
+        selectedOption.textContent = `${selectedOption.value} (active)`;
+      }
     });
   }
 
