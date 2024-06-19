@@ -30,28 +30,302 @@ document.addEventListener("DOMContentLoaded", () => {
     const chatModelsDropdown = document.getElementById('chat-models');
 
     // Clear existing options
-    chatModelsDropdown.innerHTML = '<option value="">Select a model</option>';
+    chatModelsDropdown.innerHTML = '';
 
     if (openaiApiKey) {
-        // Fetch OpenAI models (mocked for this example)
-        const openaiModels = ['text-davinci-003', 'text-curie-001'];
-        openaiModels.forEach(model => {
-            const option = document.createElement('option');
-            option.value = model;
-            option.textContent = model;
-            chatModelsDropdown.appendChild(option);
-        });
+      const openaiGroup = document.createElement('optgroup');
+      openaiGroup.label = 'GPT Models';
+      const openaiModels = ['gpt-4o']; // Representative model
+      openaiModels.forEach(model => {
+        const option = document.createElement('option');
+        option.value = model;
+        option.textContent = model;
+        openaiGroup.appendChild(option);
+      });
+      chatModelsDropdown.appendChild(openaiGroup);
     }
 
     if (anthropicApiKey) {
-        // Fetch Anthropic models (mocked for this example)
-        const anthropicModels = ['claude-v1', 'claude-v2'];
-        anthropicModels.forEach(model => {
-            const option = document.createElement('option');
-            option.value = model;
-            option.textContent = model;
-            chatModelsDropdown.appendChild(option);
-        });
+      const anthropicGroup = document.createElement('optgroup');
+      anthropicGroup.label = 'Anthropic Models';
+      const anthropicModels = ['claude-3-opus-20240229']; // Representative model
+      anthropicModels.forEach(model => {
+        const option = document.createElement('option');
+        option.value = model;
+        option.textContent = model;
+        anthropicGroup.appendChild(option);
+      });
+      chatModelsDropdown.appendChild(anthropicGroup);
+    }
+
+    if (!openaiApiKey && !anthropicApiKey) {
+      const noModelsOption = document.createElement('option');
+      noModelsOption.value = '';
+      noModelsOption.textContent = 'No validated models';
+      noModelsOption.disabled = true;
+      chatModelsDropdown.appendChild(noModelsOption);
+    }
+
+    // Add event listener to update the selected model with "(active)"
+    chatModelsDropdown.addEventListener('change', function() {
+      const selectedOption = chatModelsDropdown.options[chatModelsDropdown.selectedIndex];
+      if (selectedOption.value) {
+        selectedOption.textContent = `${selectedOption.value} (active)`;
+      }
+    });
+  }
+
+  function loadChatModels() {
+    const openaiApiKey = localStorage.getItem('openaiApiKey');
+    const anthropicApiKey = localStorage.getItem('anthropicApiKey');
+    const chatModelsDropdown = document.getElementById('chat-models');
+
+    // Clear existing options
+    chatModelsDropdown.innerHTML = '';
+
+    if (openaiApiKey) {
+      const openaiGroup = document.createElement('optgroup');
+      openaiGroup.label = 'GPT Models';
+      const openaiModels = ['gpt-4o']; // Representative model
+      openaiModels.forEach(model => {
+        const option = document.createElement('option');
+        option.value = model;
+        option.textContent = model;
+        openaiGroup.appendChild(option);
+      });
+      chatModelsDropdown.appendChild(openaiGroup);
+    }
+
+    if (anthropicApiKey) {
+      const anthropicGroup = document.createElement('optgroup');
+      anthropicGroup.label = 'Anthropic Models';
+      const anthropicModels = ['claude-3-opus-20240229']; // Representative model
+      anthropicModels.forEach(model => {
+        const option = document.createElement('option');
+        option.value = model;
+        option.textContent = model;
+        anthropicGroup.appendChild(option);
+      });
+      chatModelsDropdown.appendChild(anthropicGroup);
+    }
+
+    if (!openaiApiKey && !anthropicApiKey) {
+      const noModelsOption = document.createElement('option');
+      noModelsOption.value = '';
+      noModelsOption.textContent = 'No validated models';
+      noModelsOption.disabled = true;
+      chatModelsDropdown.appendChild(noModelsOption);
+    }
+
+    // Add event listener to update the selected model with "(active)"
+    chatModelsDropdown.addEventListener('change', function() {
+      const selectedOption = chatModelsDropdown.options[chatModelsDropdown.selectedIndex];
+      if (selectedOption.value) {
+        selectedOption.textContent = `${selectedOption.value} (active)`;
+      }
+    });
+  }
+
+  function loadChatModels() {
+    const openaiApiKey = localStorage.getItem('openaiApiKey');
+    const anthropicApiKey = localStorage.getItem('anthropicApiKey');
+    const chatModelsDropdown = document.getElementById('chat-models');
+
+    // Clear existing options
+    chatModelsDropdown.innerHTML = '';
+
+    if (openaiApiKey) {
+      const openaiGroup = document.createElement('optgroup');
+      openaiGroup.label = 'GPT Models';
+      const openaiModels = ['gpt-4o']; // Representative model
+      openaiModels.forEach(model => {
+        const option = document.createElement('option');
+        option.value = model;
+        option.textContent = model;
+        openaiGroup.appendChild(option);
+      });
+      chatModelsDropdown.appendChild(openaiGroup);
+    }
+
+    if (anthropicApiKey) {
+      const anthropicGroup = document.createElement('optgroup');
+      anthropicGroup.label = 'Anthropic Models';
+      const anthropicModels = ['claude-3-opus-20240229']; // Representative model
+      anthropicModels.forEach(model => {
+        const option = document.createElement('option');
+        option.value = model;
+        option.textContent = model;
+        anthropicGroup.appendChild(option);
+      });
+      chatModelsDropdown.appendChild(anthropicGroup);
+    }
+
+    if (!openaiApiKey && !anthropicApiKey) {
+      const noModelsOption = document.createElement('option');
+      noModelsOption.value = '';
+      noModelsOption.textContent = 'No validated models';
+      noModelsOption.disabled = true;
+      chatModelsDropdown.appendChild(noModelsOption);
+    }
+
+    // Add event listener to update the selected model with "(active)"
+    chatModelsDropdown.addEventListener('change', function() {
+      const selectedOption = chatModelsDropdown.options[chatModelsDropdown.selectedIndex];
+      if (selectedOption.value) {
+        selectedOption.textContent = `${selectedOption.value} (active)`;
+      }
+    });
+  }
+
+  function loadChatModels() {
+    const openaiApiKey = localStorage.getItem('openaiApiKey');
+    const anthropicApiKey = localStorage.getItem('anthropicApiKey');
+    const chatModelsDropdown = document.getElementById('chat-models');
+
+    // Clear existing options
+    chatModelsDropdown.innerHTML = '';
+
+    if (openaiApiKey) {
+      const openaiGroup = document.createElement('optgroup');
+      openaiGroup.label = 'GPT Models';
+      const openaiModels = ['gpt-4o']; // Representative model
+      openaiModels.forEach(model => {
+        const option = document.createElement('option');
+        option.value = model;
+        option.textContent = model;
+        openaiGroup.appendChild(option);
+      });
+      chatModelsDropdown.appendChild(openaiGroup);
+    }
+
+    if (anthropicApiKey) {
+      const anthropicGroup = document.createElement('optgroup');
+      anthropicGroup.label = 'Anthropic Models';
+      const anthropicModels = ['claude-3-opus-20240229']; // Representative model
+      anthropicModels.forEach(model => {
+        const option = document.createElement('option');
+        option.value = model;
+        option.textContent = model;
+        anthropicGroup.appendChild(option);
+      });
+      chatModelsDropdown.appendChild(anthropicGroup);
+    }
+
+    if (!openaiApiKey && !anthropicApiKey) {
+      const noModelsOption = document.createElement('option');
+      noModelsOption.value = '';
+      noModelsOption.textContent = 'No validated models';
+      noModelsOption.disabled = true;
+      chatModelsDropdown.appendChild(noModelsOption);
+    }
+
+    // Add event listener to update the selected model with "(active)"
+    chatModelsDropdown.addEventListener('change', function() {
+      const selectedOption = chatModelsDropdown.options[chatModelsDropdown.selectedIndex];
+      if (selectedOption.value) {
+        selectedOption.textContent = `${selectedOption.value} (active)`;
+      }
+    });
+  }
+
+  function loadChatModels() {
+    const openaiApiKey = localStorage.getItem('openaiApiKey');
+    const anthropicApiKey = localStorage.getItem('anthropicApiKey');
+    const chatModelsDropdown = document.getElementById('chat-models');
+
+    // Clear existing options
+    chatModelsDropdown.innerHTML = '';
+
+    if (openaiApiKey) {
+      const openaiGroup = document.createElement('optgroup');
+      openaiGroup.label = 'GPT Models';
+      const openaiModels = ['gpt-4o']; // Representative model
+      openaiModels.forEach(model => {
+        const option = document.createElement('option');
+        option.value = model;
+        option.textContent = model;
+        openaiGroup.appendChild(option);
+      });
+      chatModelsDropdown.appendChild(openaiGroup);
+    }
+
+    if (anthropicApiKey) {
+      const anthropicGroup = document.createElement('optgroup');
+      anthropicGroup.label = 'Anthropic Models';
+      const anthropicModels = ['claude-3-opus-20240229']; // Representative model
+      anthropicModels.forEach(model => {
+        const option = document.createElement('option');
+        option.value = model;
+        option.textContent = model;
+        anthropicGroup.appendChild(option);
+      });
+      chatModelsDropdown.appendChild(anthropicGroup);
+    }
+
+    if (!openaiApiKey && !anthropicApiKey) {
+      const noModelsOption = document.createElement('option');
+      noModelsOption.value = '';
+      noModelsOption.textContent = 'No validated models';
+      noModelsOption.disabled = true;
+      chatModelsDropdown.appendChild(noModelsOption);
+    }
+
+    // Add event listener to update the selected model with "(active)"
+    chatModelsDropdown.addEventListener('change', function() {
+      const selectedOption = chatModelsDropdown.options[chatModelsDropdown.selectedIndex];
+      if (selectedOption.value) {
+        selectedOption.textContent = `${selectedOption.value} (active)`;
+      }
+    });
+  }
+
+  // Chat bar functionality
+  const chatInput = document.getElementById('chat-input');
+  const sendButton = document.getElementById('send-button');
+  const chatMessages = document.getElementById('chat-messages');
+
+  sendButton.addEventListener('click', () => {
+    const message = chatInput.value.trim();
+    if (message) {
+      const messageElement = document.createElement('div');
+      messageElement.className = 'chat-message';
+      messageElement.textContent = message;
+      chatMessages.appendChild(messageElement);
+      chatInput.value = '';
+      chatMessages.scrollTop = chatMessages.scrollHeight; // Scroll to the bottom
+
+      // Save message to chat history
+      saveMessageToHistory(message);
+    }
+  });
+
+  chatInput.addEventListener('keypress', (event) => {
+    if (event.key === 'Enter') {
+      sendButton.click();
+    }
+  });
+
+  function saveMessageToHistory(message) {
+    const timestamp = new Date().toISOString();
+    const chatHistory = localStorage.getItem('chatHistory') || '';
+    const updatedHistory = `${chatHistory}\n[${timestamp}] ${message}`;
+    localStorage.setItem('chatHistory', updatedHistory);
+  }
+
+  function saveChatSession() {
+    const chatHistory = localStorage.getItem('chatHistory');
+    if (chatHistory) {
+      const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+      const topic = 'aggregate-topic'; // Replace with actual topic extraction logic
+      const filename = `${timestamp}-${topic}.md`;
+      const blob = new Blob([chatHistory], { type: 'text/markdown' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = filename;
+      link.click();
+      localStorage.removeItem('chatHistory');
     }
   }
-})
+
+  window.addEventListener('beforeunload', saveChatSession);
+});
