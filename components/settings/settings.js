@@ -44,6 +44,7 @@ document.addEventListener('DOMContentLoaded', function() {
         loadChatModels(); // Call loadChatModels after saving settings
         loadChatModels(); // Call loadChatModels after saving settings
         loadChatModels(); // Call loadChatModels after saving settings
+        loadChatModels(); // Call loadChatModels after saving settings
     }
 
     function loadChatModels() {
