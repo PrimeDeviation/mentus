@@ -17,7 +17,6 @@ document.addEventListener('DOMContentLoaded', function() {
         const localStorageLocation = document.getElementById('local-storage-location').value.trim();
         const graphSource = document.getElementById('graph-source').value.trim();
         const graphType = document.getElementById('graph-type').value.trim();
-        const editorSettings = document.getElementById('editor-settings').value.trim();
         const codeRepoIntegration = document.getElementById('code-repo-integration').value.trim();
         const obsidianVaultPath = document.getElementById('obsidian-vault-path').value.trim();
         const githubRepo = document.getElementById('github-repo').value.trim();
@@ -36,7 +35,6 @@ document.addEventListener('DOMContentLoaded', function() {
         localStorage.setItem('localStorageLocation', localStorageLocation);
         localStorage.setItem('graphSource', graphSource);
         localStorage.setItem('graphType', graphType);
-        localStorage.setItem('editorSettings', editorSettings);
         localStorage.setItem('codeRepoIntegration', codeRepoIntegration);
         localStorage.setItem('obsidianVaultPath', obsidianVaultPath);
         localStorage.setItem('githubRepo', githubRepo);
@@ -51,7 +49,6 @@ function loadSettings() {
     document.getElementById('local-storage-location').value = localStorage.getItem('localStorageLocation') || '';
     document.getElementById('graph-source').value = localStorage.getItem('graphSource') || '';
     document.getElementById('graph-type').value = localStorage.getItem('graphType') || '';
-    document.getElementById('editor-settings').value = localStorage.getItem('editorSettings') || '';
     document.getElementById('code-repo-integration').value = localStorage.getItem('codeRepoIntegration') || '';
     document.getElementById('obsidian-vault-path').value = localStorage.getItem('obsidianVaultPath') || '';
     document.getElementById('github-repo').value = localStorage.getItem('githubRepo') || '';
