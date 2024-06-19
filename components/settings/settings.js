@@ -15,7 +15,6 @@ document.addEventListener('DOMContentLoaded', function() {
         const graphdbEndpoint = document.getElementById('graphdb-endpoint').value.trim();
         const graphdbCreds = document.getElementById('graphdb-creds').value.trim();
         const localStorageLocation = document.getElementById('local-storage-location').value.trim();
-        const cloudStorageCreds = document.getElementById('cloud-storage-creds').value.trim();
         const graphSource = document.getElementById('graph-source').value.trim();
         const graphType = document.getElementById('graph-type').value.trim();
         const editorSettings = document.getElementById('editor-settings').value.trim();
@@ -35,7 +34,6 @@ document.addEventListener('DOMContentLoaded', function() {
         localStorage.setItem('graphdbEndpoint', graphdbEndpoint);
         localStorage.setItem('graphdbCreds', graphdbCreds);
         localStorage.setItem('localStorageLocation', localStorageLocation);
-        localStorage.setItem('cloudStorageCreds', cloudStorageCreds);
         localStorage.setItem('graphSource', graphSource);
         localStorage.setItem('graphType', graphType);
         localStorage.setItem('editorSettings', editorSettings);
@@ -51,7 +49,6 @@ function loadSettings() {
     document.getElementById('graphdb-endpoint').value = localStorage.getItem('graphdbEndpoint') || '';
     document.getElementById('graphdb-creds').value = localStorage.getItem('graphdbCreds') || '';
     document.getElementById('local-storage-location').value = localStorage.getItem('localStorageLocation') || '';
-    document.getElementById('cloud-storage-creds').value = localStorage.getItem('cloudStorageCreds') || '';
     document.getElementById('graph-source').value = localStorage.getItem('graphSource') || '';
     document.getElementById('graph-type').value = localStorage.getItem('graphType') || '';
     document.getElementById('editor-settings').value = localStorage.getItem('editorSettings') || '';
