@@ -39,6 +39,7 @@ document.addEventListener('DOMContentLoaded', function() {
         alert('Settings saved successfully.');
         loadChatModels(); // Call loadChatModels after saving settings
         loadChatModels(); // Call loadChatModels after saving settings
+        loadChatModels(); // Call loadChatModels after saving settings
     }
 
 function loadSettings() {
