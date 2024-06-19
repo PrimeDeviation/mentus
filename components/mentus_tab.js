@@ -123,6 +123,9 @@ document.addEventListener("DOMContentLoaded", () => {
       chatMessages.appendChild(messageElement);
       chatInput.value = '';
       chatMessages.scrollTop = chatMessages.scrollHeight; // Scroll to the bottom
+
+      // Save message to chat history
+      saveMessageToHistory(message);
     }
   });
 
@@ -131,4 +134,28 @@ document.addEventListener("DOMContentLoaded", () => {
       sendButton.click();
     }
   });
+
+  function saveMessageToHistory(message) {
+    const timestamp = new Date().toISOString();
+    const chatHistory = localStorage.getItem('chatHistory') || '';
+    const updatedHistory = `${chatHistory}\n[${timestamp}] ${message}`;
+    localStorage.setItem('chatHistory', updatedHistory);
+  }
+
+  function saveChatSession() {
+    const chatHistory = localStorage.getItem('chatHistory');
+    if (chatHistory) {
+      const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+      const topic = 'aggregate-topic'; // Replace with actual topic extraction logic
+      const filename = `${timestamp}-${topic}.md`;
+      const blob = new Blob([chatHistory], { type: 'text/markdown' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = filename;
+      link.click();
+      localStorage.removeItem('chatHistory');
+    }
+  }
+
+  window.addEventListener('beforeunload', saveChatSession);
 });
