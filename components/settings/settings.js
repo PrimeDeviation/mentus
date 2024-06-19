@@ -42,6 +42,57 @@ document.addEventListener('DOMContentLoaded', function() {
         loadChatModels(); // Call loadChatModels after saving settings
     }
 
+    function loadChatModels() {
+        const openaiApiKey = localStorage.getItem('openaiApiKey');
+        const anthropicApiKey = localStorage.getItem('anthropicApiKey');
+        const chatModelsDropdown = document.getElementById('chat-models');
+
+        // Clear existing options
+        chatModelsDropdown.innerHTML = '';
+
+        if (openaiApiKey) {
+            const openaiGroup = document.createElement('optgroup');
+            openaiGroup.label = 'GPT Models';
+            const openaiModels = ['gpt-4o']; // Representative model
+            openaiModels.forEach(model => {
+                const option = document.createElement('option');
+                option.value = model;
+                option.textContent = model;
+                openaiGroup.appendChild(option);
+            });
+            chatModelsDropdown.appendChild(openaiGroup);
+        }
+
+        if (anthropicApiKey) {
+            const anthropicGroup = document.createElement('optgroup');
+            anthropicGroup.label = 'Anthropic Models';
+            const anthropicModels = ['claude-3-opus-20240229']; // Representative model
+            anthropicModels.forEach(model => {
+                const option = document.createElement('option');
+                option.value = model;
+                option.textContent = model;
+                anthropicGroup.appendChild(option);
+            });
+            chatModelsDropdown.appendChild(anthropicGroup);
+        }
+
+        if (!openaiApiKey && !anthropicApiKey) {
+            const noModelsOption = document.createElement('option');
+            noModelsOption.value = '';
+            noModelsOption.textContent = 'No validated models';
+            noModelsOption.disabled = true;
+            chatModelsDropdown.appendChild(noModelsOption);
+        }
+
+        // Add event listener to update the selected model with "(active)"
+        chatModelsDropdown.addEventListener('change', function() {
+            const selectedOption = chatModelsDropdown.options[chatModelsDropdown.selectedIndex];
+            if (selectedOption.value) {
+                selectedOption.textContent = `${selectedOption.value} (active)`;
+            }
+        });
+    }
+
 function loadSettings() {
     document.getElementById('openai-api-key').value = loadFromLocalFile('openaiApiKey') || '';
     document.getElementById('anthropic-api-key').value = loadFromLocalFile('anthropicApiKey') || '';
