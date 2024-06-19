@@ -184,8 +184,9 @@ document.addEventListener("DOMContentLoaded", () => {
           displayAssistantReply(assistantReply);
           saveMessageToHistory(`Assistant: ${assistantReply}`);
         } else {
-          console.error('Error:', response.status);
-          displayAssistantReply('Error: Unable to get a response from the AI model.');
+          const errorData = await response.json();
+          console.error('Error:', response.status, errorData);
+          displayAssistantReply(`Error: ${errorData.error.message}`);
         }
       } catch (error) {
         console.error('Error:', error);
