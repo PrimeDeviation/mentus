@@ -76,6 +76,18 @@ body, html {
   background-color: #45a049;
 }
 
+.model-save-container {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.small-button {
+  padding: 5px 10px;
+  font-size: 12px;
+  margin-left: 10px;
+}
+
 /* Chat model selection dropdown styles */
 #chat-models {
   width: 100%;
