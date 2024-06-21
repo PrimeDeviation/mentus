@@ -73,28 +73,37 @@ document.addEventListener("DOMContentLoaded", function() {
   }
 
   function loadSettings() {
-    chrome.storage.local.get(['openai-api-key', 'anthropic-api-key', 'graphdb-endpoint', 'graphdb-creds', 'local-storage-location'], function (result) {
+    const settings = [
+      'openai-api-key',
+      'anthropic-api-key',
+      'graphdb-endpoint',
+      'graphdb-creds',
+      'local-storage-location'
+    ];
+
+    chrome.storage.local.get(settings, function (result) {
       settings.forEach(setting => {
         const inputElement = document.getElementById(setting);
         const displayElement = document.getElementById(`${setting}-display`);
-        let value = result[setting] || '';
-      
-        if (setting.includes('api-key') && value) {
-          try {
-            value = atob(value); // Decode API keys
-            inputElement.value = ''; // Clear the input field for security
-            if (displayElement) {
+        
+        if (inputElement && displayElement) {
+          let value = result[setting] || '';
+        
+          if (setting.includes('api-key') && value) {
+            try {
+              value = atob(value); // Decode API keys
+              inputElement.value = ''; // Clear the input field for security
               displayElement.textContent = value ? '********' : '';
+            } catch (e) {
+              console.error('Error decoding API key:', e);
+              value = '';
             }
-          } catch (e) {
-            console.error('Error decoding API key:', e);
-            value = '';
-          }
-        } else {
-          inputElement.value = value;
-          if (displayElement) {
+          } else {
+            inputElement.value = value;
             displayElement.textContent = value;
           }
+        } else {
+          console.error(`Element not found for setting: ${setting}`);
         }
       });
     });
