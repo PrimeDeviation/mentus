@@ -10,16 +10,6 @@ function initializeMentusTab() {
     
     showTab('settings');
     
-    // Add save button to the chat interface
-    const chatbar = document.getElementById('chatbar-content');
-    if (chatbar) {
-      const saveButton = document.createElement('button');
-      saveButton.id = 'save-chat';
-      saveButton.textContent = 'Save Chat';
-      saveButton.addEventListener('click', saveChatSession);
-      chatbar.insertBefore(saveButton, chatbar.firstChild);
-    }
-
     // Add event listener for beforeunload to save chat automatically
     window.addEventListener('beforeunload', saveChatSession);
     
