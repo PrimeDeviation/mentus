@@ -1,34 +1,76 @@
-function initializeMentusTab() {
-  const tabButtons = document.querySelectorAll('.tab-button');
-  tabButtons.forEach(button => {
-    button.addEventListener('click', (event) => {
-      const tabName = event.target.getAttribute('data-tab');
-      showTab(tabName);
+document.addEventListener('DOMContentLoaded', function() {
+  try {
+    const tabButtons = document.querySelectorAll('.tab-button');
+    tabButtons.forEach(button => {
+      button.addEventListener('click', (event) => {
+        const tabName = event.target.getAttribute('data-tab');
+        showTab(tabName);
+      });
     });
-  });
-  
-  showTab('settings');
-  
-  // Add save button to the chat interface
-  const chatbar = document.getElementById('chatbar-content');
-  if (chatbar) {
-    const saveButton = document.createElement('button');
-    saveButton.id = 'save-chat';
-    saveButton.textContent = 'Save Chat';
-    saveButton.addEventListener('click', saveChatSession);
-    chatbar.insertBefore(saveButton, chatbar.firstChild);
+    
+    showTab('settings');
+    
+    // Add save button to the chat interface
+    const chatbar = document.getElementById('chatbar-content');
+    if (chatbar) {
+      const saveButton = document.createElement('button');
+      saveButton.id = 'save-chat';
+      saveButton.textContent = 'Save Chat';
+      saveButton.addEventListener('click', saveChatSession);
+      chatbar.insertBefore(saveButton, chatbar.firstChild);
+    }
+
+    // Add event listener for beforeunload to save chat automatically
+    window.addEventListener('beforeunload', saveChatSession);
+    
+    loadChatModels();
+
+    // Call this function when the page loads to display existing saved sessions
+    displaySavedChatSessions();
+  } catch (error) {
+    console.error('Error in DOMContentLoaded event listener:', error);
   }
+});
 
-  // Add event listener for beforeunload to save chat automatically
-  window.addEventListener('beforeunload', saveChatSession);
-  
-  loadChatModels();
+// Make sure all the necessary functions are defined here
+function showTab(tabName) {
+  const tabs = document.getElementsByClassName('tab-content');
+  for (let i = 0; i < tabs.length; i++) {
+    tabs[i].classList.remove('active');
+  }
+  const activeTab = document.getElementById(tabName);
+  activeTab.classList.add('active');
 
-  // Call this function when the page loads to display existing saved sessions
-  displaySavedChatSessions();
+  if (tabName === 'settings') {
+    loadSettingsContent();
+  }
 }
 
-document.addEventListener("DOMContentLoaded", initializeMentusTab);
+function loadSettingsContent() {
+  // Load saved settings
+  loadSettings();
+
+  // Add event listeners for each input field
+  const settings = [
+    'openai-api-key',
+    'anthropic-api-key',
+    'graphdb-endpoint',
+    'graphdb-creds',
+    'local-storage-location'
+  ];
+
+  settings.forEach(setting => {
+    const inputElement = document.getElementById(setting);
+    if (inputElement) {
+      inputElement.addEventListener('input', debounce(function() {
+        saveSetting(setting, this.value);
+      }, 500));
+    }
+  });
+}
+
+// Make sure to include the implementations of loadSettings, saveSetting, debounce, 
+// saveChatSession, loadChatModels, and displaySavedChatSessions functions here
   
   function showTab(tabName) {
     const tabs = document.getElementsByClassName('tab-content');
