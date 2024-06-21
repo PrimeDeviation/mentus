@@ -21,16 +21,14 @@ document.addEventListener('DOMContentLoaded', function () {
         // Save settings to chrome.storage.local
         try {
             chrome.storage.local.set({
-                openaiApiKey: btoa(openaiApiKey),
-                anthropicApiKey: btoa(anthropicApiKey),
+                openaiApiKey: openaiApiKey,
+                anthropicApiKey: anthropicApiKey,
                 graphdbEndpoint: graphdbEndpoint,
                 graphdbCreds: graphdbCreds,
                 localStorageLocation: localStorageLocation
             }, function () {
                 alert('Settings saved successfully.');
                 loadSettings(); // Call loadSettings after saving settings
-                // Reload the page to apply the updated settings
-                window.location.reload();
             });
         } catch (error) {
             console.error('Error saving settings:', error);
@@ -40,11 +38,34 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function loadSettings() {
         chrome.storage.local.get(['openaiApiKey', 'anthropicApiKey', 'graphdbEndpoint', 'graphdbCreds', 'localStorageLocation'], function (result) {
-            document.getElementById('openai-api-key').value = result.openaiApiKey ? atob(result.openaiApiKey) : '';
-            document.getElementById('anthropic-api-key').value = result.anthropicApiKey ? atob(result.anthropicApiKey) : '';
+            document.getElementById('openai-api-key').value = result.openaiApiKey || '';
+            document.getElementById('anthropic-api-key').value = result.anthropicApiKey || '';
             document.getElementById('graphdb-endpoint').value = result.graphdbEndpoint || '';
             document.getElementById('graphdb-creds').value = result.graphdbCreds || '';
             document.getElementById('local-storage-location').value = result.localStorageLocation || '';
+
+            // Display obfuscated API keys
+            displayObfuscatedKey('openai-api-key', result.openaiApiKey);
+            displayObfuscatedKey('anthropic-api-key', result.anthropicApiKey);
         });
     }
+
+    function displayObfuscatedKey(elementId, apiKey) {
+        const displayElement = document.getElementById(`${elementId}-display`);
+        if (apiKey) {
+            const obfuscatedKey = '*'.repeat(apiKey.length - 4) + apiKey.slice(-4);
+            displayElement.textContent = obfuscatedKey;
+        } else {
+            displayElement.textContent = '';
+        }
+    }
+
+    // Add event listeners to input fields to update obfuscated display
+    document.getElementById('openai-api-key').addEventListener('input', function() {
+        displayObfuscatedKey('openai-api-key', this.value);
+    });
+
+    document.getElementById('anthropic-api-key').addEventListener('input', function() {
+        displayObfuscatedKey('anthropic-api-key', this.value);
+    });
 });
