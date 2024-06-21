@@ -8,7 +8,7 @@ function initializeMentusTab() {
       });
     });
     
-    showTab('settings');
+    showTab('graph');
     
     // Add save button to the chat interface
     const chatbar = document.getElementById('chatbar-content');
