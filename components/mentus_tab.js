@@ -1,25 +1,35 @@
-document.addEventListener("DOMContentLoaded", function() {
-  // Remove the browse button functionality as it's not applicable for Chrome extensions
-  const tabButtons = document.querySelectorAll('.tab-button');
-  tabButtons.forEach(button => {
-    button.addEventListener('click', (event) => {
-      const tabName = event.target.getAttribute('data-tab');
-      showTab(tabName);
+function initializeMentusTab() {
+  try {
+    const tabButtons = document.querySelectorAll('.tab-button');
+    tabButtons.forEach(button => {
+      button.addEventListener('click', (event) => {
+        const tabName = event.target.getAttribute('data-tab');
+        showTab(tabName);
+      });
     });
-  });
-  
-  showTab('settings');
-  
-  // Add save button to the chat interface
-  const chatbar = document.getElementById('chatbar-content');
-  const saveButton = document.createElement('button');
-  saveButton.id = 'save-chat';
-  saveButton.textContent = 'Save Chat';
-  saveButton.addEventListener('click', saveChatSession);
-  chatbar.insertBefore(saveButton, chatbar.firstChild);
+    
+    showTab('settings');
+    
+    // Add save button to the chat interface
+    const chatbar = document.getElementById('chatbar-content');
+    if (chatbar) {
+      const saveButton = document.createElement('button');
+      saveButton.id = 'save-chat';
+      saveButton.textContent = 'Save Chat';
+      saveButton.addEventListener('click', saveChatSession);
+      chatbar.insertBefore(saveButton, chatbar.firstChild);
+    }
 
-  // Add event listener for beforeunload to save chat automatically
-  window.addEventListener('beforeunload', saveChatSession);
+    // Add event listener for beforeunload to save chat automatically
+    window.addEventListener('beforeunload', saveChatSession);
+    
+    loadChatModels();
+  } catch (error) {
+    console.error('Error initializing Mentus tab:', error);
+  }
+}
+
+document.addEventListener("DOMContentLoaded", initializeMentusTab);
   
   function showTab(tabName) {
     const tabs = document.getElementsByClassName('tab-content');
