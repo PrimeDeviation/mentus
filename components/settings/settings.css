@@ -1,12 +1,13 @@
 /* Settings styles */
 body {
+    margin: 0;
+    padding: 0;
+    background-color: #1e1e1e;
+    font-family: Arial, sans-serif;
     display: flex;
     justify-content: center;
     align-items: center;
     min-height: 100vh;
-    margin: 0;
-    background-color: #1e1e1e;
-    font-family: Arial, sans-serif;
 }
 
 .settings-container {
@@ -16,6 +17,7 @@ body {
     width: 100%;
     max-width: 500px;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    margin: auto;
 }
 
 .settings-container h1 {
