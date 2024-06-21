@@ -38,7 +38,7 @@ document.addEventListener("DOMContentLoaded", function() {
     }
   }
 
-  function saveSettings() {
+  async function saveSettings() {
     const settings = [
       'openai-api-key',
       'anthropic-api-key',
@@ -49,7 +49,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
     const updatedSettings = {};
 
-    settings.forEach(setting => {
+    for (const setting of settings) {
       const inputElement = document.getElementById(setting);
       const displayElement = document.getElementById(`${setting}-display`);
       const currentValue = inputElement.value.trim();
@@ -57,22 +57,48 @@ document.addEventListener("DOMContentLoaded", function() {
 
       // Only update if the value has changed and is not the obfuscated version
       if (currentValue && currentValue !== displayedValue && !isObfuscated(currentValue)) {
-        updatedSettings[setting] = setting.includes('api-key') ? btoa(currentValue) : currentValue;
+        if (setting.includes('api-key')) {
+          // Use the Web Crypto API for encryption
+          const encoder = new TextEncoder();
+          const data = encoder.encode(currentValue);
+          const key = await window.crypto.subtle.generateKey(
+            { name: "AES-GCM", length: 256 },
+            true,
+            ["encrypt", "decrypt"]
+          );
+          const iv = window.crypto.getRandomValues(new Uint8Array(12));
+          const encryptedData = await window.crypto.subtle.encrypt(
+            { name: "AES-GCM", iv: iv },
+            key,
+            data
+          );
+          const encryptedArray = new Uint8Array(encryptedData);
+          const base64Encrypted = btoa(String.fromCharCode.apply(null, encryptedArray));
+          updatedSettings[setting] = JSON.stringify({ encrypted: base64Encrypted, iv: Array.from(iv) });
+          // Store the key securely
+          await chrome.storage.local.set({ [`${setting}_key`]: await exportCryptoKey(key) });
+        } else {
+          updatedSettings[setting] = currentValue;
+        }
       }
-    });
+    }
 
     // Save settings to chrome.storage.local
-    chrome.storage.local.set(updatedSettings, function () {
-      alert('Settings saved successfully.');
-      loadSettings(); // Reload settings after saving
-    });
+    await chrome.storage.local.set(updatedSettings);
+    alert('Settings saved successfully.');
+    await loadSettings(); // Reload settings after saving
+  }
+
+  async function exportCryptoKey(key) {
+    const exported = await window.crypto.subtle.exportKey("raw", key);
+    return Array.from(new Uint8Array(exported));
   }
 
   function isObfuscated(value) {
     return /^\*+.{4}$/.test(value);
   }
 
-  function loadSettings() {
+  async function loadSettings() {
     const settings = [
       'openai-api-key',
       'anthropic-api-key',
@@ -81,32 +107,54 @@ document.addEventListener("DOMContentLoaded", function() {
       'local-storage-location'
     ];
 
-    chrome.storage.local.get(settings, function (result) {
-      settings.forEach(setting => {
-        const inputElement = document.getElementById(setting);
-        const displayElement = document.getElementById(`${setting}-display`);
-        
-        if (inputElement && displayElement) {
-          let value = result[setting] || '';
-        
-          if (setting.includes('api-key') && value) {
-            try {
-              value = atob(value); // Decode API keys
-              inputElement.value = ''; // Clear the input field for security
-              displayElement.textContent = value ? '********' : '';
-            } catch (e) {
-              console.error('Error decoding API key:', e);
-              value = '';
-            }
-          } else {
-            inputElement.value = value;
-            displayElement.textContent = value;
+    const result = await chrome.storage.local.get(settings);
+
+    for (const setting of settings) {
+      const inputElement = document.getElementById(setting);
+      const displayElement = document.getElementById(`${setting}-display`);
+      
+      if (inputElement && displayElement) {
+        let value = result[setting] || '';
+      
+        if (setting.includes('api-key') && value) {
+          try {
+            const { encrypted, iv } = JSON.parse(value);
+            const key = await importCryptoKey(await chrome.storage.local.get(`${setting}_key`));
+            const decryptedValue = await decryptData(encrypted, iv, key);
+            inputElement.value = ''; // Clear the input field for security
+            displayElement.textContent = decryptedValue ? '********' : '';
+          } catch (e) {
+            console.error('Error decrypting API key:', e);
+            value = '';
           }
         } else {
-          console.error(`Element not found for setting: ${setting}`);
+          inputElement.value = value;
+          displayElement.textContent = value;
         }
-      });
-    });
+      } else {
+        console.error(`Element not found for setting: ${setting}`);
+      }
+    }
+  }
+
+  async function importCryptoKey(keyData) {
+    return await window.crypto.subtle.importKey(
+      "raw",
+      new Uint8Array(keyData),
+      { name: "AES-GCM", length: 256 },
+      true,
+      ["encrypt", "decrypt"]
+    );
+  }
+
+  async function decryptData(encryptedBase64, iv, key) {
+    const encryptedArray = new Uint8Array(atob(encryptedBase64).split('').map(char => char.charCodeAt(0)));
+    const decryptedData = await window.crypto.subtle.decrypt(
+      { name: "AES-GCM", iv: new Uint8Array(iv) },
+      key,
+      encryptedArray
+    );
+    return new TextDecoder().decode(decryptedData);
   }
 
   function loadChatModels() {
