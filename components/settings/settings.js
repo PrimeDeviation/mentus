@@ -69,16 +69,16 @@ document.addEventListener('DOMContentLoaded', function () {
                         value = atob(value); // Decode API keys
                         inputElement.value = ''; // Clear the input field for security
                         if (displayElement) {
-                            displayElement.textContent = value ? '********' : '';
+                            displayElement.textContent = value ? 'API key is set' : '';
                         }
                     } catch (e) {
                         console.error('Error decoding API key:', e);
                         value = '';
                     }
                 } else {
-                    inputElement.value = value;
+                    inputElement.value = '';
                     if (displayElement) {
-                        displayElement.textContent = value;
+                        displayElement.textContent = value || 'No value set';
                     }
                 }
                 console.log(`Loaded ${setting}:`, displayElement ? displayElement.textContent : value); // Debug log

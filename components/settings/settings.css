@@ -78,6 +78,12 @@ button:hover {
     margin-top: 5px;
     color: #aaa;
     font-size: 0.9em;
+    font-style: italic;
+    word-break: break-all;
+}
+
+.current-value:empty {
+    display: none;
 }
 
 /* Responsive styles */
