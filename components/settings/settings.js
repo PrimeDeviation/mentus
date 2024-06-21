@@ -18,12 +18,16 @@ document.addEventListener('DOMContentLoaded', function () {
     // Add event listeners for Enter key on input fields
     settings.forEach(setting => {
         const inputElement = document.getElementById(setting);
-        inputElement.addEventListener('keypress', function(event) {
-            if (event.key === 'Enter') {
-                event.preventDefault();
-                saveSettings();
-            }
-        });
+        if (inputElement) {
+            inputElement.addEventListener('keypress', function(event) {
+                if (event.key === 'Enter') {
+                    event.preventDefault();
+                    saveSettings();
+                }
+            });
+        } else {
+            console.error(`Element not found for setting: ${setting}`);
+        }
     });
 
     function saveSettings() {
@@ -32,19 +36,23 @@ document.addEventListener('DOMContentLoaded', function () {
 
         settings.forEach(setting => {
             const inputElement = document.getElementById(setting);
-            const currentValue = inputElement.value.trim();
-            const storedValue = localStorage.getItem(setting);
+            if (inputElement) {
+                const currentValue = inputElement.value.trim();
+                const storedValue = localStorage.getItem(setting);
 
-            if (currentValue !== storedValue) {
-                hasChanges = true;
-                if (setting.includes('api-key')) {
-                    updatedSettings[setting] = btoa(currentValue); // Encode API keys
-                } else {
-                    updatedSettings[setting] = currentValue;
+                if (currentValue !== storedValue) {
+                    hasChanges = true;
+                    if (setting.includes('api-key')) {
+                        updatedSettings[setting] = btoa(currentValue); // Encode API keys
+                    } else {
+                        updatedSettings[setting] = currentValue;
+                    }
+                    localStorage.setItem(setting, currentValue);
                 }
-                localStorage.setItem(setting, currentValue);
+                console.log(`Saving ${setting}:`, updatedSettings[setting]); // Debug log
+            } else {
+                console.error(`Element not found for setting: ${setting}`);
             }
-            console.log(`Saving ${setting}:`, updatedSettings[setting]); // Debug log
         });
 
         if (!hasChanges) {
@@ -69,33 +77,31 @@ document.addEventListener('DOMContentLoaded', function () {
             settings.forEach(setting => {
                 const inputElement = document.getElementById(setting);
                 const displayElement = document.getElementById(`${setting}-display`);
-                let value = result[setting] || '';
-        
-                if (setting.includes('api-key') && value) {
-                    try {
-                        // Check if the value is base64 encoded
-                        if (/^[A-Za-z0-9+/=]+$/.test(value)) {
-                            value = atob(value); // Decode API keys
-                        }
-                        inputElement.value = ''; // Clear the input field for security
-                        if (displayElement) {
+                if (inputElement && displayElement) {
+                    let value = result[setting] || '';
+            
+                    if (setting.includes('api-key') && value) {
+                        try {
+                            // Check if the value is base64 encoded
+                            if (/^[A-Za-z0-9+/=]+$/.test(value)) {
+                                value = atob(value); // Decode API keys
+                            }
+                            inputElement.value = ''; // Clear the input field for security
                             const visiblePart = value.substring(0, 8);
                             const obfuscatedPart = '*'.repeat(Math.max(0, value.length - 8));
                             displayElement.textContent = visiblePart + obfuscatedPart;
-                        }
-                    } catch (e) {
-                        console.error('Error processing API key:', e);
-                        if (displayElement) {
+                        } catch (e) {
+                            console.error('Error processing API key:', e);
                             displayElement.textContent = 'Error: Invalid API key format';
                         }
-                    }
-                } else {
-                    inputElement.value = value;
-                    if (displayElement) {
+                    } else {
+                        inputElement.value = value;
                         displayElement.textContent = value || 'No value set';
                     }
+                    console.log(`Loaded ${setting}:`, displayElement.textContent); // Debug log
+                } else {
+                    console.error(`Element not found for setting: ${setting}`);
                 }
-                console.log(`Loaded ${setting}:`, displayElement ? displayElement.textContent : value); // Debug log
             });
         });
     }
