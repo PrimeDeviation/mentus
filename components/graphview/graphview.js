@@ -1,61 +1,70 @@
 document.addEventListener("DOMContentLoaded", function() {
-    const width = 800;
-    const height = 600;
+    const width = window.innerWidth;
+    const height = window.innerHeight;
 
     const svg = d3.select("#graph-container")
         .append("svg")
         .attr("width", width)
         .attr("height", height);
 
-    const data = {
-        nodes: [
-            { id: "Node 1" },
-            { id: "Node 2" },
-            { id: "Node 3" }
-        ],
-        links: [
-            { source: "Node 1", target: "Node 2" },
-            { source: "Node 2", target: "Node 3" }
-        ]
+    let data = {
+        nodes: [],
+        links: []
     };
 
-    const simulation = d3.forceSimulation(data.nodes)
-        .force("link", d3.forceLink(data.links).id(d => d.id))
-        .force("charge", d3.forceManyBody().strength(-400))
+    const simulation = d3.forceSimulation()
+        .force("link", d3.forceLink().id(d => d.id).distance(100))
+        .force("charge", d3.forceManyBody().strength(-300))
         .force("center", d3.forceCenter(width / 2, height / 2));
 
-    const link = svg.append("g")
-        .selectAll("line")
-        .data(data.links)
-        .enter().append("line")
-        .attr("stroke-width", 2)
-        .attr("stroke", "#999");
+    let link = svg.append("g")
+        .attr("class", "links")
+        .selectAll("line");
 
-    const node = svg.append("g")
-        .selectAll("circle")
-        .data(data.nodes)
-        .enter().append("circle")
-        .attr("r", 10)
-        .attr("fill", "#69b3a2")
-        .call(d3.drag()
-            .on("start", dragstarted)
-            .on("drag", dragged)
-            .on("end", dragended));
+    let node = svg.append("g")
+        .attr("class", "nodes")
+        .selectAll("g");
 
-    node.append("title")
-        .text(d => d.id);
+    function updateGraph() {
+        // Remove existing nodes and links
+        node.remove();
+        link.remove();
 
-    simulation.on("tick", () => {
-        link
-            .attr("x1", d => d.source.x)
-            .attr("y1", d => d.source.y)
-            .attr("x2", d => d.target.x)
-            .attr("y2", d => d.target.y);
+        // Update the links
+        link = svg.select(".links")
+            .selectAll("line")
+            .data(data.links)
+            .enter().append("line")
+            .attr("stroke-width", 2)
+            .attr("stroke", "#999");
 
-        node
-            .attr("cx", d => d.x)
-            .attr("cy", d => d.y);
-    });
+        // Update the nodes
+        node = svg.select(".nodes")
+            .selectAll("g")
+            .data(data.nodes)
+            .enter().append("g")
+            .call(d3.drag()
+                .on("start", dragstarted)
+                .on("drag", dragged)
+                .on("end", dragended));
+
+        node.append("circle")
+            .attr("r", 10)
+            .attr("fill", d => d.color || "#69b3a2");
+
+        node.append("text")
+            .attr("dy", -15)
+            .attr("text-anchor", "middle")
+            .text(d => d.id)
+            .attr("fill", "#fff");
+
+        node.append("title")
+            .text(d => d.id);
+
+        simulation.nodes(data.nodes);
+        simulation.force("link").links(data.links);
+        simulation.alpha(1).restart();
+    }
 
     function dragstarted(event, d) {
         if (!event.active) simulation.alphaTarget(0.3).restart();
@@ -73,4 +82,42 @@ document.addEventListener("DOMContentLoaded", function() {
         d.fx = null;
         d.fy = null;
     }
+
+    simulation.on("tick", () => {
+        link
+            .attr("x1", d => d.source.x)
+            .attr("y1", d => d.source.y)
+            .attr("x2", d => d.target.x)
+            .attr("y2", d => d.target.y);
+
+        node
+            .attr("transform", d => `translate(${d.x},${d.y})`);
+    });
+
+    // Function to add a new node
+    function addNode(id, color) {
+        if (!data.nodes.some(n => n.id === id)) {
+            data.nodes.push({ id, color });
+            updateGraph();
+        }
+    }
+
+    // Function to add a new link
+    function addLink(source, target) {
+        if (!data.links.some(l => l.source.id === source && l.target.id === target)) {
+            data.links.push({ source, target });
+            updateGraph();
+        }
+    }
+
+    // Example usage:
+    addNode("Node 1", "#ff0000");
+    addNode("Node 2", "#00ff00");
+    addNode("Node 3", "#0000ff");
+    addLink("Node 1", "Node 2");
+    addLink("Node 2", "Node 3");
+
+    // Expose these functions globally for testing
+    window.addNode = addNode;
+    window.addLink = addLink;
 });
