@@ -24,8 +24,16 @@ body {
     text-align: center;
 }
 
+#settings-form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
 .form-group {
     margin-bottom: 20px;
+    width: 100%;
+    max-width: 400px;
 }
 
 label {
@@ -56,6 +64,7 @@ input[type="password"]:focus {
 
 button {
     width: 100%;
+    max-width: 400px;
     padding: 12px;
     background-color: #7289da;
     color: #fff;
@@ -65,6 +74,7 @@ button {
     transition: background-color 0.3s;
     font-size: 16px;
     font-weight: bold;
+    margin-top: 20px;
 }
 
 button:hover {
@@ -83,5 +93,10 @@ button:hover {
     .settings-container {
         width: 90%;
         padding: 20px;
+    }
+    
+    .form-group,
+    button {
+        max-width: 100%;
     }
 }
