@@ -5,12 +5,38 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Graph View</title>
     <link rel="stylesheet" href="../styles/main.css">
+    <link rel="stylesheet" href="graphview.css">
 </head>
 <body>
     <div id="graph-container">
         <!-- Graph will be rendered here -->
     </div>
+    <div id="graph-controls">
+        <input type="text" id="node-id" placeholder="Node ID">
+        <input type="color" id="node-color" value="#69b3a2">
+        <button id="add-node">Add Node</button>
+        <input type="text" id="link-source" placeholder="Source Node">
+        <input type="text" id="link-target" placeholder="Target Node">
+        <button id="add-link">Add Link</button>
+    </div>
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <script src="graphview.js"></script>
+    <script>
+        document.getElementById('add-node').addEventListener('click', function() {
+            const id = document.getElementById('node-id').value;
+            const color = document.getElementById('node-color').value;
+            if (id) {
+                window.addNode(id, color);
+            }
+        });
+
+        document.getElementById('add-link').addEventListener('click', function() {
+            const source = document.getElementById('link-source').value;
+            const target = document.getElementById('link-target').value;
+            if (source && target) {
+                window.addLink(source, target);
+            }
+        });
+    </script>
 </body>
 </html>

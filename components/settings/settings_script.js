@@ -12,24 +12,37 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   function saveSettings() {
-    const openaiApiKey = document.getElementById('openai-api-key').value.trim();
-    const anthropicApiKey = document.getElementById('anthropic-api-key').value.trim();
-    const graphdbEndpoint = document.getElementById('graphdb-endpoint').value.trim();
-    const graphdbCreds = document.getElementById('graphdb-creds').value.trim();
-    const localStorageLocation = document.getElementById('local-storage-location').value.trim();
+    const settings = [
+      'openai-api-key',
+      'anthropic-api-key',
+      'graphdb-endpoint',
+      'graphdb-creds',
+      'local-storage-location'
+    ];
+
+    const updatedSettings = {};
+
+    settings.forEach(setting => {
+      const inputElement = document.getElementById(setting);
+      const displayElement = document.getElementById(`${setting}-display`);
+      const currentValue = inputElement.value.trim();
+      const displayedValue = displayElement ? displayElement.textContent : '';
+
+      // Only update if the value has changed and is not the obfuscated version
+      if (currentValue && currentValue !== displayedValue && !isObfuscated(currentValue)) {
+        updatedSettings[setting] = setting.includes('api-key') ? btoa(currentValue) : currentValue;
+      }
+    });
 
     // Save settings to chrome.storage.local
-    chrome.storage.local.set({
-      openaiApiKey: btoa(openaiApiKey),
-      anthropicApiKey: btoa(anthropicApiKey),
-      graphdbEndpoint: graphdbEndpoint,
-      graphdbCreds: graphdbCreds,
-      localStorageLocation: localStorageLocation
-    }, function () {
+    chrome.storage.local.set(updatedSettings, function () {
       alert('Settings saved successfully.');
-      loadSettings();
-      window.location.reload();
+      loadSettings(); // Reload settings after saving
     });
+  }
+
+  function isObfuscated(value) {
+    return /^\*+.{4}$/.test(value);
   }
 
   function loadSettings() {
