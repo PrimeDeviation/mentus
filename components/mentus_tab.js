@@ -292,7 +292,7 @@ document.addEventListener("DOMContentLoaded", function() {
         body: JSON.stringify({
           model: model,
           messages: [{ role: 'user', content: message }],
-          max_tokens: 1000
+          max_tokens: 4000
         })
       });
 
