@@ -119,17 +119,18 @@ document.addEventListener("DOMContentLoaded", function() {
         if (setting.includes('api-key') && value) {
           try {
             const { encrypted, iv } = JSON.parse(value);
-            const key = await importCryptoKey(await chrome.storage.local.get(`${setting}_key`));
+            const keyData = await chrome.storage.local.get(`${setting}_key`);
+            const key = await importCryptoKey(keyData[`${setting}_key`]);
             const decryptedValue = await decryptData(encrypted, iv, key);
             inputElement.value = ''; // Clear the input field for security
-            displayElement.textContent = decryptedValue ? '********' : '';
+            displayElement.textContent = decryptedValue ? '********' + decryptedValue.slice(-4) : '';
           } catch (e) {
             console.error('Error decrypting API key:', e);
             value = '';
           }
         } else {
           inputElement.value = value;
-          displayElement.textContent = value;
+          displayElement.textContent = value || 'No value set';
         }
       } else {
         console.error(`Element not found for setting: ${setting}`);
