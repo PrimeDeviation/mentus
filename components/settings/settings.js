@@ -26,7 +26,11 @@ document.addEventListener('DOMContentLoaded', function () {
             const currentValue = inputElement.value.trim();
 
             if (currentValue) {
-                updatedSettings[setting] = currentValue;
+                if (setting.includes('api-key')) {
+                    updatedSettings[setting] = btoa(currentValue); // Encode API keys
+                } else {
+                    updatedSettings[setting] = currentValue;
+                }
             }
         });
 
@@ -53,8 +57,26 @@ document.addEventListener('DOMContentLoaded', function () {
         chrome.storage.local.get(settings, function (result) {
             settings.forEach(setting => {
                 const inputElement = document.getElementById(setting);
-                const value = result[setting] || '';
-                inputElement.value = value;
+                const displayElement = document.getElementById(`${setting}-display`);
+                let value = result[setting] || '';
+            
+                if (setting.includes('api-key') && value) {
+                    try {
+                        value = atob(value); // Decode API keys
+                        inputElement.value = ''; // Clear the input field for security
+                        if (displayElement) {
+                            displayElement.textContent = value ? '********' : '';
+                        }
+                    } catch (e) {
+                        console.error('Error decoding API key:', e);
+                        value = '';
+                    }
+                } else {
+                    inputElement.value = value;
+                    if (displayElement) {
+                        displayElement.textContent = value;
+                    }
+                }
             });
         });
     }
