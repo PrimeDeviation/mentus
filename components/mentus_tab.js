@@ -87,6 +87,56 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
+  async function sendMessageToOpenAI(message) {
+    const openaiApiKey = await getApiKey('openai-api-key');
+    const selectedModel = document.getElementById('chat-models').value;
+
+    if (!openaiApiKey) {
+      displayAssistantReply('Error: OpenAI API key is missing or invalid. Please provide a valid API key in the settings.');
+      return;
+    }
+
+    if (!selectedModel) {
+      displayAssistantReply('Error: Please select a valid chat model.');
+      return;
+    }
+
+    try {
+      const response = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${openaiApiKey}`
+        },
+        body: JSON.stringify({
+          model: selectedModel,
+          messages: [{ role: 'user', content: message }]
+        })
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        const assistantReply = data.choices[0].message.content;
+        displayAssistantReply(assistantReply);
+      } else {
+        const errorData = await response.json();
+        console.error('Error:', response.status, errorData);
+        displayAssistantReply(`Error: ${errorData.error.message}`);
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      displayAssistantReply(`Error: ${error.message}`);
+    }
+  }
+
+  function getApiKey(key) {
+    return new Promise((resolve) => {
+      chrome.storage.local.get([key], function(result) {
+        resolve(result[key] ? atob(result[key]) : null);
+      });
+    });
+  }
+
   const chatInput = document.getElementById('chat-input');
   const sendButton = document.getElementById('send-button');
   const chatMessages = document.getElementById('chat-messages');
