@@ -27,11 +27,16 @@ document.addEventListener("DOMContentLoaded", () => {
   function loadSettingsContent() {
     const settingsUrl = chrome.runtime.getURL('components/settings/settings.html');
     fetch(settingsUrl)
-      .then(response => response.text())
+      .then(response => {
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.text();
+      })
       .then(html => {
         document.getElementById('settings-content').innerHTML = html;
         const script = document.createElement('script');
-        script.src = chrome.runtime.getURL('components/settings/settings_script.js');
+        script.src = chrome.runtime.getURL('components/settings/settings.js');
         script.onload = function() {
           // Call the loadSettings function after the script has loaded
           if (typeof loadSettings === 'function') {
@@ -40,7 +45,10 @@ document.addEventListener("DOMContentLoaded", () => {
         };
         document.body.appendChild(script);
       })
-      .catch(error => console.error('Error loading settings content:', error));
+      .catch(error => {
+        console.error('Error loading settings content:', error);
+        document.getElementById('settings-content').innerHTML = '<p>Error loading settings. Please try again later.</p>';
+      });
   }
 
   function loadChatModels() {
