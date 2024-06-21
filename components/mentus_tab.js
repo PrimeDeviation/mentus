@@ -9,6 +9,17 @@ document.addEventListener("DOMContentLoaded", function() {
   
   showTab('settings');
   
+  // Add save button to the chat interface
+  const chatbar = document.getElementById('chatbar-content');
+  const saveButton = document.createElement('button');
+  saveButton.id = 'save-chat';
+  saveButton.textContent = 'Save Chat';
+  saveButton.addEventListener('click', saveChatSession);
+  chatbar.insertBefore(saveButton, chatbar.firstChild);
+
+  // Add event listener for beforeunload to save chat automatically
+  window.addEventListener('beforeunload', saveChatSession);
+  
   function showTab(tabName) {
     const tabs = document.getElementsByClassName('tab-content');
     for (let i = 0; i < tabs.length; i++) {
@@ -332,5 +343,29 @@ document.addEventListener("DOMContentLoaded", function() {
     replyElement.textContent = reply;
     chatMessages.appendChild(replyElement);
     chatMessages.scrollTop = chatMessages.scrollHeight;
+  }
+
+  function saveChatSession() {
+    const chatMessages = document.getElementById('chat-messages');
+    const messages = Array.from(chatMessages.children).map(msg => ({
+      type: msg.classList.contains('user-message') ? 'user' : 'assistant',
+      content: msg.textContent
+    }));
+
+    const chatSession = {
+      timestamp: new Date().toISOString(),
+      messages: messages
+    };
+
+    // Get existing chat sessions or initialize an empty array
+    chrome.storage.local.get(['chatSessions'], function(result) {
+      let chatSessions = result.chatSessions || [];
+      chatSessions.push(chatSession);
+
+      // Save the updated chat sessions
+      chrome.storage.local.set({ chatSessions: chatSessions }, function() {
+        console.log('Chat session saved successfully');
+      });
+    });
   }
 });
