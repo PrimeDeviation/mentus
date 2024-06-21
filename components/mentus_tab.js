@@ -208,7 +208,17 @@ document.addEventListener("DOMContentLoaded", function() {
   function getApiKey(key) {
     return new Promise((resolve) => {
       chrome.storage.local.get([key], function(result) {
-        resolve(result[key] ? atob(result[key]) : null);
+        if (result[key]) {
+          try {
+            const decodedKey = atob(result[key]);
+            resolve(decodedKey);
+          } catch (error) {
+            console.error('Error decoding API key:', error);
+            resolve(null);
+          }
+        } else {
+          resolve(null);
+        }
       });
     });
   }
@@ -279,11 +289,12 @@ document.addEventListener("DOMContentLoaded", function() {
   }
 
   async function sendMessageToOpenAI(message, model, apiKey) {
+    const decodedApiKey = atob(apiKey);
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apiKey}`
+        'Authorization': `Bearer ${decodedApiKey}`
       },
       body: JSON.stringify({
         model: model,
@@ -303,11 +314,12 @@ document.addEventListener("DOMContentLoaded", function() {
 
   async function sendMessageToAnthropic(message, model, apiKey) {
     try {
+      const decodedApiKey = atob(apiKey);
       const response = await fetch('https://api.anthropic.com/v1/messages', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'x-api-key': apiKey,
+          'x-api-key': decodedApiKey,
           'anthropic-version': '2023-06-01'
         },
         body: JSON.stringify({
