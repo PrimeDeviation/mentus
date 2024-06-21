@@ -72,6 +72,39 @@
   </div>
   <script src="./mentus_tab.js"></script>
   <script src="./settings/settings_script.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      try {
+        // Existing code from mentus_tab.js
+        const tabButtons = document.querySelectorAll('.tab-button');
+        tabButtons.forEach(button => {
+          button.addEventListener('click', (event) => {
+            const tabName = event.target.getAttribute('data-tab');
+            showTab(tabName);
+          });
+        });
+        
+        showTab('settings');
+        
+        // Add save button to the chat interface
+        const chatbar = document.getElementById('chatbar-content');
+        if (chatbar) {
+          const saveButton = document.createElement('button');
+          saveButton.id = 'save-chat';
+          saveButton.textContent = 'Save Chat';
+          saveButton.addEventListener('click', saveChatSession);
+          chatbar.insertBefore(saveButton, chatbar.firstChild);
+        }
+
+        // Add event listener for beforeunload to save chat automatically
+        window.addEventListener('beforeunload', saveChatSession);
+        
+        loadChatModels();
+      } catch (error) {
+        console.error('Error in DOMContentLoaded event listener:', error);
+      }
+    });
+  </script>
 </body>
 
 </html>
