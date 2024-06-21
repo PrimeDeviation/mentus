@@ -41,6 +41,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         if (!hasChanges) {
             console.log('No changes detected, skipping save');
+            alert('No changes detected. Settings remain unchanged.');
             return;
         }
 
