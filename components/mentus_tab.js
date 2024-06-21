@@ -25,91 +25,15 @@ document.addEventListener("DOMContentLoaded", () => {
   loadChatModels();
 
   function loadSettingsContent() {
-    const settingsHTML = `
-      <div class="settings-container">
-        <h1>Settings</h1>
-        <form id="settings-form">
-          <div class="form-group">
-            <label for="openai-api-key">OpenAI API Key:</label>
-            <input type="password" id="openai-api-key" placeholder="Enter OpenAI API Key">
-            <span id="openai-api-key-value" class="current-value"></span>
-          </div>
-          <div class="form-group">
-            <label for="anthropic-api-key">Anthropic API Key:</label>
-            <input type="password" id="anthropic-api-key" placeholder="Enter Anthropic API Key">
-            <span id="anthropic-api-key-value" class="current-value"></span>
-          </div>
-          <div class="form-group">
-            <label for="graphdb-endpoint">GraphDB Endpoint:</label>
-            <input type="text" id="graphdb-endpoint" placeholder="Enter GraphDB Endpoint">
-            <span id="graphdb-endpoint-value" class="current-value"></span>
-          </div>
-          <div class="form-group">
-            <label for="graphdb-creds">GraphDB Credentials:</label>
-            <input type="text" id="graphdb-creds" placeholder="Enter GraphDB Credentials">
-            <span id="graphdb-creds-value" class="current-value"></span>
-          </div>
-          <div class="form-group">
-            <label for="local-storage-location">Local Storage Location:</label>
-            <input type="text" id="local-storage-location" placeholder="Enter Local Storage Location">
-            <span id="local-storage-location-value" class="current-value"></span>
-          </div>
-          <button type="button" id="save-settings">Save</button>
-        </form>
-      </div>
-    `;
-    
-    document.getElementById('settings-content').innerHTML = settingsHTML;
-    
-    // Load the settings JavaScript
-    const settingsScript = document.createElement('script');
-    settingsScript.textContent = `
-      document.addEventListener('DOMContentLoaded', function () {
-        const settingsForm = document.getElementById('settings-form');
-        const saveButton = document.getElementById('save-settings');
-
-        // Load saved settings
-        loadSettings();
-
-        if (saveButton) {
-          saveButton.addEventListener('click', function () {
-            saveSettings();
-          });
-        }
-
-        function saveSettings() {
-          const openaiApiKey = document.getElementById('openai-api-key').value.trim();
-          const anthropicApiKey = document.getElementById('anthropic-api-key').value.trim();
-          const graphdbEndpoint = document.getElementById('graphdb-endpoint').value.trim();
-          const graphdbCreds = document.getElementById('graphdb-creds').value.trim();
-          const localStorageLocation = document.getElementById('local-storage-location').value.trim();
-
-          // Save settings to chrome.storage.local
-          chrome.storage.local.set({
-            openaiApiKey: btoa(openaiApiKey),
-            anthropicApiKey: btoa(anthropicApiKey),
-            graphdbEndpoint: graphdbEndpoint,
-            graphdbCreds: graphdbCreds,
-            localStorageLocation: localStorageLocation
-          }, function () {
-            alert('Settings saved successfully.');
-            loadSettings();
-            window.location.reload();
-          });
-        }
-
-        function loadSettings() {
-          chrome.storage.local.get(['openaiApiKey', 'anthropicApiKey', 'graphdbEndpoint', 'graphdbCreds', 'localStorageLocation'], function (result) {
-            document.getElementById('openai-api-key').value = result.openaiApiKey ? atob(result.openaiApiKey) : '';
-            document.getElementById('anthropic-api-key').value = result.anthropicApiKey ? atob(result.anthropicApiKey) : '';
-            document.getElementById('graphdb-endpoint').value = result.graphdbEndpoint || '';
-            document.getElementById('graphdb-creds').value = result.graphdbCreds || '';
-            document.getElementById('local-storage-location').value = result.localStorageLocation || '';
-          });
-        }
-      });
-    `;
-    document.body.appendChild(settingsScript);
+    fetch('components/settings/settings.html')
+      .then(response => response.text())
+      .then(html => {
+        document.getElementById('settings-content').innerHTML = html;
+        const script = document.createElement('script');
+        script.src = 'components/settings/settings_script.js';
+        document.body.appendChild(script);
+      })
+      .catch(error => console.error('Error loading settings content:', error));
   }
 
   function loadChatModels() {
