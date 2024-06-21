@@ -21,45 +21,47 @@ document.addEventListener("DOMContentLoaded", () => {
   loadChatModels();
 
   function loadChatModels() {
-    const openaiApiKey = localStorage.getItem('openaiApiKey');
-    const anthropicApiKey = localStorage.getItem('anthropicApiKey');
-    const chatModelsDropdown = document.getElementById('chat-models');
+    chrome.storage.local.get(['openaiApiKey', 'anthropicApiKey'], function(result) {
+      const openaiApiKey = result.openaiApiKey ? atob(result.openaiApiKey) : null;
+      const anthropicApiKey = result.anthropicApiKey ? atob(result.anthropicApiKey) : null;
+      const chatModelsDropdown = document.getElementById('chat-models');
 
-    chatModelsDropdown.innerHTML = '';
+      chatModelsDropdown.innerHTML = '';
 
-    if (openaiApiKey) {
-      const openaiGroup = document.createElement('optgroup');
-      openaiGroup.label = 'GPT Models';
-      const openaiModels = ['gpt-3.5-turbo', 'gpt-4'];
-      openaiModels.forEach(model => {
-        const option = document.createElement('option');
-        option.value = model;
-        option.textContent = model;
-        openaiGroup.appendChild(option);
-      });
-      chatModelsDropdown.appendChild(openaiGroup);
-    }
+      if (openaiApiKey) {
+        const openaiGroup = document.createElement('optgroup');
+        openaiGroup.label = 'GPT Models';
+        const openaiModels = ['gpt-3.5-turbo', 'gpt-4'];
+        openaiModels.forEach(model => {
+          const option = document.createElement('option');
+          option.value = model;
+          option.textContent = model;
+          openaiGroup.appendChild(option);
+        });
+        chatModelsDropdown.appendChild(openaiGroup);
+      }
 
-    if (anthropicApiKey) {
-      const anthropicGroup = document.createElement('optgroup');
-      anthropicGroup.label = 'Anthropic Models';
-      const anthropicModels = ['claude-2.1'];
-      anthropicModels.forEach(model => {
-        const option = document.createElement('option');
-        option.value = model;
-        option.textContent = model;
-        anthropicGroup.appendChild(option);
-      });
-      chatModelsDropdown.appendChild(anthropicGroup);
-    }
+      if (anthropicApiKey) {
+        const anthropicGroup = document.createElement('optgroup');
+        anthropicGroup.label = 'Anthropic Models';
+        const anthropicModels = ['claude-2.1'];
+        anthropicModels.forEach(model => {
+          const option = document.createElement('option');
+          option.value = model;
+          option.textContent = model;
+          anthropicGroup.appendChild(option);
+        });
+        chatModelsDropdown.appendChild(anthropicGroup);
+      }
 
-    if (!openaiApiKey && !anthropicApiKey) {
-      const noApiKeyOption = document.createElement('option');
-      noApiKeyOption.value = '';
-      noApiKeyOption.textContent = 'No API keys found. Please provide an OpenAI or Anthropic API key.';
-      noApiKeyOption.disabled = true;
-      chatModelsDropdown.appendChild(noApiKeyOption);
-    }
+      if (!openaiApiKey && !anthropicApiKey) {
+        const noApiKeyOption = document.createElement('option');
+        noApiKeyOption.value = '';
+        noApiKeyOption.textContent = 'No API keys found. Please provide an OpenAI or Anthropic API key.';
+        noApiKeyOption.disabled = true;
+        chatModelsDropdown.appendChild(noApiKeyOption);
+      }
+    });
   }
 
   const chatInput = document.getElementById('chat-input');
