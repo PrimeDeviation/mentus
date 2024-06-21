@@ -1,35 +1,31 @@
 function initializeMentusTab() {
-  try {
-    const tabButtons = document.querySelectorAll('.tab-button');
-    tabButtons.forEach(button => {
-      button.addEventListener('click', (event) => {
-        const tabName = event.target.getAttribute('data-tab');
-        showTab(tabName);
-      });
+  const tabButtons = document.querySelectorAll('.tab-button');
+  tabButtons.forEach(button => {
+    button.addEventListener('click', (event) => {
+      const tabName = event.target.getAttribute('data-tab');
+      showTab(tabName);
     });
-    
-    showTab('settings');
-    
-    // Add save button to the chat interface
-    const chatbar = document.getElementById('chatbar-content');
-    if (chatbar) {
-      const saveButton = document.createElement('button');
-      saveButton.id = 'save-chat';
-      saveButton.textContent = 'Save Chat';
-      saveButton.addEventListener('click', saveChatSession);
-      chatbar.insertBefore(saveButton, chatbar.firstChild);
-    }
-
-    // Add event listener for beforeunload to save chat automatically
-    window.addEventListener('beforeunload', saveChatSession);
-    
-    loadChatModels();
-
-    // Call this function when the page loads to display existing saved sessions
-    displaySavedChatSessions();
-  } catch (error) {
-    console.error('Error initializing Mentus tab:', error);
+  });
+  
+  showTab('settings');
+  
+  // Add save button to the chat interface
+  const chatbar = document.getElementById('chatbar-content');
+  if (chatbar) {
+    const saveButton = document.createElement('button');
+    saveButton.id = 'save-chat';
+    saveButton.textContent = 'Save Chat';
+    saveButton.addEventListener('click', saveChatSession);
+    chatbar.insertBefore(saveButton, chatbar.firstChild);
   }
+
+  // Add event listener for beforeunload to save chat automatically
+  window.addEventListener('beforeunload', saveChatSession);
+  
+  loadChatModels();
+
+  // Call this function when the page loads to display existing saved sessions
+  displaySavedChatSessions();
 }
 
 document.addEventListener("DOMContentLoaded", initializeMentusTab);
