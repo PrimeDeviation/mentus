@@ -1,0 +1,56 @@
+#documents-container {
+    padding: 20px;
+    background-color: #2F3136;
+    color: #ffffff;
+}
+
+#upload-section {
+    margin-bottom: 20px;
+}
+
+#file-upload, #upload-button {
+    margin-right: 10px;
+}
+
+.document-item {
+    padding: 10px;
+    margin-bottom: 5px;
+    background-color: #40444B;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.document-item:hover {
+    background-color: #4F545C;
+}
+
+.chat-content {
+    margin-top: 20px;
+}
+
+.user-message, .assistant-message {
+    padding: 10px;
+    margin-bottom: 5px;
+    border-radius: 5px;
+}
+
+.user-message {
+    background-color: #4CAF50;
+}
+
+.assistant-message {
+    background-color: #3498DB;
+}
+
+button {
+    padding: 10px;
+    background-color: #7289DA;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #677BC4;
+}

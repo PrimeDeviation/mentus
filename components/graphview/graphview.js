@@ -110,14 +110,25 @@ document.addEventListener("DOMContentLoaded", function() {
         }
     }
 
-    // Example usage:
-    addNode("Node 1", "#ff0000");
-    addNode("Node 2", "#00ff00");
-    addNode("Node 3", "#0000ff");
-    addLink("Node 1", "Node 2");
-    addLink("Node 2", "Node 3");
+    // Load saved chat sessions and create nodes
+    function loadChatSessions() {
+        chrome.storage.local.get(['chatSessions'], function(result) {
+            const chatSessions = result.chatSessions || [];
+            chatSessions.forEach((session, index) => {
+                const nodeId = `Chat ${index + 1}`;
+                addNode(nodeId, "#4CAF50");
+                if (index > 0) {
+                    addLink(`Chat ${index}`, nodeId);
+                }
+            });
+        });
+    }
+
+    // Load chat sessions when the graph is initialized
+    loadChatSessions();
 
     // Expose these functions globally for testing
     window.addNode = addNode;
     window.addLink = addLink;
+    window.loadChatSessions = loadChatSessions;
 });
