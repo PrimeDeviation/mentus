@@ -32,13 +32,16 @@ document.addEventListener('DOMContentLoaded', function () {
                     updatedSettings[setting] = currentValue;
                 }
             }
+            console.log(`Saving ${setting}:`, updatedSettings[setting]); // Debug log
         });
 
         // Save settings to chrome.storage.local
         chrome.storage.local.set(updatedSettings, function () {
             if (chrome.runtime.lastError) {
+                console.error('Error saving settings:', chrome.runtime.lastError);
                 alert('Error saving settings: ' + chrome.runtime.lastError.message);
             } else {
+                console.log('Settings saved successfully');
                 alert('Settings saved successfully.');
                 loadSettings(); // Reload settings after saving
             }
@@ -55,11 +58,12 @@ document.addEventListener('DOMContentLoaded', function () {
         ];
 
         chrome.storage.local.get(settings, function (result) {
+            console.log('Loaded settings:', result); // Debug log
             settings.forEach(setting => {
                 const inputElement = document.getElementById(setting);
                 const displayElement = document.getElementById(`${setting}-display`);
                 let value = result[setting] || '';
-            
+        
                 if (setting.includes('api-key') && value) {
                     try {
                         value = atob(value); // Decode API keys
@@ -77,6 +81,7 @@ document.addEventListener('DOMContentLoaded', function () {
                         displayElement.textContent = value;
                     }
                 }
+                console.log(`Loaded ${setting}:`, displayElement ? displayElement.textContent : value); // Debug log
             });
         });
     }
