@@ -210,32 +210,23 @@ document.addEventListener("DOMContentLoaded", function() {
       chrome.storage.local.get([key], function(result) {
         if (result[key]) {
           try {
-            // Attempt to decode the stored value
-            const decodedKey = atob(result[key]);
-            // Check if the decoded key starts with 'sk-' (typical for OpenAI keys)
-            if (decodedKey.startsWith('sk-')) {
-              resolve(decodedKey);
-            } else {
-              // If it doesn't start with 'sk-', it might be an unencoded key or the obfuscated string
-              // Check if it matches the obfuscated pattern (e.g., "****1234")
-              if (/^\*+.{4}$/.test(result[key])) {
-                console.error('Retrieved obfuscated API key. Please re-enter the full API key.');
-                resolve(null);
+            // Check if the value is base64 encoded
+            if (/^[A-Za-z0-9+/=]+$/.test(result[key])) {
+              const decodedKey = atob(result[key]);
+              // Check if the decoded key starts with 'sk-' (typical for OpenAI keys)
+              if (decodedKey.startsWith('sk-')) {
+                resolve(decodedKey);
               } else {
-                // If it's not obfuscated, return it as is (might be an unencoded key)
-                resolve(result[key]);
+                resolve(result[key]); // Return the original value if it's not an OpenAI key
               }
+            } else {
+              // If it's not base64 encoded, return it as is
+              resolve(result[key]);
             }
           } catch (error) {
             console.error('Error processing API key:', error);
-            // If decoding fails, check if it's the obfuscated string
-            if (/^\*+.{4}$/.test(result[key])) {
-              console.error('Retrieved obfuscated API key. Please re-enter the full API key.');
-              resolve(null);
-            } else {
-              // If not obfuscated, it might be an unencoded key
-              resolve(result[key]);
-            }
+            // If there's an error, return the original value
+            resolve(result[key]);
           }
         } else {
           resolve(null);
