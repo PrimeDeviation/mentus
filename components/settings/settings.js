@@ -42,8 +42,8 @@ document.addEventListener('DOMContentLoaded', function () {
                 alert('Error saving settings: ' + chrome.runtime.lastError.message);
             } else {
                 console.log('Settings saved successfully');
-                alert('Settings saved successfully.');
                 loadSettings(); // Reload settings after saving
+                alert('Settings saved successfully.'); // Moved outside the loop
             }
         });
     }
