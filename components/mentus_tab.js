@@ -210,11 +210,13 @@ document.addEventListener("DOMContentLoaded", function() {
       chrome.storage.local.get([key], function(result) {
         if (result[key]) {
           try {
-            const decodedKey = atob(result[key]);
+            // Check if the key is already decoded
+            const decodedKey = result[key].startsWith('sk-') ? result[key] : atob(result[key]);
             resolve(decodedKey);
           } catch (error) {
             console.error('Error decoding API key:', error);
-            resolve(null);
+            // If decoding fails, return the original value
+            resolve(result[key]);
           }
         } else {
           resolve(null);
