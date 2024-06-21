@@ -32,8 +32,12 @@ document.addEventListener('DOMContentLoaded', function () {
 
         // Save settings to chrome.storage.local
         chrome.storage.local.set(updatedSettings, function () {
-            alert('Settings saved successfully.');
-            loadSettings(); // Reload settings after saving
+            if (chrome.runtime.lastError) {
+                alert('Error saving settings: ' + chrome.runtime.lastError.message);
+            } else {
+                alert('Settings saved successfully.');
+                loadSettings(); // Reload settings after saving
+            }
         });
     }
 
