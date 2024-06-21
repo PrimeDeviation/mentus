@@ -20,20 +20,29 @@ document.addEventListener('DOMContentLoaded', function () {
         ];
 
         const updatedSettings = {};
+        let hasChanges = false;
 
         settings.forEach(setting => {
             const inputElement = document.getElementById(setting);
             const currentValue = inputElement.value.trim();
+            const storedValue = localStorage.getItem(setting);
 
-            if (currentValue) {
+            if (currentValue !== storedValue) {
+                hasChanges = true;
                 if (setting.includes('api-key')) {
                     updatedSettings[setting] = btoa(currentValue); // Encode API keys
                 } else {
                     updatedSettings[setting] = currentValue;
                 }
+                localStorage.setItem(setting, currentValue);
             }
             console.log(`Saving ${setting}:`, updatedSettings[setting]); // Debug log
         });
+
+        if (!hasChanges) {
+            console.log('No changes detected, skipping save');
+            return;
+        }
 
         // Save settings to chrome.storage.local
         chrome.storage.local.set(updatedSettings, function () {
