@@ -43,6 +43,29 @@ document.addEventListener("DOMContentLoaded", initializeMentusTab);
     }
   }
   
+  function loadSettingsContent() {
+    // Load saved settings
+    loadSettings();
+
+    // Add event listeners for each input field
+    const settings = [
+      'openai-api-key',
+      'anthropic-api-key',
+      'graphdb-endpoint',
+      'graphdb-creds',
+      'local-storage-location'
+    ];
+
+    settings.forEach(setting => {
+      const inputElement = document.getElementById(setting);
+      if (inputElement) {
+        inputElement.addEventListener('input', debounce(function() {
+          saveSetting(setting, this.value);
+        }, 500));
+      }
+    });
+  }
+  
   loadChatModels();
 
   function loadSettingsContent() {
