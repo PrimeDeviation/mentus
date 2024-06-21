@@ -56,7 +56,10 @@ body, html {
 }
 
 #send-button {
-  padding: 8px 15px;
+  width: 15%;
+  min-width: 60px;
+  max-width: 20%;
+  padding: 8px 0;
   border: none;
   border-radius: 20px;
   background-color: #4CAF50;
@@ -64,6 +67,9 @@ body, html {
   cursor: pointer;
   font-size: 14px;
   transition: background-color 0.3s;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 #send-button:hover {
