@@ -60,7 +60,12 @@ document.addEventListener("DOMContentLoaded", function() {
   }
 
   async function saveSetting(setting, value) {
-    const updatedSetting = { [setting]: value };
+    let updatedSetting;
+    if (setting.includes('api-key')) {
+      updatedSetting = { [setting]: btoa(value) }; // Encode API keys
+    } else {
+      updatedSetting = { [setting]: value };
+    }
 
     // Save setting to chrome.storage.local
     await chrome.storage.local.set(updatedSetting);
@@ -69,11 +74,6 @@ document.addEventListener("DOMContentLoaded", function() {
     if (setting.includes('api-key')) {
       loadChatModels(); // Reload chat models if API key was changed
     }
-  }
-
-  async function exportCryptoKey(key) {
-    const exported = await window.crypto.subtle.exportKey("raw", key);
-    return Array.from(new Uint8Array(exported));
   }
 
   function isObfuscated(value) {
@@ -99,8 +99,17 @@ document.addEventListener("DOMContentLoaded", function() {
         let value = result[setting] || '';
       
         if (setting.includes('api-key') && value) {
-          inputElement.value = value;
-          displayElement.textContent = '********' + value.slice(-4);
+          try {
+            value = atob(value); // Decode API keys
+            inputElement.value = ''; // Clear the input field for security
+            const visiblePart = value.substring(0, 4);
+            const obfuscatedPart = '*'.repeat(Math.max(0, value.length - 4));
+            displayElement.textContent = visiblePart + obfuscatedPart;
+          } catch (e) {
+            console.error('Error decoding API key:', e);
+            value = '';
+            displayElement.textContent = 'Error: Invalid API key';
+          }
         } else {
           inputElement.value = value;
           displayElement.textContent = value || 'No value set';
@@ -109,26 +118,6 @@ document.addEventListener("DOMContentLoaded", function() {
         console.error(`Element not found for setting: ${setting}`);
       }
     }
-  }
-
-  async function importCryptoKey(keyData) {
-    return await window.crypto.subtle.importKey(
-      "raw",
-      new Uint8Array(keyData),
-      { name: "AES-GCM", length: 256 },
-      true,
-      ["encrypt", "decrypt"]
-    );
-  }
-
-  async function decryptData(encryptedBase64, iv, key) {
-    const encryptedArray = new Uint8Array(atob(encryptedBase64).split('').map(char => char.charCodeAt(0)));
-    const decryptedData = await window.crypto.subtle.decrypt(
-      { name: "AES-GCM", iv: new Uint8Array(iv) },
-      key,
-      encryptedArray
-    );
-    return new TextDecoder().decode(decryptedData);
   }
 
   async function loadChatModels() {
