@@ -1,4 +1,4 @@
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", function() {
   const tabButtons = document.querySelectorAll('.tab-button');
   tabButtons.forEach(button => {
     button.addEventListener('click', (event) => {
@@ -25,30 +25,79 @@ document.addEventListener("DOMContentLoaded", () => {
   loadChatModels();
 
   function loadSettingsContent() {
-    const settingsUrl = chrome.runtime.getURL('components/settings/settings.html');
-    fetch(settingsUrl)
-      .then(response => {
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        return response.text();
-      })
-      .then(html => {
-        document.getElementById('settings-content').innerHTML = html;
-        const script = document.createElement('script');
-        script.src = chrome.runtime.getURL('components/settings/settings.js');
-        script.onload = function() {
-          // Call the loadSettings function after the script has loaded
-          if (typeof loadSettings === 'function') {
-            loadSettings();
-          }
-        };
-        document.body.appendChild(script);
-      })
-      .catch(error => {
-        console.error('Error loading settings content:', error);
-        document.getElementById('settings-content').innerHTML = '<p>Error loading settings. Please try again later.</p>';
+    const settingsForm = document.getElementById('settings-form');
+    const saveButton = document.getElementById('save-settings');
+
+    // Load saved settings
+    loadSettings();
+
+    if (saveButton) {
+      saveButton.addEventListener('click', function () {
+        saveSettings();
       });
+    }
+  }
+
+  function saveSettings() {
+    const settings = [
+      'openai-api-key',
+      'anthropic-api-key',
+      'graphdb-endpoint',
+      'graphdb-creds',
+      'local-storage-location'
+    ];
+
+    const updatedSettings = {};
+
+    settings.forEach(setting => {
+      const inputElement = document.getElementById(setting);
+      const displayElement = document.getElementById(`${setting}-display`);
+      const currentValue = inputElement.value.trim();
+      const displayedValue = displayElement ? displayElement.textContent : '';
+
+      // Only update if the value has changed and is not the obfuscated version
+      if (currentValue && currentValue !== displayedValue && !isObfuscated(currentValue)) {
+        updatedSettings[setting] = setting.includes('api-key') ? btoa(currentValue) : currentValue;
+      }
+    });
+
+    // Save settings to chrome.storage.local
+    chrome.storage.local.set(updatedSettings, function () {
+      alert('Settings saved successfully.');
+      loadSettings(); // Reload settings after saving
+    });
+  }
+
+  function isObfuscated(value) {
+    return /^\*+.{4}$/.test(value);
+  }
+
+  function loadSettings() {
+    chrome.storage.local.get(['openai-api-key', 'anthropic-api-key', 'graphdb-endpoint', 'graphdb-creds', 'local-storage-location'], function (result) {
+      settings.forEach(setting => {
+        const inputElement = document.getElementById(setting);
+        const displayElement = document.getElementById(`${setting}-display`);
+        let value = result[setting] || '';
+      
+        if (setting.includes('api-key') && value) {
+          try {
+            value = atob(value); // Decode API keys
+            inputElement.value = ''; // Clear the input field for security
+            if (displayElement) {
+              displayElement.textContent = value ? '********' : '';
+            }
+          } catch (e) {
+            console.error('Error decoding API key:', e);
+            value = '';
+          }
+        } else {
+          inputElement.value = value;
+          if (displayElement) {
+            displayElement.textContent = value;
+          }
+        }
+      });
+    });
   }
 
   function loadChatModels() {
