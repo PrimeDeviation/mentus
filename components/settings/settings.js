@@ -83,6 +83,9 @@ document.addEventListener('DOMContentLoaded', function () {
                     } catch (e) {
                         console.error('Error decoding API key:', e);
                         value = '';
+                        if (displayElement) {
+                            displayElement.textContent = 'Error: Invalid API key';
+                        }
                     }
                 } else {
                     inputElement.value = value;
