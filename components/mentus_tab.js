@@ -277,9 +277,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
     const data = await response.json();
     console.log('OpenAI API Response:', data); // Log the entire response
-    const assistantReply = data.choices[0].message.content;
-    displayAssistantReply(assistantReply); // Display the reply in the chat
-    return assistantReply;
+    return data.choices[0].message.content;
   }
 
   async function sendMessageToAnthropic(message, model, apiKey) {
