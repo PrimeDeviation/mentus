@@ -82,10 +82,11 @@ body, html {
   margin-bottom: 10px;
 }
 
-.small-button {
-  padding: 5px 10px;
-  font-size: 12px;
-  margin-left: 10px;
+.tiny-button {
+  padding: 3px 6px;
+  font-size: 10px;
+  margin-left: 5px;
+  width: 50px;
 }
 
 /* Chat model selection dropdown styles */
