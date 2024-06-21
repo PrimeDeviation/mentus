@@ -16,9 +16,25 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     const activeTab = document.getElementById(tabName);
     activeTab.classList.add('active');
+
+    if (tabName === 'settings') {
+      loadSettingsContent();
+    }
   }
   
   loadChatModels();
+
+  function loadSettingsContent() {
+    fetch('components/settings/settings.html')
+      .then(response => response.text())
+      .then(html => {
+        document.getElementById('settings-content').innerHTML = html;
+        const script = document.createElement('script');
+        script.src = 'components/settings/settings.js';
+        document.body.appendChild(script);
+      })
+      .catch(error => console.error('Error loading settings content:', error));
+  }
 
   function loadChatModels() {
     chrome.storage.local.get(['openaiApiKey', 'anthropicApiKey'], function(result) {
