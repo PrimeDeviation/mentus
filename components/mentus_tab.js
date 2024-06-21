@@ -372,31 +372,7 @@ function loadSettingsContent() {
     });
   }
 
-  const chatInput = document.getElementById('chat-input');
-  const sendButton = document.getElementById('send-button');
-  const chatMessages = document.getElementById('chat-messages');
-
-  if (chatInput && sendButton && chatMessages) {
-    sendButton.addEventListener('click', () => {
-      const message = chatInput.value.trim();
-      if (message) {
-        const messageElement = document.createElement('div');
-        messageElement.className = 'chat-message user-message';
-        messageElement.textContent = message;
-        chatMessages.appendChild(messageElement);
-        chatInput.value = '';
-        chatMessages.scrollTop = chatMessages.scrollHeight;
-
-        sendMessage(message);
-      }
-    });
-
-    chatInput.addEventListener('keypress', (event) => {
-      if (event.key === 'Enter') {
-        sendButton.click();
-      }
-    });
-  }
+  // Remove this block entirely
 
   async function sendMessage(message) {
     const selectedModel = document.getElementById('chat-models').value;
