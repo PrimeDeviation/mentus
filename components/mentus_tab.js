@@ -363,20 +363,30 @@ document.addEventListener("DOMContentLoaded", function() {
       content: msg.textContent
     }));
 
-    const chatSession = {
-      timestamp: new Date().toISOString(),
-      messages: messages
-    };
+    const timestamp = new Date().toISOString();
+    const fileName = `chat_session_${timestamp.replace(/[:.]/g, '-')}.md`;
 
-    // Get existing chat sessions or initialize an empty array
-    chrome.storage.local.get(['chatSessions'], function(result) {
-      let chatSessions = result.chatSessions || [];
-      chatSessions.push(chatSession);
+    chrome.storage.local.get(['local-storage-location'], function(result) {
+      const localStorageLocation = result['local-storage-location'] || 'chat_sessions';
+      const filePath = `${localStorageLocation}/${fileName}`;
 
-      // Save the updated chat sessions
-      chrome.storage.local.set({ chatSessions: chatSessions }, function() {
-        console.log('Chat session saved successfully');
-        displaySavedChatSessions(); // Call the new function to display saved sessions
+      let markdownContent = `# Chat Session - ${timestamp}\n\n`;
+      messages.forEach(msg => {
+        markdownContent += `## ${msg.type === 'user' ? 'User' : 'Assistant'}\n${msg.content}\n\n`;
+      });
+
+      // Save the markdown file
+      chrome.runtime.sendMessage({
+        action: 'saveFile',
+        filePath: filePath,
+        content: markdownContent
+      }, function(response) {
+        if (response.success) {
+          console.log('Chat session saved successfully');
+          displaySavedChatSessions(); // Call the function to display saved sessions
+        } else {
+          console.error('Error saving chat session:', response.error);
+        }
       });
     });
   }
