@@ -45,7 +45,9 @@
         "components/graphview/graphview.js",
         "components/graphview/graphview.css",
         "components/settings/settings.js",
-        "components/settings/settings.css"
+        "components/settings/settings.css",
+        "components/settings/settings.html",
+        "components/settings/settings_script.js"
       ],
       "matches": [
         "<all_urls>"
