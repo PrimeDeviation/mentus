@@ -365,7 +365,26 @@ document.addEventListener("DOMContentLoaded", function() {
       // Save the updated chat sessions
       chrome.storage.local.set({ chatSessions: chatSessions }, function() {
         console.log('Chat session saved successfully');
+        displaySavedChatSessions(); // Call the new function to display saved sessions
       });
     });
   }
+
+  function displaySavedChatSessions() {
+    chrome.storage.local.get(['chatSessions'], function(result) {
+      const chatSessions = result.chatSessions || [];
+      console.log('Saved Chat Sessions:');
+      chatSessions.forEach((session, index) => {
+        console.log(`Session ${index + 1}:`);
+        console.log(`  Timestamp: ${session.timestamp}`);
+        console.log(`  Messages: ${session.messages.length}`);
+        session.messages.forEach((msg, msgIndex) => {
+          console.log(`    Message ${msgIndex + 1}: ${msg.type} - ${msg.content.substring(0, 50)}...`);
+        });
+      });
+    });
+  }
+
+  // Call this function when the page loads to display existing saved sessions
+  displaySavedChatSessions();
 });
