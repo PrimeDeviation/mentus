@@ -69,14 +69,16 @@ document.addEventListener('DOMContentLoaded', function () {
                         value = atob(value); // Decode API keys
                         inputElement.value = ''; // Clear the input field for security
                         if (displayElement) {
-                            displayElement.textContent = value ? 'API key is set' : '';
+                            const visiblePart = value.substring(0, 8);
+                            const obfuscatedPart = '*'.repeat(Math.max(0, value.length - 8));
+                            displayElement.textContent = visiblePart + obfuscatedPart;
                         }
                     } catch (e) {
                         console.error('Error decoding API key:', e);
                         value = '';
                     }
                 } else {
-                    inputElement.value = '';
+                    inputElement.value = value;
                     if (displayElement) {
                         displayElement.textContent = value || 'No value set';
                     }
