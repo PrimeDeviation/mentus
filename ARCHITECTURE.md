@@ -8,6 +8,7 @@ Mentus is a Chrome extension designed to curate learning content, validate user 
 ### Chat Bar
 - Located on the left side of the screen.
 - Supports user interactions and displays chat messages.
+- Each chat session is persisted as a markdown (md) file.
 
 ### Tabbed Navigation
 - Located at the top of the screen.
@@ -19,23 +20,33 @@ Mentus is a Chrome extension designed to curate learning content, validate user 
 - Layout is horizontally drag-adjustable.
 
 ### Graph View
-- Displays the knowledge graph.
-- Clicking on links opens them in a new browser window or tab.
+- Displays the knowledge graph based on the markdown files.
+- Nodes represent markdown files (chat sessions).
+- Edges represent links between markdown files.
+- Clicking on nodes allows editing of the corresponding markdown file.
 
 ### Documents/Files
-- Allows users to view and manage documents/files.
+- Allows users to view and manage markdown files as a file system.
+- Represents the same data as the Graph View but in a traditional file structure.
 
 ### Editor
 - Provides a functional text editor for user-generated content.
+- Allows editing of markdown files, which updates both the file system and the graph representation.
 
 ### Settings
 - Allows users to configure the extension settings.
 
+## Data Flow and Integration
+- Chat sessions are saved as markdown files.
+- These markdown files are the basis for both the file system in the Documents tab and the graph in the Graph View tab.
+- Editing a file in the Documents tab, a node in the Graph View, or directly in the Editor tab updates the underlying markdown file and reflects changes across all views.
+
 ## Storage and Data Management
-- User data is stored and managed using localStorage or other storage mechanisms.
+- Markdown files are stored locally and managed using the extension's storage mechanisms.
+- Graph structure is derived from the markdown files' content and links.
 
 ## External API Integration
-- Interacts with external APIs (e.g., GPT-4, Claude 3 Opus) to provide additional functionality.
+- Interacts with external APIs (e.g., GPT-4, Claude 3 Opus) to provide chat functionality and potentially assist in knowledge graph construction.
 
 ## Coding Standards
 - Follow JavaScript ES6+ standards.
@@ -58,10 +69,16 @@ Mentus is a Chrome extension designed to curate learning content, validate user 
 ## Performance Optimization
 - Minimize DOM manipulations.
 - Optimize CSS for better performance.
-- Use efficient algorithms and data structures.
+- Use efficient algorithms and data structures, especially for graph operations.
+- Implement lazy loading for large graphs or file systems.
 - Avoid memory leaks by cleaning up event listeners and intervals.
 
 ## Tasks
+- Implement markdown file creation and storage from chat sessions.
+- Develop a file system viewer for the Documents tab.
+- Create a graph visualization component for the Graph View tab.
+- Implement a markdown editor with live preview.
+- Ensure synchronization between all views (Documents, Graph, Editor).
 - Verify file paths in manifest.json.
 - Check for missing permissions in manifest.json.
 - Ensure all components are integrated and functional.
@@ -103,5 +120,4 @@ mentus/
         ├── settings.html
         ├── settings.js
         └── settings.css
-
 
