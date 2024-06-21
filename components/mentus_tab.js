@@ -1,15 +1,5 @@
 document.addEventListener("DOMContentLoaded", function() {
-  const browseButton = document.getElementById('browse-local-storage');
-  const localStorageInput = document.getElementById('local-storage-location');
-
-  browseButton.addEventListener('click', function() {
-    chrome.runtime.sendMessage({action: 'openDirectoryPicker'}, function(response) {
-      if (response && response.path) {
-        localStorageInput.value = response.path;
-        saveSettings();
-      }
-    });
-  });
+  // Remove the browse button functionality as it's not applicable for Chrome extensions
   const tabButtons = document.querySelectorAll('.tab-button');
   tabButtons.forEach(button => {
     button.addEventListener('click', (event) => {
@@ -358,28 +348,20 @@ document.addEventListener("DOMContentLoaded", function() {
     }));
 
     const timestamp = new Date().toISOString();
-    const fileName = `chat_session_${timestamp.replace(/[:.]/g, '-')}.md`;
+    const sessionData = {
+      timestamp: timestamp,
+      messages: messages
+    };
 
-    chrome.storage.local.get(['local-storage-location'], function(result) {
-      const localStorageLocation = result['local-storage-location'] || 'chat_sessions';
-      const filePath = `${localStorageLocation}/${fileName}`;
-
-      let markdownContent = `# Chat Session - ${timestamp}\n\n`;
-      messages.forEach(msg => {
-        markdownContent += `## ${msg.type === 'user' ? 'User' : 'Assistant'}\n${msg.content}\n\n`;
-      });
-
-      // Save the markdown file
-      chrome.runtime.sendMessage({
-        action: 'saveFile',
-        filePath: filePath,
-        content: markdownContent
-      }, function(response) {
-        if (response.success) {
+    chrome.storage.local.get(['chatSessions'], function(result) {
+      let chatSessions = result.chatSessions || [];
+      chatSessions.push(sessionData);
+      chrome.storage.local.set({ chatSessions: chatSessions }, function() {
+        if (chrome.runtime.lastError) {
+          console.error('Error saving chat session:', chrome.runtime.lastError);
+        } else {
           console.log('Chat session saved successfully');
           displaySavedChatSessions(); // Call the function to display saved sessions
-        } else {
-          console.error('Error saving chat session:', response.error);
         }
       });
     });
