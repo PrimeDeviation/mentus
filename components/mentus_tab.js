@@ -24,6 +24,9 @@ function initializeMentusTab() {
     window.addEventListener('beforeunload', saveChatSession);
     
     loadChatModels();
+
+    // Call this function when the page loads to display existing saved sessions
+    displaySavedChatSessions();
   } catch (error) {
     console.error('Error initializing Mentus tab:', error);
   }
