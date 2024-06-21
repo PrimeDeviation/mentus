@@ -29,21 +29,16 @@ document.addEventListener('DOMContentLoaded', function () {
             const displayedValue = displayElement ? displayElement.textContent : '';
 
             // Only update if the value has changed and is not the obfuscated version
-            if (currentValue && currentValue !== displayedValue) {
-                updatedSettings[setting] = currentValue;
+            if (currentValue && currentValue !== displayedValue && !isObfuscated(currentValue)) {
+                updatedSettings[setting] = setting.includes('api-key') ? btoa(currentValue) : currentValue;
             }
         });
 
         // Save settings to chrome.storage.local
-        try {
-            chrome.storage.local.set(updatedSettings, function () {
-                alert('Settings saved successfully.');
-                loadSettings(); // Reload settings after saving
-            });
-        } catch (error) {
-            console.error('Error saving settings:', error);
-            alert('An error occurred while saving settings. Please check the console for more details.');
-        }
+        chrome.storage.local.set(updatedSettings, function () {
+            alert('Settings saved successfully.');
+            loadSettings(); // Reload settings after saving
+        });
     }
 
     function loadSettings() {
@@ -59,15 +54,16 @@ document.addEventListener('DOMContentLoaded', function () {
             settings.forEach(setting => {
                 const inputElement = document.getElementById(setting);
                 const displayElement = document.getElementById(`${setting}-display`);
-                const value = result[setting] || '';
+                let value = result[setting] || '';
 
-                inputElement.value = value;
-
-                if (setting.includes('api-key')) {
+                if (setting.includes('api-key') && value) {
+                    value = atob(value);
                     displayObfuscatedKey(setting, value);
                 } else if (displayElement) {
                     displayElement.textContent = value;
                 }
+
+                inputElement.value = '';
             });
         });
     }
@@ -80,6 +76,10 @@ document.addEventListener('DOMContentLoaded', function () {
         } else {
             displayElement.textContent = '';
         }
+    }
+
+    function isObfuscated(value) {
+        return /^\*+.{4}$/.test(value);
     }
 
     // Add event listeners to input fields to update obfuscated display for API keys

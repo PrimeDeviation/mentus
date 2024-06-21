@@ -37,9 +37,9 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function loadChatModels() {
-    chrome.storage.local.get(['openaiApiKey', 'anthropicApiKey'], function(result) {
-      const openaiApiKey = result.openaiApiKey ? atob(result.openaiApiKey) : null;
-      const anthropicApiKey = result.anthropicApiKey ? atob(result.anthropicApiKey) : null;
+    chrome.storage.local.get(['openai-api-key', 'anthropic-api-key'], function(result) {
+      const openaiApiKey = result['openai-api-key'] ? atob(result['openai-api-key']) : null;
+      const anthropicApiKey = result['anthropic-api-key'] ? atob(result['anthropic-api-key']) : null;
       const chatModelsDropdown = document.getElementById('chat-models');
 
       chatModelsDropdown.innerHTML = '';
