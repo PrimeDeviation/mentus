@@ -1,12 +1,12 @@
 /* General Styles */
-body {
+body, html {
   margin: 0;
   padding: 0;
   font-family: Arial, sans-serif;
   background-color: #2e2e2e;
-  /* Dark background color */
   color: #fff;
-  /* Light text color */
+  height: 100%;
+  overflow: hidden;
 }
 
 .container {
@@ -17,11 +17,12 @@ body {
 /* Chatbar Styles */
 .chatbar {
   background-color: #1e1e1e;
-  /* Matching the darker background */
   width: 20%;
-  flex-direction: column;
+  min-width: 250px;
+  display: flex;
   flex-direction: column;
   padding: 10px;
+  box-sizing: border-box;
 }
 
 #chatbar-content {
@@ -63,17 +64,11 @@ body {
 /* Main Content Styles */
 .main-content {
   flex: 1;
-  padding: 20px;
-}
-
-.tabs {
   display: flex;
-  justify-content: space-around;
-  background-color: #1e1e1e;
-  padding: 10px;
+  flex-direction: column;
+  overflow: hidden;
 }
 
-/* Tab Styles */
 .tabs {
   display: flex;
   justify-content: space-around;
@@ -86,47 +81,41 @@ body {
   padding: 10px;
   background-color: #333;
   border: 1px solid #444;
-  color: #444;
+  color: #fff;
   cursor: pointer;
   text-align: center;
   transition: background-color 0.3s, color 0.3s;
 }
 
 .tab-button:hover {
-  color: #fff;
   background-color: #484C52;
 }
 
 .tab-button.active {
-  color: #fff;
   background-color: #484C52;
+}
+
+#tab-content {
+  flex: 1;
+  overflow: auto;
 }
 
 .tab-content {
   display: none;
-  height: 100vh;
+  height: 100%;
   width: 100%;
   padding: 20px;
   background-color: #2F3136;
+  box-sizing: border-box;
 }
 
 .tab-content.active {
   display: block;
 }
 
-/* Removed empty ruleset for #graph */
-
-#docs,
-#editor,
-#settings {
-  display: settings;
-}
-
-/* Divider Styles */
-.divider {
-  width: 5px;
-  cursor: ew-resize;
-  background-color: #ccc;
+/* Specific tab styles */
+#graph, #docs, #editor, #settings {
+  height: 100%;
 }
 
 /* Object Styles */
@@ -134,54 +123,4 @@ object {
   width: 100%;
   height: 100%;
   border: none;
-}
-
-/* Footer Styles */
-.footer {
-  height: 40px;
-  background-color: #34495e;
-  color: #ecf0f1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0 20px;
-}
-
-#tab-buttons {
-  display: flex;
-  justify-content: space-around;
-  margin-bottom: 10px;
-}
-
-.tab-button {
-  padding: 5px 10px;
-  cursor: pointer;
-  border: none;
-  background-color: #f0f0f0;
-  border-radius: 3px;
-  transition: background-color 0.3s;
-}
-
-.tab-button.active {
-  background-color: #ddd;
-}
-
-#expand-collapse-button {
-  margin-top: 10px;
-  padding: 5px 10px;
-  cursor: pointer;
-  border: none;
-  background-color: #007bff;
-  color: #fff;
-  border-radius: 3px;
-  transition: background-color 0.3s;
-}
-
-#expand-collapse-button:hover {
-  background-color: #0056b3;
-}
-
-#central-content {
-  margin-right: 300px;
-  /* Adjust for the chat bar width */
 }
