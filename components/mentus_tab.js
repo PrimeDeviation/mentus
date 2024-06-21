@@ -424,4 +424,6 @@ document.addEventListener("DOMContentLoaded", initializeMentusTab);
 
   // Call this function when the page loads to display existing saved sessions
   displaySavedChatSessions();
-});
+}
+
+document.addEventListener("DOMContentLoaded", initializeMentusTab);
