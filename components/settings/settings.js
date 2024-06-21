@@ -1,5 +1,4 @@
 document.addEventListener('DOMContentLoaded', function () {
-    const saveButton = document.getElementById('save-settings');
     const settings = [
         'openai-api-key',
         'anthropic-api-key',
@@ -11,61 +10,32 @@ document.addEventListener('DOMContentLoaded', function () {
     // Load saved settings
     loadSettings();
 
-    if (saveButton) {
-        saveButton.addEventListener('click', saveSettings);
-    }
-
-    // Add event listeners for Enter key on input fields
+    // Add event listeners for input changes
     settings.forEach(setting => {
         const inputElement = document.getElementById(setting);
         if (inputElement) {
-            inputElement.addEventListener('keypress', function(event) {
-                if (event.key === 'Enter') {
-                    event.preventDefault();
-                    saveSettings();
-                }
-            });
+            inputElement.addEventListener('input', debounce(function() {
+                saveSetting(setting, this.value);
+            }, 500));
         } else {
             console.error(`Element not found for setting: ${setting}`);
         }
     });
 
-    function saveSettings() {
-        const updatedSettings = {};
-        let hasChanges = false;
-
-        settings.forEach(setting => {
-            const inputElement = document.getElementById(setting);
-            if (inputElement) {
-                const currentValue = inputElement.value.trim();
-                const storedValue = localStorage.getItem(setting);
-
-                if (currentValue !== storedValue) {
-                    hasChanges = true;
-                    if (setting.includes('api-key')) {
-                        updatedSettings[setting] = btoa(currentValue); // Encode API keys
-                    } else {
-                        updatedSettings[setting] = currentValue;
-                    }
-                    localStorage.setItem(setting, currentValue);
-                }
-                console.log(`Saving ${setting}:`, updatedSettings[setting]); // Debug log
-            } else {
-                console.error(`Element not found for setting: ${setting}`);
-            }
-        });
-
-        if (!hasChanges) {
-            console.log('No changes detected, skipping save');
-            return;
+    function saveSetting(setting, value) {
+        const updatedSetting = {};
+        if (setting.includes('api-key')) {
+            updatedSetting[setting] = btoa(value.trim()); // Encode API keys
+        } else {
+            updatedSetting[setting] = value.trim();
         }
 
-        // Save settings to chrome.storage.local
-        chrome.storage.local.set(updatedSettings, function () {
+        // Save setting to chrome.storage.local
+        chrome.storage.local.set(updatedSetting, function () {
             if (chrome.runtime.lastError) {
-                console.error('Error saving settings:', chrome.runtime.lastError);
+                console.error('Error saving setting:', chrome.runtime.lastError);
             } else {
-                console.log('Settings saved successfully');
+                console.log(`${setting} saved successfully`);
                 loadSettings(); // Reload settings after saving
             }
         });
@@ -82,10 +52,7 @@ document.addEventListener('DOMContentLoaded', function () {
             
                     if (setting.includes('api-key') && value) {
                         try {
-                            // Check if the value is base64 encoded
-                            if (/^[A-Za-z0-9+/=]+$/.test(value)) {
-                                value = atob(value); // Decode API keys
-                            }
+                            value = atob(value); // Decode API keys
                             inputElement.value = ''; // Clear the input field for security
                             const visiblePart = value.substring(0, 8);
                             const obfuscatedPart = '*'.repeat(Math.max(0, value.length - 8));
@@ -104,5 +71,18 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
             });
         });
+    }
+
+    // Debounce function to limit how often a function can fire
+    function debounce(func, wait) {
+        let timeout;
+        return function executedFunction(...args) {
+            const later = () => {
+                clearTimeout(timeout);
+                func(...args);
+            };
+            clearTimeout(timeout);
+            timeout = setTimeout(later, wait);
+        };
     }
 });
