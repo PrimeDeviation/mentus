@@ -55,8 +55,6 @@ input[type="password"]:focus {
 }
 
 button {
-    width: 100%;
-    max-width: 400px;
     padding: 12px;
     background-color: #7289da;
     color: #fff;
@@ -66,11 +64,24 @@ button {
     transition: background-color 0.3s;
     font-size: 16px;
     font-weight: bold;
-    margin-top: 20px;
 }
 
 button:hover {
     background-color: #5e77d4;
+}
+
+.input-with-button {
+    display: flex;
+    align-items: center;
+}
+
+.input-with-button input {
+    flex-grow: 1;
+    margin-right: 10px;
+}
+
+.input-with-button button {
+    flex-shrink: 0;
 }
 
 .current-value {

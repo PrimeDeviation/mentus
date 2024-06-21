@@ -47,44 +47,38 @@ document.addEventListener("DOMContentLoaded", function() {
   loadChatModels();
 
   function loadSettingsContent() {
-    const settingsForm = document.getElementById('settings-form');
-    const saveButton = document.getElementById('save-settings');
-
     // Load saved settings
     loadSettings();
 
-    if (saveButton) {
-      saveButton.addEventListener('click', function () {
-        saveSettings();
-      });
-    }
-  }
-
-  async function saveSettings() {
+    // Add event listeners for each input field
     const settings = [
       'openai-api-key',
       'anthropic-api-key',
       'graphdb-endpoint',
-      'graphdb-creds',
-      'local-storage-location'
+      'graphdb-creds'
     ];
 
-    const updatedSettings = {};
-
-    for (const setting of settings) {
+    settings.forEach(setting => {
       const inputElement = document.getElementById(setting);
-      const currentValue = inputElement.value.trim();
+      inputElement.addEventListener('keypress', async function(event) {
+        if (event.key === 'Enter') {
+          event.preventDefault();
+          await saveSetting(setting, this.value.trim());
+        }
+      });
+    });
+  }
 
-      if (currentValue) {
-        updatedSettings[setting] = currentValue;
-      }
-    }
+  async function saveSetting(setting, value) {
+    const updatedSetting = { [setting]: value };
 
-    // Save settings to chrome.storage.local
-    await chrome.storage.local.set(updatedSettings);
-    alert('Settings saved successfully.');
+    // Save setting to chrome.storage.local
+    await chrome.storage.local.set(updatedSetting);
+    console.log(`${setting} saved successfully.`);
     await loadSettings(); // Reload settings after saving
-    loadChatModels(); // Reload chat models
+    if (setting.includes('api-key')) {
+      loadChatModels(); // Reload chat models if API key was changed
+    }
   }
 
   async function exportCryptoKey(key) {
