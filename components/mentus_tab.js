@@ -271,7 +271,18 @@ document.addEventListener("DOMContentLoaded", function() {
       } else {
         response = await sendMessageToAnthropic(message, selectedModel, apiKey);
       }
+      
+      // Add user message to chat history
+      const userMessageElement = document.createElement('div');
+      userMessageElement.className = 'chat-message user-message';
+      userMessageElement.textContent = message;
+      chatMessages.appendChild(userMessageElement);
+
+      // Add assistant response to chat history
       displayAssistantReply(response);
+
+      // Scroll to the bottom of the chat
+      chatMessages.scrollTop = chatMessages.scrollHeight;
     } catch (error) {
       console.error('Error:', error);
       displayAssistantReply(`Error: ${error.message}`);
@@ -338,6 +349,9 @@ document.addEventListener("DOMContentLoaded", function() {
     replyElement.textContent = reply;
     chatMessages.appendChild(replyElement);
     chatMessages.scrollTop = chatMessages.scrollHeight;
+
+    // Save the chat session after each assistant reply
+    saveChatSession();
   }
 
   function saveChatSession() {
