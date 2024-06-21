@@ -281,25 +281,34 @@ document.addEventListener("DOMContentLoaded", function() {
   }
 
   async function sendMessageToAnthropic(message, model, apiKey) {
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': apiKey
-      },
-      body: JSON.stringify({
-        model: model,
-        messages: [{ role: 'user', content: message }]
-      })
-    });
+    try {
+      const response = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': apiKey,
+          'anthropic-version': '2023-06-01'
+        },
+        body: JSON.stringify({
+          model: model,
+          messages: [{ role: 'user', content: message }],
+          max_tokens: 1000
+        })
+      });
 
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.error);
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error('Anthropic API Error:', errorData);
+        throw new Error(`Anthropic API Error: ${JSON.stringify(errorData)}`);
+      }
+
+      const data = await response.json();
+      console.log('Anthropic API Response:', data);
+      return data.content[0].text;
+    } catch (error) {
+      console.error('Error in sendMessageToAnthropic:', error);
+      throw error;
     }
-
-    const data = await response.json();
-    return data.content[0].text;
   }
 
   function displayAssistantReply(reply) {
