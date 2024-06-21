@@ -1,4 +1,15 @@
 document.addEventListener("DOMContentLoaded", function() {
+  const browseButton = document.getElementById('browse-local-storage');
+  const localStorageInput = document.getElementById('local-storage-location');
+
+  browseButton.addEventListener('click', function() {
+    chrome.runtime.sendMessage({action: 'openDirectoryPicker'}, function(response) {
+      if (response && response.path) {
+        localStorageInput.value = response.path;
+        saveSettings();
+      }
+    });
+  });
   const tabButtons = document.querySelectorAll('.tab-button');
   tabButtons.forEach(button => {
     button.addEventListener('click', (event) => {
