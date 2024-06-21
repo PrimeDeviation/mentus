@@ -212,13 +212,13 @@ document.addEventListener("DOMContentLoaded", function() {
       const message = chatInput.value.trim();
       if (message) {
         const messageElement = document.createElement('div');
-        messageElement.className = 'chat-message';
+        messageElement.className = 'chat-message user-message';
         messageElement.textContent = message;
         chatMessages.appendChild(messageElement);
         chatInput.value = '';
         chatMessages.scrollTop = chatMessages.scrollHeight;
 
-        sendMessageToOpenAI(message);
+        sendMessage(message);
       }
     });
 
@@ -229,38 +229,76 @@ document.addEventListener("DOMContentLoaded", function() {
     });
   }
 
-  async function sendMessageToOpenAI(message) {
-    const openaiApiKey = localStorage.getItem('openaiApiKey');
+  async function sendMessage(message) {
     const selectedModel = document.getElementById('chat-models').value;
+    const apiKey = await getApiKey(selectedModel.includes('gpt') ? 'openai-api-key' : 'anthropic-api-key');
 
-    if (openaiApiKey && selectedModel) {
-      try {
-        const response = await fetch('https://api.openai.com/v1/chat/completions', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${openaiApiKey}`
-          },
-          body: JSON.stringify({
-            model: selectedModel,
-            messages: [{ role: 'user', content: message }]
-          })
-        });
-
-        if (response.ok) {
-          const data = await response.json();
-          const assistantReply = data.choices[0].message.content;
-          displayAssistantReply(assistantReply);
-        } else {
-          const errorData = await response.json();
-          console.error('Error:', response.status, errorData);
-          displayAssistantReply(`Error: ${errorData.error.message}`);
-        }
-      } catch (error) {
-        console.error('Error:', error);
-        displayAssistantReply(`Error: ${error.message}`);
-      }
+    if (!apiKey) {
+      displayAssistantReply('Error: API key is missing or invalid. Please provide a valid API key in the settings.');
+      return;
     }
+
+    if (!selectedModel) {
+      displayAssistantReply('Error: Please select a valid chat model.');
+      return;
+    }
+
+    try {
+      let response;
+      if (selectedModel.includes('gpt')) {
+        response = await sendMessageToOpenAI(message, selectedModel, apiKey);
+      } else {
+        response = await sendMessageToAnthropic(message, selectedModel, apiKey);
+      }
+      displayAssistantReply(response);
+    } catch (error) {
+      console.error('Error:', error);
+      displayAssistantReply(`Error: ${error.message}`);
+    }
+  }
+
+  async function sendMessageToOpenAI(message, model, apiKey) {
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`
+      },
+      body: JSON.stringify({
+        model: model,
+        messages: [{ role: 'user', content: message }]
+      })
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error.message);
+    }
+
+    const data = await response.json();
+    return data.choices[0].message.content;
+  }
+
+  async function sendMessageToAnthropic(message, model, apiKey) {
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': apiKey
+      },
+      body: JSON.stringify({
+        model: model,
+        messages: [{ role: 'user', content: message }]
+      })
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error);
+    }
+
+    const data = await response.json();
+    return data.content[0].text;
   }
 
   function displayAssistantReply(reply) {
