@@ -73,7 +73,10 @@ document.addEventListener('DOMContentLoaded', function () {
         
                 if (setting.includes('api-key') && value) {
                     try {
-                        value = atob(value); // Decode API keys
+                        // Check if the value is base64 encoded
+                        if (/^[A-Za-z0-9+/=]+$/.test(value)) {
+                            value = atob(value); // Decode API keys
+                        }
                         inputElement.value = ''; // Clear the input field for security
                         if (displayElement) {
                             const visiblePart = value.substring(0, 8);
@@ -81,10 +84,9 @@ document.addEventListener('DOMContentLoaded', function () {
                             displayElement.textContent = visiblePart + obfuscatedPart;
                         }
                     } catch (e) {
-                        console.error('Error decoding API key:', e);
-                        value = '';
+                        console.error('Error processing API key:', e);
                         if (displayElement) {
-                            displayElement.textContent = 'Error: Invalid API key';
+                            displayElement.textContent = 'Error: Invalid API key format';
                         }
                     }
                 } else {
