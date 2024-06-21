@@ -12,23 +12,33 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function saveSettings() {
-        const openaiApiKey = document.getElementById('openai-api-key').value.trim();
-        const anthropicApiKey = document.getElementById('anthropic-api-key').value.trim();
-        const graphdbEndpoint = document.getElementById('graphdb-endpoint').value.trim();
-        const graphdbCreds = document.getElementById('graphdb-creds').value.trim();
-        const localStorageLocation = document.getElementById('local-storage-location').value.trim();
+        const settings = [
+            'openai-api-key',
+            'anthropic-api-key',
+            'graphdb-endpoint',
+            'graphdb-creds',
+            'local-storage-location'
+        ];
+
+        const updatedSettings = {};
+
+        settings.forEach(setting => {
+            const inputElement = document.getElementById(setting);
+            const displayElement = document.getElementById(`${setting}-display`);
+            const currentValue = inputElement.value.trim();
+            const displayedValue = displayElement ? displayElement.textContent : '';
+
+            // Only update if the value has changed and is not the obfuscated version
+            if (currentValue && currentValue !== displayedValue) {
+                updatedSettings[setting] = currentValue;
+            }
+        });
 
         // Save settings to chrome.storage.local
         try {
-            chrome.storage.local.set({
-                openaiApiKey: openaiApiKey,
-                anthropicApiKey: anthropicApiKey,
-                graphdbEndpoint: graphdbEndpoint,
-                graphdbCreds: graphdbCreds,
-                localStorageLocation: localStorageLocation
-            }, function () {
+            chrome.storage.local.set(updatedSettings, function () {
                 alert('Settings saved successfully.');
-                loadSettings(); // Call loadSettings after saving settings
+                loadSettings(); // Reload settings after saving
             });
         } catch (error) {
             console.error('Error saving settings:', error);
@@ -37,16 +47,28 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function loadSettings() {
-        chrome.storage.local.get(['openaiApiKey', 'anthropicApiKey', 'graphdbEndpoint', 'graphdbCreds', 'localStorageLocation'], function (result) {
-            document.getElementById('openai-api-key').value = result.openaiApiKey || '';
-            document.getElementById('anthropic-api-key').value = result.anthropicApiKey || '';
-            document.getElementById('graphdb-endpoint').value = result.graphdbEndpoint || '';
-            document.getElementById('graphdb-creds').value = result.graphdbCreds || '';
-            document.getElementById('local-storage-location').value = result.localStorageLocation || '';
+        const settings = [
+            'openai-api-key',
+            'anthropic-api-key',
+            'graphdb-endpoint',
+            'graphdb-creds',
+            'local-storage-location'
+        ];
 
-            // Display obfuscated API keys
-            displayObfuscatedKey('openai-api-key', result.openaiApiKey);
-            displayObfuscatedKey('anthropic-api-key', result.anthropicApiKey);
+        chrome.storage.local.get(settings, function (result) {
+            settings.forEach(setting => {
+                const inputElement = document.getElementById(setting);
+                const displayElement = document.getElementById(`${setting}-display`);
+                const value = result[setting] || '';
+
+                inputElement.value = value;
+
+                if (setting.includes('api-key')) {
+                    displayObfuscatedKey(setting, value);
+                } else if (displayElement) {
+                    displayElement.textContent = value;
+                }
+            });
         });
     }
 
@@ -60,12 +82,10 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
-    // Add event listeners to input fields to update obfuscated display
-    document.getElementById('openai-api-key').addEventListener('input', function() {
-        displayObfuscatedKey('openai-api-key', this.value);
-    });
-
-    document.getElementById('anthropic-api-key').addEventListener('input', function() {
-        displayObfuscatedKey('anthropic-api-key', this.value);
+    // Add event listeners to input fields to update obfuscated display for API keys
+    ['openai-api-key', 'anthropic-api-key'].forEach(key => {
+        document.getElementById(key).addEventListener('input', function() {
+            displayObfuscatedKey(key, this.value);
+        });
     });
 });
