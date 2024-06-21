@@ -210,19 +210,32 @@ document.addEventListener("DOMContentLoaded", function() {
       chrome.storage.local.get([key], function(result) {
         if (result[key]) {
           try {
-            // Check if the key is encoded (base64)
+            // Attempt to decode the stored value
             const decodedKey = atob(result[key]);
-            // Verify if the decoded key starts with 'sk-'
+            // Check if the decoded key starts with 'sk-' (typical for OpenAI keys)
             if (decodedKey.startsWith('sk-')) {
               resolve(decodedKey);
             } else {
-              // If not, it might be the original API key
-              resolve(result[key]);
+              // If it doesn't start with 'sk-', it might be an unencoded key or the obfuscated string
+              // Check if it matches the obfuscated pattern (e.g., "****1234")
+              if (/^\*+.{4}$/.test(result[key])) {
+                console.error('Retrieved obfuscated API key. Please re-enter the full API key.');
+                resolve(null);
+              } else {
+                // If it's not obfuscated, return it as is (might be an unencoded key)
+                resolve(result[key]);
+              }
             }
           } catch (error) {
-            console.error('Error decoding API key:', error);
-            // If decoding fails, it's likely the original API key
-            resolve(result[key]);
+            console.error('Error processing API key:', error);
+            // If decoding fails, check if it's the obfuscated string
+            if (/^\*+.{4}$/.test(result[key])) {
+              console.error('Retrieved obfuscated API key. Please re-enter the full API key.');
+              resolve(null);
+            } else {
+              // If not obfuscated, it might be an unencoded key
+              resolve(result[key]);
+            }
           }
         } else {
           resolve(null);
