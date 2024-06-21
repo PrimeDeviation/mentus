@@ -85,4 +85,7 @@ document.addEventListener('DOMContentLoaded', function () {
             timeout = setTimeout(later, wait);
         };
     }
+
+    // Call loadSettings immediately when the script runs
+    loadSettings();
 });
