@@ -1,4 +1,4 @@
-document.addEventListener('DOMContentLoaded', function() {
+function initializeMentusTab() {
   try {
     const tabButtons = document.querySelectorAll('.tab-button');
     tabButtons.forEach(button => {
@@ -28,9 +28,11 @@ document.addEventListener('DOMContentLoaded', function() {
     // Call this function when the page loads to display existing saved sessions
     displaySavedChatSessions();
   } catch (error) {
-    console.error('Error in DOMContentLoaded event listener:', error);
+    console.error('Error in initializeMentusTab:', error);
   }
-});
+}
+
+document.addEventListener("DOMContentLoaded", initializeMentusTab);
 
 function showTab(tabName) {
   const tabs = document.getElementsByClassName('tab-content');
