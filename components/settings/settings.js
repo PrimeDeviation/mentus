@@ -43,7 +43,11 @@ document.addEventListener('DOMContentLoaded', function () {
             } else {
                 console.log('Settings saved successfully');
                 loadSettings(); // Reload settings after saving
-                alert('Settings saved successfully.'); // Moved outside the loop
+                let settingsString = settings.map(setting => {
+                    const value = document.getElementById(setting).value.trim();
+                    return `${setting}: ${value}`;
+                }).join('\n');
+                alert('Settings saved successfully.\n\nCurrent values:\n' + settingsString);
             }
         });
     }
