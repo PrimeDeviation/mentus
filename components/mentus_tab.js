@@ -51,35 +51,10 @@ document.addEventListener("DOMContentLoaded", function() {
 
     for (const setting of settings) {
       const inputElement = document.getElementById(setting);
-      const displayElement = document.getElementById(`${setting}-display`);
       const currentValue = inputElement.value.trim();
-      const displayedValue = displayElement ? displayElement.textContent : '';
 
-      // Only update if the value has changed and is not the obfuscated version
-      if (currentValue && currentValue !== displayedValue && !isObfuscated(currentValue)) {
-        if (setting.includes('api-key')) {
-          // Use the Web Crypto API for encryption
-          const encoder = new TextEncoder();
-          const data = encoder.encode(currentValue);
-          const key = await window.crypto.subtle.generateKey(
-            { name: "AES-GCM", length: 256 },
-            true,
-            ["encrypt", "decrypt"]
-          );
-          const iv = window.crypto.getRandomValues(new Uint8Array(12));
-          const encryptedData = await window.crypto.subtle.encrypt(
-            { name: "AES-GCM", iv: iv },
-            key,
-            data
-          );
-          const encryptedArray = new Uint8Array(encryptedData);
-          const base64Encrypted = btoa(String.fromCharCode.apply(null, encryptedArray));
-          updatedSettings[setting] = JSON.stringify({ encrypted: base64Encrypted, iv: Array.from(iv) });
-          // Store the key securely
-          await chrome.storage.local.set({ [`${setting}_key`]: await exportCryptoKey(key) });
-        } else {
-          updatedSettings[setting] = currentValue;
-        }
+      if (currentValue) {
+        updatedSettings[setting] = currentValue;
       }
     }
 
@@ -87,6 +62,7 @@ document.addEventListener("DOMContentLoaded", function() {
     await chrome.storage.local.set(updatedSettings);
     alert('Settings saved successfully.');
     await loadSettings(); // Reload settings after saving
+    loadChatModels(); // Reload chat models
   }
 
   async function exportCryptoKey(key) {
@@ -117,17 +93,8 @@ document.addEventListener("DOMContentLoaded", function() {
         let value = result[setting] || '';
       
         if (setting.includes('api-key') && value) {
-          try {
-            const { encrypted, iv } = JSON.parse(value);
-            const keyData = await chrome.storage.local.get(`${setting}_key`);
-            const key = await importCryptoKey(keyData[`${setting}_key`]);
-            const decryptedValue = await decryptData(encrypted, iv, key);
-            inputElement.value = ''; // Clear the input field for security
-            displayElement.textContent = decryptedValue ? '********' + decryptedValue.slice(-4) : '';
-          } catch (e) {
-            console.error('Error decrypting API key:', e);
-            value = '';
-          }
+          inputElement.value = value;
+          displayElement.textContent = '********' + value.slice(-4);
         } else {
           inputElement.value = value;
           displayElement.textContent = value || 'No value set';
@@ -158,48 +125,47 @@ document.addEventListener("DOMContentLoaded", function() {
     return new TextDecoder().decode(decryptedData);
   }
 
-  function loadChatModels() {
-    chrome.storage.local.get(['openai-api-key', 'anthropic-api-key'], function(result) {
-      const openaiApiKey = result['openai-api-key'] ? atob(result['openai-api-key']) : null;
-      const anthropicApiKey = result['anthropic-api-key'] ? atob(result['anthropic-api-key']) : null;
-      const chatModelsDropdown = document.getElementById('chat-models');
+  async function loadChatModels() {
+    const result = await chrome.storage.local.get(['openai-api-key', 'anthropic-api-key']);
+    const openaiApiKey = result['openai-api-key'];
+    const anthropicApiKey = result['anthropic-api-key'];
+    const chatModelsDropdown = document.getElementById('chat-models');
 
-      chatModelsDropdown.innerHTML = '';
+    chatModelsDropdown.innerHTML = '';
 
-      if (openaiApiKey) {
-        const openaiGroup = document.createElement('optgroup');
-        openaiGroup.label = 'GPT Models';
-        const openaiModels = ['gpt-3.5-turbo', 'gpt-3.5-turbo-0125', 'gpt-3.5-turbo-1106', 'gpt-3.5-turbo-16k', 'gpt-3.5-turbo-instruct', 'gpt-3.5-turbo-instruct-0914', 'gpt-4', 'gpt-4-0125-preview', 'gpt-4-0613', 'gpt-4-1106-preview', 'gpt-4-1106-vision-preview', 'gpt-4-turbo', 'gpt-4-turbo-2024-04-09', 'gpt-4-turbo-preview', 'gpt-4-vision-preview', 'gpt-4o', 'gpt-4o-2024-05-13'];
-        openaiModels.forEach(model => {
-          const option = document.createElement('option');
-          option.value = model;
-          option.textContent = model;
-          openaiGroup.appendChild(option);
-        });
-        chatModelsDropdown.appendChild(openaiGroup);
-      }
+    if (openaiApiKey) {
+      const openaiGroup = document.createElement('optgroup');
+      openaiGroup.label = 'GPT Models';
+      const openaiModels = ['gpt-3.5-turbo', 'gpt-3.5-turbo-0125', 'gpt-3.5-turbo-1106', 'gpt-3.5-turbo-16k', 'gpt-3.5-turbo-instruct', 'gpt-3.5-turbo-instruct-0914', 'gpt-4', 'gpt-4-0125-preview', 'gpt-4-0613', 'gpt-4-1106-preview', 'gpt-4-1106-vision-preview', 'gpt-4-turbo', 'gpt-4-turbo-2024-04-09', 'gpt-4-turbo-preview', 'gpt-4-vision-preview', 'gpt-4o', 'gpt-4o-2024-05-13'];
+      openaiModels.forEach(model => {
+        const option = document.createElement('option');
+        option.value = model;
+        option.textContent = model;
+        openaiGroup.appendChild(option);
+      });
+      chatModelsDropdown.appendChild(openaiGroup);
+    }
 
-      if (anthropicApiKey) {
-        const anthropicGroup = document.createElement('optgroup');
-        anthropicGroup.label = 'Anthropic Models';
-        const anthropicModels = ['claude-3-5-sonnet-20240620', 'claude-3-opus-20240229', 'claude-3-haiku-20240307', 'claude-2.1'];
-        anthropicModels.forEach(model => {
-          const option = document.createElement('option');
-          option.value = model;
-          option.textContent = model;
-          anthropicGroup.appendChild(option);
-        });
-        chatModelsDropdown.appendChild(anthropicGroup);
-      }
+    if (anthropicApiKey) {
+      const anthropicGroup = document.createElement('optgroup');
+      anthropicGroup.label = 'Anthropic Models';
+      const anthropicModels = ['claude-3-5-sonnet-20240620', 'claude-3-opus-20240229', 'claude-3-haiku-20240307', 'claude-2.1'];
+      anthropicModels.forEach(model => {
+        const option = document.createElement('option');
+        option.value = model;
+        option.textContent = model;
+        anthropicGroup.appendChild(option);
+      });
+      chatModelsDropdown.appendChild(anthropicGroup);
+    }
 
-      if (!openaiApiKey && !anthropicApiKey) {
-        const noApiKeyOption = document.createElement('option');
-        noApiKeyOption.value = '';
-        noApiKeyOption.textContent = 'No API keys found. Please provide an OpenAI or Anthropic API key.';
-        noApiKeyOption.disabled = true;
-        chatModelsDropdown.appendChild(noApiKeyOption);
-      }
-    });
+    if (!openaiApiKey && !anthropicApiKey) {
+      const noApiKeyOption = document.createElement('option');
+      noApiKeyOption.value = '';
+      noApiKeyOption.textContent = 'No API keys found. Please provide an OpenAI or Anthropic API key.';
+      noApiKeyOption.disabled = true;
+      chatModelsDropdown.appendChild(noApiKeyOption);
+    }
   }
 
   async function sendMessageToOpenAI(message) {
