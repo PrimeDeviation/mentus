@@ -1,24 +1,32 @@
 document.addEventListener('DOMContentLoaded', function () {
     const saveButton = document.getElementById('save-settings');
+    const settings = [
+        'openai-api-key',
+        'anthropic-api-key',
+        'graphdb-endpoint',
+        'graphdb-creds',
+        'local-storage-location'
+    ];
 
     // Load saved settings
     loadSettings();
 
     if (saveButton) {
-        saveButton.addEventListener('click', function () {
-            saveSettings();
-        });
+        saveButton.addEventListener('click', saveSettings);
     }
 
-    function saveSettings() {
-        const settings = [
-            'openai-api-key',
-            'anthropic-api-key',
-            'graphdb-endpoint',
-            'graphdb-creds',
-            'local-storage-location'
-        ];
+    // Add event listeners for Enter key on input fields
+    settings.forEach(setting => {
+        const inputElement = document.getElementById(setting);
+        inputElement.addEventListener('keypress', function(event) {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                saveSettings();
+            }
+        });
+    });
 
+    function saveSettings() {
         const updatedSettings = {};
         let hasChanges = false;
 
@@ -41,7 +49,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
         if (!hasChanges) {
             console.log('No changes detected, skipping save');
-            alert('No changes detected. Settings remain unchanged.');
             return;
         }
 
@@ -49,28 +56,14 @@ document.addEventListener('DOMContentLoaded', function () {
         chrome.storage.local.set(updatedSettings, function () {
             if (chrome.runtime.lastError) {
                 console.error('Error saving settings:', chrome.runtime.lastError);
-                alert('Error saving settings: ' + chrome.runtime.lastError.message);
             } else {
                 console.log('Settings saved successfully');
                 loadSettings(); // Reload settings after saving
-                let settingsString = settings.map(setting => {
-                    const value = document.getElementById(setting).value.trim();
-                    return `${setting}: ${value}`;
-                }).join('\n');
-                alert('Settings saved successfully.\n\nCurrent values:\n' + settingsString);
             }
         });
     }
 
     function loadSettings() {
-        const settings = [
-            'openai-api-key',
-            'anthropic-api-key',
-            'graphdb-endpoint',
-            'graphdb-creds',
-            'local-storage-location'
-        ];
-
         chrome.storage.local.get(settings, function (result) {
             console.log('Loaded settings:', result); // Debug log
             settings.forEach(setting => {
