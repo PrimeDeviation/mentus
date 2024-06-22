@@ -35,19 +35,7 @@ document.addEventListener('DOMContentLoaded', function () {
       const currentValue = inputElement.value.trim();
 
       if (currentValue) {
-        if (setting.includes('api-key')) {
-          // Encode API keys
-          const encodedValue = btoa(currentValue);
-          if (isBase64(encodedValue)) {
-            updatedSettings[setting] = encodedValue;
-          } else {
-            console.error(`Failed to encode ${setting}`);
-            alert(`Failed to encode ${setting}. Please check the input.`);
-            return;
-          }
-        } else {
-          updatedSettings[setting] = currentValue;
-        }
+        updatedSettings[setting] = currentValue;
       }
     });
 
@@ -83,22 +71,10 @@ document.addEventListener('DOMContentLoaded', function () {
         let value = result[setting] || '';
 
         if (setting.includes('api-key') && value) {
-          if (isBase64(value)) {
-            try {
-              // Decode API keys
-              const decodedValue = atob(value);
-              inputElement.value = ''; // Clear the input field for security
-              const visiblePart = decodedValue.substring(0, 4);
-              const obfuscatedPart = '*'.repeat(Math.max(0, decodedValue.length - 4));
-              displayElement.textContent = visiblePart + obfuscatedPart;
-            } catch (e) {
-              console.error('Error decoding API key:', e);
-              displayElement.textContent = 'Error: Invalid API key format';
-            }
-          } else {
-            console.error('Stored API key is not valid base64');
-            displayElement.textContent = 'Error: Invalid API key format';
-          }
+          inputElement.value = value;
+          const visiblePart = value.substring(0, 4);
+          const obfuscatedPart = '*'.repeat(Math.max(0, value.length - 4));
+          displayElement.textContent = visiblePart + obfuscatedPart;
         } else {
           inputElement.value = value;
           displayElement.textContent = value || 'No value set';
