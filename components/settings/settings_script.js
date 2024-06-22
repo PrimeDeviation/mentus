@@ -56,36 +56,58 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   }
 
-  function encryptString(str) {
+  function getAuthToken() {
     return new Promise((resolve, reject) => {
-      chrome.storage.local.get(['encryptionKey'], function(result) {
+      chrome.identity.getAuthToken({ interactive: true }, function(token) {
         if (chrome.runtime.lastError) {
           reject(chrome.runtime.lastError);
         } else {
-          const key = result.encryptionKey || generateEncryptionKey();
-          const encrypted = str.split('').map((char, index) => 
-            String.fromCharCode(char.charCodeAt(0) ^ key.charCodeAt(index % key.length))
-          ).join('');
-          resolve(encrypted);
+          resolve(token);
         }
       });
     });
   }
 
-  function decryptString(str) {
-    return encryptString(str); // XOR encryption is symmetric
+  async function deriveKey(token) {
+    const encoder = new TextEncoder();
+    const data = encoder.encode(token);
+    const hash = await crypto.subtle.digest('SHA-256', data);
+    return crypto.subtle.importKey(
+      'raw',
+      hash,
+      { name: 'AES-GCM' },
+      false,
+      ['encrypt', 'decrypt']
+    );
   }
 
-  function generateEncryptionKey() {
-    const key = Array.from(crypto.getRandomValues(new Uint8Array(32)))
-      .map(b => b.toString(16).padStart(2, "0"))
-      .join("");
-    chrome.storage.local.set({encryptionKey: key}, function() {
-      if (chrome.runtime.lastError) {
-        console.error('Error saving encryption key:', chrome.runtime.lastError);
-      }
-    });
-    return key;
+  async function encryptString(str) {
+    const token = await getAuthToken();
+    const key = await deriveKey(token);
+    const encoder = new TextEncoder();
+    const data = encoder.encode(str);
+    const iv = crypto.getRandomValues(new Uint8Array(12));
+    const encrypted = await crypto.subtle.encrypt(
+      { name: 'AES-GCM', iv: iv },
+      key,
+      data
+    );
+    const encryptedArray = new Uint8Array(encrypted);
+    return btoa(String.fromCharCode.apply(null, [...iv, ...encryptedArray]));
+  }
+
+  async function decryptString(encryptedStr) {
+    const token = await getAuthToken();
+    const key = await deriveKey(token);
+    const encryptedData = atob(encryptedStr);
+    const iv = new Uint8Array(encryptedData.slice(0, 12).split('').map(c => c.charCodeAt(0)));
+    const data = new Uint8Array(encryptedData.slice(12).split('').map(c => c.charCodeAt(0)));
+    const decrypted = await crypto.subtle.decrypt(
+      { name: 'AES-GCM', iv: iv },
+      key,
+      data
+    );
+    return new TextDecoder().decode(decrypted);
   }
 
   function isObfuscated(value) {
