@@ -35,7 +35,12 @@ document.addEventListener('DOMContentLoaded', function () {
       const currentValue = inputElement.value.trim();
 
       if (currentValue) {
-        updatedSettings[setting] = currentValue;
+        if (setting.includes('api-key')) {
+          // Encrypt API keys before storing
+          updatedSettings[setting] = encryptString(currentValue);
+        } else {
+          updatedSettings[setting] = currentValue;
+        }
       }
     });
 
@@ -49,6 +54,19 @@ document.addEventListener('DOMContentLoaded', function () {
         loadSettings(); // Reload settings after saving
       }
     });
+  }
+
+  function encryptString(str) {
+    // This is a simple XOR encryption. In a real-world scenario, use a more robust encryption method.
+    const key = 'your-secret-key'; // Store this securely
+    return str.split('').map((char, index) => 
+      String.fromCharCode(char.charCodeAt(0) ^ key.charCodeAt(index % key.length))
+    ).join('');
+  }
+
+  function decryptString(str) {
+    // Decryption for the simple XOR method
+    return encryptString(str); // XOR encryption is symmetric
   }
 
   function isObfuscated(value) {
@@ -71,9 +89,10 @@ document.addEventListener('DOMContentLoaded', function () {
         let value = result[setting] || '';
 
         if (setting.includes('api-key') && value) {
-          inputElement.value = value;
-          const visiblePart = value.substring(0, 4);
-          const obfuscatedPart = '*'.repeat(Math.max(0, value.length - 4));
+          const decryptedValue = decryptString(value);
+          inputElement.value = ''; // Clear the input for security
+          const visiblePart = decryptedValue.substring(0, 4);
+          const obfuscatedPart = '*'.repeat(Math.max(0, decryptedValue.length - 4));
           displayElement.textContent = visiblePart + obfuscatedPart;
         } else {
           inputElement.value = value;
