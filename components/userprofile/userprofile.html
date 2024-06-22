@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Profile</title>
+    <link rel="stylesheet" href="../styles/main.css">
+    <link rel="stylesheet" href="userprofile.css">
+</head>
+<body>
+    <div class="user-profile-container">
+        <h1>User Profile</h1>
+        <form id="user-profile-form">
+            <div class="form-group">
+                <label for="username">Username:</label>
+                <input type="text" id="username" name="username" required>
+            </div>
+            <div class="form-group">
+                <label for="email">Email:</label>
+                <input type="email" id="email" name="email" required>
+            </div>
+            <div class="form-group">
+                <label for="bio">Bio:</label>
+                <textarea id="bio" name="bio" rows="4"></textarea>
+            </div>
+            <div class="form-group">
+                <label for="github-token">GitHub Token:</label>
+                <input type="password" id="github-token" name="github-token">
+            </div>
+            <div class="form-group">
+                <label for="openai-api-key">OpenAI API Key:</label>
+                <input type="password" id="openai-api-key" name="openai-api-key">
+            </div>
+            <div class="form-group">
+                <label for="anthropic-api-key">Anthropic API Key:</label>
+                <input type="password" id="anthropic-api-key" name="anthropic-api-key">
+            </div>
+            <button type="submit">Save Profile</button>
+        </form>
+    </div>
+    <script src="userprofile.js"></script>
+</body>
+</html>

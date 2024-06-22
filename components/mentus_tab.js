@@ -17,9 +17,19 @@ function initializeMentusTab() {
 
     // Call this function when the page loads to display existing saved sessions
     displaySavedChatSessions();
+
+    // Load user profile data
+    loadUserProfile();
   } catch (error) {
     console.error('Error in initializeMentusTab:', error);
   }
+}
+
+function loadUserProfile() {
+  chrome.storage.sync.get(['username', 'email', 'bio', 'githubToken', 'openaiApiKey', 'anthropicApiKey'], function(data) {
+    // You can use this data to populate fields in the main UI if needed
+    console.log('User profile loaded:', data);
+  });
 }
 
 document.addEventListener("DOMContentLoaded", function() {
