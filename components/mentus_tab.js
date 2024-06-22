@@ -1,5 +1,3 @@
-let chatMessages;
-
 function initializeMentusTab() {
   try {
     const tabButtons = document.querySelectorAll('.tab-button');
@@ -15,7 +13,7 @@ function initializeMentusTab() {
     loadChatModels();
 
     // Initialize chatMessages
-    chatMessages = document.getElementById('chat-messages');
+    window.chatMessages = document.getElementById('chat-messages');
 
     // Call this function when the page loads to display existing saved sessions
     displaySavedChatSessions();
@@ -468,12 +466,11 @@ function loadSettingsContent() {
 
   async function sendMessageToAnthropic(message, model, apiKey) {
     try {
-      const decodedApiKey = atob(apiKey);
       const response = await fetch('https://api.anthropic.com/v1/messages', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'x-api-key': decodedApiKey,
+          'x-api-key': apiKey,
           'anthropic-version': '2023-06-01'
         },
         body: JSON.stringify({
