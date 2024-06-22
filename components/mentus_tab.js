@@ -359,22 +359,14 @@ function loadSettingsContent() {
       chrome.storage.local.get([key], function(result) {
         if (result[key]) {
           try {
-            // Check if the value is base64 encoded
-            if (/^[A-Za-z0-9+/=]+$/.test(result[key])) {
+            if (isBase64(result[key])) {
               const decodedKey = atob(result[key]);
-              // Check if the decoded key starts with 'sk-' (typical for OpenAI keys)
-              if (decodedKey.startsWith('sk-')) {
-                resolve(decodedKey);
-              } else {
-                resolve(result[key]); // Return the original value if it's not an OpenAI key
-              }
+              resolve(decodedKey);
             } else {
-              // If it's not base64 encoded, return it as is
               resolve(result[key]);
             }
           } catch (error) {
             console.error('Error processing API key:', error);
-            // If there's an error, return the original value
             resolve(result[key]);
           }
         } else {
@@ -425,6 +417,14 @@ function loadSettingsContent() {
     } catch (error) {
       console.error('Error:', error);
       displayAssistantReply(`Error: ${error.message}`);
+    }
+  }
+
+  function isBase64(str) {
+    try {
+      return btoa(atob(str)) === str;
+    } catch (err) {
+      return false;
     }
   }
 
