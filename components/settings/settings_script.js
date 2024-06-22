@@ -24,20 +24,27 @@ document.addEventListener('DOMContentLoaded', function () {
 
     settings.forEach(setting => {
       const inputElement = document.getElementById(setting);
-      const displayElement = document.getElementById(`${setting}-display`);
       const currentValue = inputElement.value.trim();
-      const displayedValue = displayElement ? displayElement.textContent : '';
 
-      // Only update if the value has changed and is not the obfuscated version
-      if (currentValue && currentValue !== displayedValue && !isObfuscated(currentValue)) {
-        updatedSettings[setting] = setting.includes('api-key') ? btoa(currentValue) : currentValue;
+      if (currentValue) {
+        if (setting.includes('api-key')) {
+          // Encode API keys
+          updatedSettings[setting] = btoa(currentValue);
+        } else {
+          updatedSettings[setting] = currentValue;
+        }
       }
     });
 
     // Save settings to chrome.storage.local
     chrome.storage.local.set(updatedSettings, function () {
-      alert('Settings saved successfully.');
-      loadSettings(); // Reload settings after saving
+      if (chrome.runtime.lastError) {
+        console.error('Error saving settings:', chrome.runtime.lastError);
+        alert('Error saving settings. Please try again.');
+      } else {
+        alert('Settings saved successfully.');
+        loadSettings(); // Reload settings after saving
+      }
     });
   }
 
@@ -46,12 +53,37 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   function loadSettings() {
-    chrome.storage.local.get(['openaiApiKey', 'anthropicApiKey', 'graphdbEndpoint', 'graphdbCreds', 'localStorageLocation'], function (result) {
-      document.getElementById('openai-api-key').value = result.openaiApiKey ? atob(result.openaiApiKey) : '';
-      document.getElementById('anthropic-api-key').value = result.anthropicApiKey ? atob(result.anthropicApiKey) : '';
-      document.getElementById('graphdb-endpoint').value = result.graphdbEndpoint || '';
-      document.getElementById('graphdb-creds').value = result.graphdbCreds || '';
-      document.getElementById('local-storage-location').value = result.localStorageLocation || '';
+    const settings = [
+      'openai-api-key',
+      'anthropic-api-key',
+      'graphdb-endpoint',
+      'graphdb-creds',
+      'local-storage-location'
+    ];
+
+    chrome.storage.local.get(settings, function (result) {
+      settings.forEach(setting => {
+        const inputElement = document.getElementById(setting);
+        const displayElement = document.getElementById(`${setting}-display`);
+        let value = result[setting] || '';
+
+        if (setting.includes('api-key') && value) {
+          try {
+            // Decode API keys
+            const decodedValue = atob(value);
+            inputElement.value = ''; // Clear the input field for security
+            const visiblePart = decodedValue.substring(0, 4);
+            const obfuscatedPart = '*'.repeat(Math.max(0, decodedValue.length - 4));
+            displayElement.textContent = visiblePart + obfuscatedPart;
+          } catch (e) {
+            console.error('Error decoding API key:', e);
+            displayElement.textContent = 'Error: Invalid API key format';
+          }
+        } else {
+          inputElement.value = value;
+          displayElement.textContent = value || 'No value set';
+        }
+      });
     });
   }
 });
