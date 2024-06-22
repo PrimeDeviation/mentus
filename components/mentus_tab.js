@@ -1,3 +1,5 @@
+let chatMessages;
+
 function initializeMentusTab() {
   try {
     const tabButtons = document.querySelectorAll('.tab-button');
@@ -12,6 +14,9 @@ function initializeMentusTab() {
     
     loadChatModels();
 
+    // Initialize chatMessages
+    chatMessages = document.getElementById('chat-messages');
+
     // Call this function when the page loads to display existing saved sessions
     displaySavedChatSessions();
   } catch (error) {
@@ -19,7 +24,27 @@ function initializeMentusTab() {
   }
 }
 
-document.addEventListener("DOMContentLoaded", initializeMentusTab);
+document.addEventListener("DOMContentLoaded", function() {
+  initializeMentusTab();
+  
+  const chatInput = document.getElementById('chat-input');
+  const sendButton = document.getElementById('send-button');
+
+  sendButton.addEventListener('click', function() {
+    const message = chatInput.value.trim();
+    if (message) {
+      sendMessage(message);
+      chatInput.value = '';
+    }
+  });
+
+  chatInput.addEventListener('keypress', function(e) {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      sendButton.click();
+    }
+  });
+});
 
 function showTab(tabName) {
   const tabs = document.getElementsByClassName('tab-content');
@@ -376,6 +401,15 @@ function loadSettingsContent() {
     }
 
     try {
+      // Add user message to chat history
+      const userMessageElement = document.createElement('div');
+      userMessageElement.className = 'chat-message user-message';
+      userMessageElement.textContent = message;
+      chatMessages.appendChild(userMessageElement);
+
+      // Scroll to the bottom of the chat
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+
       let response;
       if (selectedModel.includes('gpt')) {
         response = await sendMessageToOpenAI(message, selectedModel, apiKey);
@@ -383,16 +417,10 @@ function loadSettingsContent() {
         response = await sendMessageToAnthropic(message, selectedModel, apiKey);
       }
       
-      // Add user message to chat history
-      const userMessageElement = document.createElement('div');
-      userMessageElement.className = 'chat-message user-message';
-      userMessageElement.textContent = message;
-      chatMessages.appendChild(userMessageElement);
-
       // Add assistant response to chat history
       displayAssistantReply(response);
 
-      // Scroll to the bottom of the chat
+      // Scroll to the bottom of the chat again
       chatMessages.scrollTop = chatMessages.scrollHeight;
     } catch (error) {
       console.error('Error:', error);
