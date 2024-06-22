@@ -70,13 +70,12 @@ document.addEventListener('DOMContentLoaded', function () {
         const displayElement = document.getElementById(`${setting}-display`);
         let value = result[setting] || '';
 
+        inputElement.value = value;
         if (setting.includes('api-key') && value) {
-          inputElement.value = value;
           const visiblePart = value.substring(0, 4);
           const obfuscatedPart = '*'.repeat(Math.max(0, value.length - 4));
           displayElement.textContent = visiblePart + obfuscatedPart;
         } else {
-          inputElement.value = value;
           displayElement.textContent = value || 'No value set';
         }
       });
