@@ -359,14 +359,17 @@ function loadSettingsContent() {
       chrome.storage.local.get([key], function(result) {
         if (result[key]) {
           try {
+            // First, check if the string is valid base64
             if (isBase64(result[key])) {
               const decodedKey = atob(result[key]);
               resolve(decodedKey);
             } else {
+              // If it's not base64, return the original string
               resolve(result[key]);
             }
           } catch (error) {
             console.error('Error processing API key:', error);
+            // If there's an error, return the original string
             resolve(result[key]);
           }
         } else {
@@ -374,6 +377,17 @@ function loadSettingsContent() {
         }
       });
     });
+  }
+
+  function isBase64(str) {
+    if (typeof str !== 'string') {
+      return false;
+    }
+    try {
+      return btoa(atob(str)) === str;
+    } catch (err) {
+      return false;
+    }
   }
 
   // Remove this block entirely
