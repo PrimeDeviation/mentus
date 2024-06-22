@@ -18,7 +18,7 @@
     "identity"
   ],
   "oauth2": {
-    "client_id": "123456789012-abcdefghijklmnopqrstuvwxyz123456.apps.googleusercontent.com",
+    "client_id": "${CHROME_EXTENSION_ITEM_ID}.apps.googleusercontent.com",
     "scopes": [
       "https://www.googleapis.com/auth/userinfo.email"
     ]
