@@ -19,7 +19,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   }
 
-  function saveSettings() {
+  async function saveSettings() {
     const settings = [
       'openai-api-key',
       'anthropic-api-key',
@@ -30,19 +30,19 @@ document.addEventListener('DOMContentLoaded', function () {
 
     const updatedSettings = {};
 
-    settings.forEach(setting => {
+    for (const setting of settings) {
       const inputElement = document.getElementById(setting);
       const currentValue = inputElement.value.trim();
 
       if (currentValue) {
         if (setting.includes('api-key')) {
           // Encrypt API keys before storing
-          updatedSettings[setting] = encryptString(currentValue);
+          updatedSettings[setting] = await encryptString(currentValue);
         } else {
           updatedSettings[setting] = currentValue;
         }
       }
-    });
+    }
 
     // Save settings to chrome.storage.local
     chrome.storage.local.set(updatedSettings, function () {
