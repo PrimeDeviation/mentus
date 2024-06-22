@@ -1,0 +1,16 @@
+{
+  "bindings": [
+    {
+      "role": "roles/iam.serviceAccountKeyAdmin",
+      "members": [
+        "serviceAccount:mentus-ext-sa@mentus-extension.iam.gserviceaccount.com"
+      ]
+    },
+    {
+      "role": "roles/owner",
+      "members": [
+        "user:lan@primedeviation.com"
+      ]
+    }
+  ]
+}

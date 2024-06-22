@@ -120,4 +120,8 @@ mentus/
         ├── settings.html
         ├── settings.js
         └── settings.css
+    └── userprofile/
+        ├── userprofile.html
+        ├── userprofile.js
+        └── userprofile.css
 

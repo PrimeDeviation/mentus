@@ -1,6 +1,18 @@
 chrome.runtime.onInstalled.addListener(function() {
     console.log('Background script loaded');
+    initializeAuth();
 });
+
+function initializeAuth() {
+    chrome.identity.getAuthToken({ interactive: true }, function(token) {
+        if (chrome.runtime.lastError) {
+            console.error('Error getting auth token:', chrome.runtime.lastError);
+        } else {
+            console.log('Successfully authenticated');
+            // You can store the token or perform any other initialization here
+        }
+    });
+}
 chrome.action.onClicked.addListener(() => {
     chrome.tabs.create({ url: chrome.runtime.getURL("components/mentus_tab.html") });
 });

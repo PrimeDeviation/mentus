@@ -101,23 +101,6 @@ body, html {
   font-size: 14px;
 }
 
-/* Save chat button styles */
-#save-chat {
-  width: 100%;
-  padding: 8px;
-  margin-bottom: 10px;
-  background-color: #4CAF50;
-  color: #fff;
-  border: none;
-  border-radius: 4px;
-  font-size: 14px;
-  cursor: pointer;
-  transition: background-color 0.3s;
-}
-
-#save-chat:hover {
-  background-color: #45a049;
-}
 
 /* Main Content Styles */
 .main-content {
