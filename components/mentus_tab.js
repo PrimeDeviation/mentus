@@ -441,12 +441,11 @@ function loadSettingsContent() {
   }
 
   async function sendMessageToOpenAI(message, model, apiKey) {
-    const decodedApiKey = atob(apiKey);
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${decodedApiKey}`
+        'Authorization': `Bearer ${apiKey}`
       },
       body: JSON.stringify({
         model: model,
