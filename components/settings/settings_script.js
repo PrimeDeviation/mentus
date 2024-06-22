@@ -57,16 +57,35 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   function encryptString(str) {
-    // This is a simple XOR encryption. In a real-world scenario, use a more robust encryption method.
-    const key = 'your-secret-key'; // Store this securely
-    return str.split('').map((char, index) => 
-      String.fromCharCode(char.charCodeAt(0) ^ key.charCodeAt(index % key.length))
-    ).join('');
+    return new Promise((resolve, reject) => {
+      chrome.storage.local.get(['encryptionKey'], function(result) {
+        if (chrome.runtime.lastError) {
+          reject(chrome.runtime.lastError);
+        } else {
+          const key = result.encryptionKey || generateEncryptionKey();
+          const encrypted = str.split('').map((char, index) => 
+            String.fromCharCode(char.charCodeAt(0) ^ key.charCodeAt(index % key.length))
+          ).join('');
+          resolve(encrypted);
+        }
+      });
+    });
   }
 
   function decryptString(str) {
-    // Decryption for the simple XOR method
     return encryptString(str); // XOR encryption is symmetric
+  }
+
+  function generateEncryptionKey() {
+    const key = Array.from(crypto.getRandomValues(new Uint8Array(32)))
+      .map(b => b.toString(16).padStart(2, "0"))
+      .join("");
+    chrome.storage.local.set({encryptionKey: key}, function() {
+      if (chrome.runtime.lastError) {
+        console.error('Error saving encryption key:', chrome.runtime.lastError);
+      }
+    });
+    return key;
   }
 
   function isObfuscated(value) {
