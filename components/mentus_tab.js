@@ -10,9 +10,6 @@ function initializeMentusTab() {
     
     showTab('settings');
     
-    // Add event listener for beforeunload to save chat automatically
-    window.addEventListener('beforeunload', saveChatSession);
-    
     loadChatModels();
 
     // Call this function when the page loads to display existing saved sessions
@@ -470,32 +467,7 @@ function loadSettingsContent() {
     saveChatSession();
   }
 
-  function saveChatSession() {
-    const chatMessages = document.getElementById('chat-messages');
-    const messages = Array.from(chatMessages.children).map(msg => ({
-      type: msg.classList.contains('user-message') ? 'user' : 'assistant',
-      content: msg.textContent
-    }));
-
-    const timestamp = new Date().toISOString();
-    const sessionData = {
-      timestamp: timestamp,
-      messages: messages
-    };
-
-    chrome.storage.local.get(['chatSessions'], function(result) {
-      let chatSessions = result.chatSessions || [];
-      chatSessions.push(sessionData);
-      chrome.storage.local.set({ chatSessions: chatSessions }, function() {
-        if (chrome.runtime.lastError) {
-          console.error('Error saving chat session:', chrome.runtime.lastError);
-        } else {
-          console.log('Chat session saved successfully');
-          displaySavedChatSessions(); // Call the function to display saved sessions
-        }
-      });
-    });
-  }
+  // Function removed
 
   function displaySavedChatSessions() {
     chrome.storage.local.get(['chatSessions'], function(result) {
