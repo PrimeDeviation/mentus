@@ -20,6 +20,14 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
+    // Ensure all elements are present
+    const requiredElements = ['username', 'email', 'bio', 'github-token', 'google-account', 'google-auth-button'];
+    requiredElements.forEach(id => {
+        if (!document.getElementById(id)) {
+            console.error(`Required element with id '${id}' not found`);
+        }
+    });
+
     googleAuthButton.addEventListener('click', function() {
         chrome.identity.getAuthToken({ interactive: true }, function(token) {
             if (chrome.runtime.lastError) {
