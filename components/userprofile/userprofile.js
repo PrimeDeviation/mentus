@@ -37,21 +37,17 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Define handleGoogleAuth function
     function handleGoogleAuth() {
-        chrome.identity.getAuthToken({ interactive: true }, function(token) {
-            if (chrome.runtime.lastError) {
-                console.error(chrome.runtime.lastError);
-                return;
+        chrome.runtime.sendMessage({action: 'initializeAuth'}, function(response) {
+            if (response.success) {
+                chrome.storage.local.get(['userInfo'], function(result) {
+                    if (result.userInfo) {
+                        document.getElementById('google-account').value = result.userInfo.email;
+                        chrome.storage.sync.set({ googleAccount: result.userInfo.email });
+                    }
+                });
+            } else {
+                console.error('Error during authentication:', response.error);
             }
-            
-            fetch('https://www.googleapis.com/oauth2/v1/userinfo?alt=json', {
-                headers: { Authorization: `Bearer ${token}` }
-            })
-            .then(response => response.json())
-            .then(data => {
-                document.getElementById('google-account').value = data.email;
-                chrome.storage.sync.set({ googleAccount: data.email });
-            })
-            .catch(error => console.error('Error fetching Google user info:', error));
         });
     }
 

@@ -4,21 +4,16 @@ chrome.runtime.onInstalled.addListener(function() {
 });
 
 function initializeAuth() {
-    chrome.identity.getAuthToken({ interactive: true }, function(token) {
-        if (chrome.runtime.lastError) {
-            console.error('Error getting auth token:', chrome.runtime.lastError.message);
-            // Attempt to clear the token and try again
-            if (token) {
-                chrome.identity.removeCachedAuthToken({ token: token }, function() {
-                    chrome.identity.getAuthToken({ interactive: true }, handleAuthToken);
-                });
+    return new Promise((resolve, reject) => {
+        chrome.identity.getAuthToken({ interactive: true }, function(token) {
+            if (chrome.runtime.lastError) {
+                console.error('Error getting auth token:', chrome.runtime.lastError.message);
+                reject(chrome.runtime.lastError);
             } else {
-                console.error('No token to remove. Retrying authentication.');
-                chrome.identity.getAuthToken({ interactive: true }, handleAuthToken);
+                handleAuthToken(token);
+                resolve(token);
             }
-        } else {
-            handleAuthToken(token);
-        }
+        });
     });
 }
 
@@ -28,23 +23,26 @@ function handleAuthToken(token) {
         chrome.storage.local.set({ 'authToken': token }, function() {
             console.log('Auth token saved');
         });
-        // Verify the token with Google's tokeninfo endpoint
-        fetch(`https://www.googleapis.com/oauth2/v1/tokeninfo?access_token=${token}`)
-            .then(response => response.json())
-            .then(data => {
-                if (data.error) {
-                    console.error('Token validation error:', data.error);
-                    chrome.identity.removeCachedAuthToken({ token: token }, initializeAuth);
-                } else {
-                    console.log('Token validated successfully');
-                }
-            })
-            .catch(error => {
-                console.error('Error validating token:', error);
-            });
+        getUserInfo(token);
     } else {
         console.error('No auth token received');
     }
+}
+
+function getUserInfo(token) {
+    fetch('https://www.googleapis.com/oauth2/v2/userinfo', {
+        headers: { Authorization: `Bearer ${token}` }
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log('User info:', data);
+        chrome.storage.local.set({ 'userInfo': data }, function() {
+            console.log('User info saved');
+        });
+    })
+    .catch(error => {
+        console.error('Error fetching user info:', error);
+    });
 }
 
 chrome.action.onClicked.addListener(() => {
@@ -52,7 +50,12 @@ chrome.action.onClicked.addListener(() => {
 });
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-    if (request.action === 'saveFile') {
+    if (request.action === 'initializeAuth') {
+        initializeAuth()
+            .then(token => sendResponse({ success: true, token: token }))
+            .catch(error => sendResponse({ success: false, error: error.message }));
+        return true;
+    } else if (request.action === 'saveFile') {
         const { filePath, content } = request;
         chrome.storage.local.set({ [filePath]: content }, function() {
             if (chrome.runtime.lastError) {
