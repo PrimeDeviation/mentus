@@ -6,10 +6,13 @@ chrome.runtime.onInstalled.addListener(function() {
 function initializeAuth() {
     chrome.identity.getAuthToken({ interactive: true }, function(token) {
         if (chrome.runtime.lastError) {
-            console.error('Error getting auth token:', chrome.runtime.lastError);
+            console.error('Error getting auth token:', chrome.runtime.lastError.message);
         } else {
             console.log('Successfully authenticated');
             // You can store the token or perform any other initialization here
+            chrome.storage.local.set({ 'authToken': token }, function() {
+                console.log('Auth token saved');
+            });
         }
     });
 }

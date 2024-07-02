@@ -70,7 +70,15 @@
       </div>
     </div>
       <div id="userprofile" class="tab-content">
-        <iframe src="userprofile/userprofile.html" frameborder="0" width="100%" height="100%"></iframe>
+        <form id="user-profile-form">
+          <input type="text" id="username" placeholder="Username">
+          <input type="email" id="email" placeholder="Email">
+          <textarea id="bio" placeholder="Bio"></textarea>
+          <input type="password" id="github-token" placeholder="GitHub Token">
+          <input type="password" id="openai-api-key" placeholder="OpenAI API Key">
+          <input type="password" id="anthropic-api-key" placeholder="Anthropic API Key">
+          <button type="submit">Save Profile</button>
+        </form>
       </div>
     </div>
   </div>
