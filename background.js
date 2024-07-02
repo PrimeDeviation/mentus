@@ -9,13 +9,13 @@ function initializeAuth() {
             console.error('Error getting auth token:', chrome.runtime.lastError.message);
         } else {
             console.log('Successfully authenticated');
-            // You can store the token or perform any other initialization here
             chrome.storage.local.set({ 'authToken': token }, function() {
                 console.log('Auth token saved');
             });
         }
     });
 }
+
 chrome.action.onClicked.addListener(() => {
     chrome.tabs.create({ url: chrome.runtime.getURL("components/mentus_tab.html") });
 });
@@ -30,7 +30,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
                 sendResponse({ success: true });
             }
         });
-        return true; // Indicates that the response is sent asynchronously
+        return true;
     } else if (request.action === 'openDirectoryPicker') {
         chrome.fileSystem.chooseEntry({type: 'openDirectory'}, function(entry) {
             if (chrome.runtime.lastError) {
@@ -43,27 +43,27 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
                 sendResponse({ error: 'No directory selected' });
             }
         });
-        return true; // Indicates that the response is sent asynchronously
+        return true;
+    } else if (request.action === 'configureGitHubIntegration') {
+        configureGitHubIntegration(request.repoUrl, request.branch, request.token)
+            .then(result => sendResponse({ success: true, data: result }))
+            .catch(error => sendResponse({ success: false, error: error.message }));
+        return true;
     }
 });
 
-// Function to configure GitHub repository integration
-function configureGitHubIntegration(repoUrl, branch, token) {
-    // Load the Octokit library
-    const Octokit = require('../../libs/octokit.js');
+async function configureGitHubIntegration(repoUrl, branch, token) {
+    try {
+        const { Octokit } = await import('https://cdn.skypack.dev/@octokit/rest');
+        const octokit = new Octokit({ auth: token });
 
-    // Initialize Octokit with the provided token
-    const octokit = new Octokit({
-        auth: token
-    });
+        const [owner, repo] = repoUrl.split('/').slice(-2);
+        const response = await octokit.repos.get({ owner, repo });
 
-    // Test the connection to the repository
-    octokit.repos.get({
-        owner: repoUrl.split('/')[3],
-        repo: repoUrl.split('/')[4]
-    }).then(response => {
         console.log('Repository connection successful:', response.data);
-    }).catch(error => {
+        return response.data;
+    } catch (error) {
         console.error('Error connecting to repository:', error);
-    });
+        throw error;
+    }
 }
