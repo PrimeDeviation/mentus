@@ -8,8 +8,8 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     // Load existing profile data
-    chrome.storage.sync.get(['username', 'email', 'bio', 'githubToken', 'openaiApiKey', 'anthropicApiKey', 'googleAccount'], function(data) {
-        const elements = ['username', 'email', 'bio', 'github-token', 'openai-api-key', 'anthropic-api-key', 'google-account'];
+    chrome.storage.sync.get(['username', 'email', 'bio', 'githubToken', 'googleAccount'], function(data) {
+        const elements = ['username', 'email', 'bio', 'github-token', 'google-account'];
         elements.forEach(id => {
             const element = document.getElementById(id);
             if (element) {
@@ -46,8 +46,6 @@ document.addEventListener('DOMContentLoaded', function() {
         const email = document.getElementById('email').value;
         const bio = document.getElementById('bio').value;
         const githubToken = document.getElementById('github-token').value;
-        const openaiApiKey = document.getElementById('openai-api-key').value;
-        const anthropicApiKey = document.getElementById('anthropic-api-key').value;
         const googleAccount = document.getElementById('google-account').value;
 
         chrome.storage.sync.set({
@@ -55,8 +53,6 @@ document.addEventListener('DOMContentLoaded', function() {
             email: email,
             bio: bio,
             githubToken: githubToken,
-            openaiApiKey: openaiApiKey,
-            anthropicApiKey: anthropicApiKey,
             googleAccount: googleAccount
         }, function() {
             alert('Profile saved successfully!');
