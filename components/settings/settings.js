@@ -1,4 +1,7 @@
-document.addEventListener('DOMContentLoaded', function () {
+document.addEventListener('DOMContentLoaded', async function () {
+    const settingsForm = document.getElementById('settings-form');
+    const saveButton = document.getElementById('save-settings');
+
     const settings = [
         'openai-api-key',
         'anthropic-api-key',
@@ -8,26 +11,69 @@ document.addEventListener('DOMContentLoaded', function () {
     ];
 
     // Load saved settings
-    loadSettings();
+    await loadSettings();
 
     // Add event listeners for input changes
     settings.forEach(setting => {
         const inputElement = document.getElementById(setting);
         if (inputElement) {
-            inputElement.addEventListener('input', debounce(function() {
-                saveSetting(setting, this.value);
+            inputElement.addEventListener('input', debounce(async function() {
+                await saveSetting(setting, this.value);
             }, 500));
         } else {
             console.error(`Element not found for setting: ${setting}`);
         }
     });
 
-    function saveSetting(setting, value) {
-        const updatedSetting = {};
+    if (saveButton) {
+        saveButton.addEventListener('click', function () {
+            saveSettings();
+        });
+    }
+
+    function isBase64(str) {
+        try {
+            return btoa(atob(str)) === str;
+        } catch (err) {
+            return false;
+        }
+    }
+
+    async function saveSettings() {
+        const updatedSettings = {};
+
+        for (const setting of settings) {
+            const inputElement = document.getElementById(setting);
+            const currentValue = inputElement.value.trim();
+
+            if (currentValue) {
+                if (setting.includes('api-key')) {
+                    // Encrypt API keys before storing
+                    updatedSettings[setting] = await encryptString(currentValue);
+                } else {
+                    updatedSettings[setting] = currentValue;
+                }
+            }
+        }
+
+        // Save settings to chrome.storage.local
+        chrome.storage.local.set(updatedSettings, function () {
+            if (chrome.runtime.lastError) {
+                console.error('Error saving settings:', chrome.runtime.lastError);
+                alert('Error saving settings. Please try again.');
+            } else {
+                alert('Settings saved successfully.');
+                loadSettings(); // Reload settings after saving
+            }
+        });
+    }
+
+    async function saveSetting(setting, value) {
+        let updatedSetting;
         if (setting.includes('api-key')) {
-            updatedSetting[setting] = btoa(value.trim()); // Encode API keys
+            updatedSetting = { [setting]: await encryptString(value) };
         } else {
-            updatedSetting[setting] = value.trim();
+            updatedSetting = { [setting]: value };
         }
 
         // Save setting to chrome.storage.local
@@ -41,36 +87,101 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    function loadSettings() {
-        chrome.storage.local.get(settings, function (result) {
-            console.log('Loaded settings:', result); // Debug log
-            settings.forEach(setting => {
-                const inputElement = document.getElementById(setting);
-                const displayElement = document.getElementById(`${setting}-display`);
-                if (inputElement && displayElement) {
-                    let value = result[setting] || '';
-            
-                    if (setting.includes('api-key') && value) {
-                        try {
-                            value = atob(value); // Decode API keys
-                            inputElement.value = ''; // Clear the input field for security
-                            const visiblePart = value.substring(0, 8);
-                            const obfuscatedPart = '*'.repeat(Math.max(0, value.length - 8));
-                            displayElement.textContent = visiblePart + obfuscatedPart;
-                        } catch (e) {
-                            console.error('Error processing API key:', e);
-                            displayElement.textContent = 'Error: Invalid API key format';
-                        }
-                    } else {
-                        inputElement.value = value;
-                        displayElement.textContent = value || 'No value set';
-                    }
-                    console.log(`Loaded ${setting}:`, displayElement.textContent); // Debug log
+    function getAuthToken() {
+        return new Promise((resolve, reject) => {
+            chrome.identity.getAuthToken({ interactive: true }, function(token) {
+                if (chrome.runtime.lastError) {
+                    reject(chrome.runtime.lastError);
                 } else {
-                    console.error(`Element not found for setting: ${setting}`);
+                    resolve(token);
                 }
             });
         });
+    }
+
+    async function deriveKey(token) {
+        const encoder = new TextEncoder();
+        const data = encoder.encode(token);
+        const hash = await crypto.subtle.digest('SHA-256', data);
+        return crypto.subtle.importKey(
+            'raw',
+            hash,
+            { name: 'AES-GCM' },
+            false,
+            ['encrypt', 'decrypt']
+        );
+    }
+
+    async function encryptString(str) {
+        const token = await getAuthToken();
+        const key = await deriveKey(token);
+        const encoder = new TextEncoder();
+        const data = encoder.encode(str);
+        const iv = crypto.getRandomValues(new Uint8Array(12));
+        const encrypted = await crypto.subtle.encrypt(
+            { name: 'AES-GCM', iv: iv },
+            key,
+            data
+        );
+        const encryptedArray = new Uint8Array(encrypted);
+        return btoa(String.fromCharCode.apply(null, [...iv, ...encryptedArray]));
+    }
+
+    async function decryptString(encryptedStr) {
+        const token = await getAuthToken();
+        const key = await deriveKey(token);
+        const encryptedData = atob(encryptedStr);
+        const iv = new Uint8Array(encryptedData.slice(0, 12).split('').map(c => c.charCodeAt(0)));
+        const data = new Uint8Array(encryptedData.slice(12).split('').map(c => c.charCodeAt(0)));
+        const decrypted = await crypto.subtle.decrypt(
+            { name: 'AES-GCM', iv: iv },
+            key,
+            data
+        );
+        return new TextDecoder().decode(decrypted);
+    }
+
+    function isObfuscated(value) {
+        return /^\*+.{4}$/.test(value);
+    }
+
+    async function loadSettings() {
+        try {
+            const result = await new Promise((resolve, reject) => {
+                chrome.storage.local.get(settings, (result) => {
+                    if (chrome.runtime.lastError) {
+                        reject(chrome.runtime.lastError);
+                    } else {
+                        resolve(result);
+                    }
+                });
+            });
+
+            for (const setting of settings) {
+                const inputElement = document.getElementById(setting);
+                const displayElement = document.getElementById(`${setting}-display`);
+                let value = result[setting] || '';
+
+                if (setting.includes('api-key') && value) {
+                    try {
+                        const decryptedValue = await decryptString(value);
+                        inputElement.value = ''; // Clear the input for security
+                        const visiblePart = decryptedValue.substring(0, 4);
+                        const obfuscatedPart = '*'.repeat(Math.max(0, decryptedValue.length - 4));
+                        displayElement.textContent = visiblePart + obfuscatedPart;
+                    } catch (error) {
+                        console.error(`Error decrypting ${setting}:`, error);
+                        displayElement.textContent = 'Error: Unable to decrypt';
+                    }
+                } else {
+                    inputElement.value = value;
+                    displayElement.textContent = value || 'No value set';
+                }
+            }
+        } catch (error) {
+            console.error('Error loading settings:', error);
+            alert('Error loading settings. Please try again.');
+        }
     }
 
     // Debounce function to limit how often a function can fire
@@ -85,7 +196,4 @@ document.addEventListener('DOMContentLoaded', function () {
             timeout = setTimeout(later, wait);
         };
     }
-
-    // Call loadSettings immediately when the script runs
-    loadSettings();
 });
