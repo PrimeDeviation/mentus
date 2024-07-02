@@ -38,20 +38,35 @@ document.addEventListener('DOMContentLoaded', function() {
     // Define handleGoogleAuth function
     function handleGoogleAuth() {
         console.log('Initiating Google Auth...');
-        chrome.runtime.sendMessage({action: 'initializeAuth'}, function(response) {
-            console.log('Auth response received:', response);
-            if (response.success) {
-                chrome.storage.local.get(['userInfo'], function(result) {
-                    console.log('User info retrieved:', result.userInfo);
-                    if (result.userInfo) {
-                        document.getElementById('google-account').value = result.userInfo.email;
-                        chrome.storage.sync.set({ googleAccount: result.userInfo.email });
-                        console.log('Google account set:', result.userInfo.email);
-                    }
-                });
+        chrome.identity.getAuthToken({ interactive: true }, function(token) {
+            console.log('Auth token request initiated');
+            if (chrome.runtime.lastError) {
+                console.error('Error getting auth token:', chrome.runtime.lastError.message);
             } else {
-                console.error('Error during authentication:', response.error);
+                console.log('Auth token received:', token ? 'Token present' : 'No token');
+                if (token) {
+                    fetchUserInfo(token);
+                } else {
+                    console.error('No auth token received');
+                }
             }
+        });
+    }
+
+    function fetchUserInfo(token) {
+        console.log('Fetching user info...');
+        fetch('https://www.googleapis.com/oauth2/v2/userinfo', {
+            headers: { Authorization: `Bearer ${token}` }
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log('User info retrieved:', data);
+            document.getElementById('google-account').value = data.email;
+            chrome.storage.sync.set({ googleAccount: data.email });
+            console.log('Google account set:', data.email);
+        })
+        .catch(error => {
+            console.error('Error fetching user info:', error);
         });
     }
 
