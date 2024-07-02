@@ -16,8 +16,7 @@
     "scripting",
     "tabs",
     "identity",
-    "identity.email",
-    "fileSystem"
+    "identity.email"
   ],
   "oauth2": {
     "client_id": "822953729366-c8c0huboujjdrrf230e84nnafoi9u3kc.apps.googleusercontent.com",
