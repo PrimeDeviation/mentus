@@ -27,7 +27,6 @@
       "https://www.googleapis.com/auth/drive.file"
     ]
   },
-  "key": "${EXTENSION_KEY}",
   "host_permissions": [
     "http://*/*",
     "https://*/*"
