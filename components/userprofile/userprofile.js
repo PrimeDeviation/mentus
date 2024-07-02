@@ -35,6 +35,47 @@ document.addEventListener('DOMContentLoaded', function() {
         return;
     }
 
+    // Define handleGoogleAuth function
+    function handleGoogleAuth() {
+        chrome.identity.getAuthToken({ interactive: true }, function(token) {
+            if (chrome.runtime.lastError) {
+                console.error(chrome.runtime.lastError);
+                return;
+            }
+            
+            fetch('https://www.googleapis.com/oauth2/v1/userinfo?alt=json', {
+                headers: { Authorization: `Bearer ${token}` }
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('google-account').value = data.email;
+                chrome.storage.sync.set({ googleAccount: data.email });
+            })
+            .catch(error => console.error('Error fetching Google user info:', error));
+        });
+    }
+
+    // Define handleFormSubmit function
+    function handleFormSubmit(e) {
+        e.preventDefault();
+        
+        const username = document.getElementById('username').value;
+        const email = document.getElementById('email').value;
+        const bio = document.getElementById('bio').value;
+        const githubToken = document.getElementById('github-token').value;
+        const googleAccount = document.getElementById('google-account').value;
+
+        chrome.storage.sync.set({
+            username: username,
+            email: email,
+            bio: bio,
+            githubToken: githubToken,
+            googleAccount: googleAccount
+        }, function() {
+            alert('Profile saved successfully!');
+        });
+    }
+
     // Only add event listeners if all elements are present
     if (googleAuthButton) {
         googleAuthButton.addEventListener('click', handleGoogleAuth);
