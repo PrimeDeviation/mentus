@@ -116,6 +116,7 @@ function displaySavedChatSessions() {
 }
 
 // Make sure all the necessary functions are defined here
+// Function to show the selected tab
 function showTab(tabName) {
   const tabs = document.getElementsByClassName('tab-content');
   for (let i = 0; i < tabs.length; i++) {
@@ -129,11 +130,14 @@ function showTab(tabName) {
   }
 }
 
+// Function to load settings content
 function loadSettingsContent() {
-  // Load saved settings
   loadSettings();
+  addSettingsEventListeners();
+}
 
-  // Add event listeners for each input field
+// Function to add event listeners for settings inputs
+function addSettingsEventListeners() {
   const settings = [
     'openai-api-key',
     'anthropic-api-key',
@@ -151,45 +155,6 @@ function loadSettingsContent() {
     }
   });
 }
-
-// Make sure to include the implementations of loadSettings, saveSetting, debounce, 
-// saveChatSession, loadChatModels, and displaySavedChatSessions functions here
-  
-  function showTab(tabName) {
-    const tabs = document.getElementsByClassName('tab-content');
-    for (let i = 0; i < tabs.length; i++) {
-      tabs[i].classList.remove('active');
-    }
-    const activeTab = document.getElementById(tabName);
-    activeTab.classList.add('active');
-
-    if (tabName === 'settings') {
-      loadSettingsContent();
-    }
-  }
-  
-  function loadSettingsContent() {
-    // Load saved settings
-    loadSettings();
-
-    // Add event listeners for each input field
-    const settings = [
-      'openai-api-key',
-      'anthropic-api-key',
-      'graphdb-endpoint',
-      'graphdb-creds',
-      'local-storage-location'
-    ];
-
-    settings.forEach(setting => {
-      const inputElement = document.getElementById(setting);
-      if (inputElement) {
-        inputElement.addEventListener('input', debounce(function() {
-          saveSetting(setting, this.value);
-        }, 500));
-      }
-    });
-  }
   
   loadChatModels();
 
