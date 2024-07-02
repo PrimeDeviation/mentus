@@ -6,10 +6,12 @@ chrome.runtime.onInstalled.addListener(function() {
 function initializeAuth() {
     return new Promise((resolve, reject) => {
         chrome.identity.getAuthToken({ interactive: true }, function(token) {
+            console.log('Auth token request initiated');
             if (chrome.runtime.lastError) {
                 console.error('Error getting auth token:', chrome.runtime.lastError.message);
                 reject(chrome.runtime.lastError);
             } else {
+                console.log('Auth token received:', token ? 'Token present' : 'No token');
                 handleAuthToken(token);
                 resolve(token);
             }

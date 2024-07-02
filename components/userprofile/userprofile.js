@@ -37,12 +37,16 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Define handleGoogleAuth function
     function handleGoogleAuth() {
+        console.log('Initiating Google Auth...');
         chrome.runtime.sendMessage({action: 'initializeAuth'}, function(response) {
+            console.log('Auth response received:', response);
             if (response.success) {
                 chrome.storage.local.get(['userInfo'], function(result) {
+                    console.log('User info retrieved:', result.userInfo);
                     if (result.userInfo) {
                         document.getElementById('google-account').value = result.userInfo.email;
                         chrome.storage.sync.set({ googleAccount: result.userInfo.email });
+                        console.log('Google account set:', result.userInfo.email);
                     }
                 });
             } else {
