@@ -22,11 +22,27 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Ensure all elements are present
     const requiredElements = ['username', 'email', 'bio', 'github-token', 'google-account', 'google-auth-button'];
+    let allElementsPresent = true;
     requiredElements.forEach(id => {
         if (!document.getElementById(id)) {
             console.error(`Required element with id '${id}' not found`);
+            allElementsPresent = false;
         }
     });
+
+    if (!allElementsPresent) {
+        console.error('Not all required elements are present. Some functionality may be limited.');
+        return;
+    }
+
+    // Only add event listeners if all elements are present
+    if (googleAuthButton) {
+        googleAuthButton.addEventListener('click', handleGoogleAuth);
+    }
+
+    if (form) {
+        form.addEventListener('submit', handleFormSubmit);
+    }
 
     googleAuthButton.addEventListener('click', function() {
         chrome.identity.getAuthToken({ interactive: true }, function(token) {

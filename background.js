@@ -8,9 +8,14 @@ function initializeAuth() {
         if (chrome.runtime.lastError) {
             console.error('Error getting auth token:', chrome.runtime.lastError.message);
             // Attempt to clear the token and try again
-            chrome.identity.removeCachedAuthToken({ token: token }, function() {
+            if (token) {
+                chrome.identity.removeCachedAuthToken({ token: token }, function() {
+                    chrome.identity.getAuthToken({ interactive: true }, handleAuthToken);
+                });
+            } else {
+                console.error('No token to remove. Retrying authentication.');
                 chrome.identity.getAuthToken({ interactive: true }, handleAuthToken);
-            });
+            }
         } else {
             handleAuthToken(token);
         }
