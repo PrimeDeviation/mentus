@@ -61,7 +61,6 @@
         "components/settings/settings.js",
         "components/settings/settings.css",
         "components/settings/settings.html",
-        "components/settings/settings_script.js",
         "components/userprofile/userprofile.js",
         "components/userprofile/userprofile.css",
         "components/userprofile/userprofile.html",
