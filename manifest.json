@@ -16,12 +16,14 @@
     "scripting",
     "tabs",
     "identity",
+    "identity.email",
     "fileSystem"
   ],
   "oauth2": {
-    "client_id": "${CHROME_EXTENSION_ITEM_ID}.apps.googleusercontent.com",
+    "client_id": "${CHROME_EXTENSION_CLIENT_ID}.apps.googleusercontent.com",
     "scopes": [
-      "https://www.googleapis.com/auth/userinfo.email"
+      "https://www.googleapis.com/auth/userinfo.email",
+      "https://www.googleapis.com/auth/drive.file"
     ]
   },
   "host_permissions": [
