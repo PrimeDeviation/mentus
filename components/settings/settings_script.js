@@ -1,9 +1,9 @@
-document.addEventListener('DOMContentLoaded', function () {
+document.addEventListener('DOMContentLoaded', async function () {
   const settingsForm = document.getElementById('settings-form');
   const saveButton = document.getElementById('save-settings');
 
   // Load saved settings
-  loadSettings();
+  await loadSettings();
 
   if (saveButton) {
     saveButton.addEventListener('click', function () {
@@ -114,7 +114,7 @@ document.addEventListener('DOMContentLoaded', function () {
     return /^\*+.{4}$/.test(value);
   }
 
-  function loadSettings() {
+  async function loadSettings() {
     const settings = [
       'openai-api-key',
       'anthropic-api-key',
@@ -123,24 +123,42 @@ document.addEventListener('DOMContentLoaded', function () {
       'local-storage-location'
     ];
 
-    chrome.storage.local.get(settings, function (result) {
-      settings.forEach(setting => {
+    try {
+      const result = await new Promise((resolve, reject) => {
+        chrome.storage.local.get(settings, (result) => {
+          if (chrome.runtime.lastError) {
+            reject(chrome.runtime.lastError);
+          } else {
+            resolve(result);
+          }
+        });
+      });
+
+      for (const setting of settings) {
         const inputElement = document.getElementById(setting);
         const displayElement = document.getElementById(`${setting}-display`);
         let value = result[setting] || '';
 
         if (setting.includes('api-key') && value) {
-          const decryptedValue = decryptString(value);
-          inputElement.value = ''; // Clear the input for security
-          const visiblePart = decryptedValue.substring(0, 4);
-          const obfuscatedPart = '*'.repeat(Math.max(0, decryptedValue.length - 4));
-          displayElement.textContent = visiblePart + obfuscatedPart;
+          try {
+            const decryptedValue = await decryptString(value);
+            inputElement.value = ''; // Clear the input for security
+            const visiblePart = decryptedValue.substring(0, 4);
+            const obfuscatedPart = '*'.repeat(Math.max(0, decryptedValue.length - 4));
+            displayElement.textContent = visiblePart + obfuscatedPart;
+          } catch (error) {
+            console.error(`Error decrypting ${setting}:`, error);
+            displayElement.textContent = 'Error: Unable to decrypt';
+          }
         } else {
           inputElement.value = value;
           displayElement.textContent = value || 'No value set';
         }
-      });
-    });
+      }
+    } catch (error) {
+      console.error('Error loading settings:', error);
+      alert('Error loading settings. Please try again.');
+    }
   }
 });
 
