@@ -178,15 +178,37 @@ function initializeChatListeners() {
     newSessionButton.addEventListener('click', startNewSession);
 }
 
-function sendMessage() {
+async function sendMessage() {
     const chatInput = document.getElementById('chat-input');
     const chatMessages = document.getElementById('chat-messages');
+    const chatModels = document.getElementById('chat-models');
     const message = chatInput.value.trim();
-    if (message) {
+    const selectedModel = chatModels.value;
+
+    if (message && selectedModel) {
         addMessageToChat('user-message', message);
-        // Implement API call to get response
         chatInput.value = '';
+
+        try {
+            const response = await callChatAPI(selectedModel, message);
+            addMessageToChat('assistant-message', response);
+        } catch (error) {
+            console.error('Error calling chat API:', error);
+            addMessageToChat('error-message', 'An error occurred while processing your request.');
+        }
+    } else if (!selectedModel) {
+        alert('Please select a chat model before sending a message.');
     }
+}
+
+async function callChatAPI(model, message) {
+    // Implement the API call based on the selected model
+    // This is a placeholder implementation
+    return new Promise((resolve) => {
+        setTimeout(() => {
+            resolve(`Response from ${model}: ${message}`);
+        }, 1000);
+    });
 }
 
 function addMessageToChat(className, message) {
