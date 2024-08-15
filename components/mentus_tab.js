@@ -190,7 +190,11 @@ async function sendMessage() {
         chatInput.value = '';
 
         try {
-            const response = await callChatAPI(selectedModel, message);
+            const response = await chrome.runtime.sendMessage({
+                action: 'callChatAPI',
+                model: selectedModel,
+                message: message
+            });
             addMessageToChat('assistant-message', response);
         } catch (error) {
             console.error('Error calling chat API:', error);
@@ -199,17 +203,6 @@ async function sendMessage() {
     } else if (!selectedModel) {
         alert('Please select a chat model before sending a message.');
     }
-}
-
-async function callChatAPI(model, message) {
-    // This is a placeholder implementation. Replace with actual API call.
-    console.log(`Calling ${model} API with message: ${message}`);
-    
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    // Return a mock response
-    return `This is a response from ${model}: I received your message "${message}"`;
 }
 
 async function callChatAPI(model, message) {
