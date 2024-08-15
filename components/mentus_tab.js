@@ -167,7 +167,7 @@ function initializeChatListeners() {
     const saveSessionButton = document.getElementById('save-session-button');
     const newSessionButton = document.getElementById('new-session-button');
 
-    sendButton.addEventListener('click', sendMessage);
+    sendButton.addEventListener('click', () => sendMessage());
     chatInput.addEventListener('keypress', function(e) {
         if (e.key === 'Enter' && !e.shiftKey) {
             e.preventDefault();
@@ -217,11 +217,15 @@ async function callChatAPI(model, message) {
 
 function addMessageToChat(className, message) {
     const chatMessages = document.getElementById('chat-messages');
-    const messageElement = document.createElement('div');
-    messageElement.className = `chat-message ${className}`;
-    messageElement.textContent = message;
-    chatMessages.appendChild(messageElement);
-    chatMessages.scrollTop = chatMessages.scrollHeight;
+    if (chatMessages) {
+        const messageElement = document.createElement('div');
+        messageElement.className = `chat-message ${className}`;
+        messageElement.textContent = message;
+        chatMessages.appendChild(messageElement);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    } else {
+        console.error('Chat messages container not found');
+    }
 }
 
 function saveSession() {
