@@ -178,7 +178,7 @@ function initializeChatListeners() {
     newSessionButton.addEventListener('click', startNewSession);
 }
 
-async function sendMessage() {
+function sendMessage() {
     const chatInput = document.getElementById('chat-input');
     const chatMessages = document.getElementById('chat-messages');
     const chatModels = document.getElementById('chat-models');
@@ -189,30 +189,14 @@ async function sendMessage() {
         addMessageToChat('user-message', message);
         chatInput.value = '';
 
-        try {
-            const response = await chrome.runtime.sendMessage({
-                action: 'callChatAPI',
-                model: selectedModel,
-                message: message
-            });
+        // Simulate API call (replace with actual API call later)
+        setTimeout(() => {
+            const response = `Response from ${selectedModel}: ${message}`;
             addMessageToChat('assistant-message', response);
-        } catch (error) {
-            console.error('Error calling chat API:', error);
-            addMessageToChat('error-message', 'An error occurred while processing your request.');
-        }
+        }, 1000);
     } else if (!selectedModel) {
         alert('Please select a chat model before sending a message.');
     }
-}
-
-async function callChatAPI(model, message) {
-    // Implement the API call based on the selected model
-    // This is a placeholder implementation
-    return new Promise((resolve) => {
-        setTimeout(() => {
-            resolve(`Response from ${model}: ${message}`);
-        }, 1000);
-    });
 }
 
 function addMessageToChat(className, message) {
@@ -227,6 +211,32 @@ function addMessageToChat(className, message) {
         console.error('Chat messages container not found');
     }
 }
+
+// Ensure chat listeners are initialized
+function initializeChatListeners() {
+    const sendButton = document.getElementById('send-button');
+    const chatInput = document.getElementById('chat-input');
+
+    if (sendButton) {
+        sendButton.addEventListener('click', sendMessage);
+    } else {
+        console.error('Send button not found');
+    }
+
+    if (chatInput) {
+        chatInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+    } else {
+        console.error('Chat input not found');
+    }
+}
+
+// Call this function when initializing the tab
+initializeChatListeners();
 
 function saveSession() {
     // Implementation for saving the current session
