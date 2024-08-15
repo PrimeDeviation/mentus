@@ -30,15 +30,9 @@ function initializeMentusTab() {
     loadSettings();
     showTab('settings');
     loadChatModels();
-    window.chatMessages = document.getElementById('chat-messages');
     loadSessions();
     loadUserProfile();
     initializeChatListeners();
-    
-    const newSessionButton = document.getElementById('new-session-button');
-    if (newSessionButton) {
-      newSessionButton.addEventListener('click', startNewSession);
-    }
   } catch (error) {
     console.error('Error in initializeMentusTab:', error);
   }
@@ -166,11 +160,53 @@ function addNoApiKeyOption(dropdown) {
   dropdown.appendChild(option);
 }
 
-// Chat-specific functionality has been moved to components/chat/chat.js
+// Chat-specific functionality
+function initializeChatListeners() {
+    const chatInput = document.getElementById('chat-input');
+    const sendButton = document.getElementById('send-button');
+    const saveSessionButton = document.getElementById('save-session-button');
+    const newSessionButton = document.getElementById('new-session-button');
 
-// Chat-specific functionality has been moved to components/chat/chat.js
+    sendButton.addEventListener('click', sendMessage);
+    chatInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            sendMessage();
+        }
+    });
+    saveSessionButton.addEventListener('click', saveSession);
+    newSessionButton.addEventListener('click', startNewSession);
+}
 
-// Chat-specific functionality has been moved to components/chat/chat.js
+function sendMessage() {
+    const chatInput = document.getElementById('chat-input');
+    const chatMessages = document.getElementById('chat-messages');
+    const message = chatInput.value.trim();
+    if (message) {
+        addMessageToChat('user-message', message);
+        // Implement API call to get response
+        chatInput.value = '';
+    }
+}
+
+function addMessageToChat(className, message) {
+    const chatMessages = document.getElementById('chat-messages');
+    const messageElement = document.createElement('div');
+    messageElement.className = `chat-message ${className}`;
+    messageElement.textContent = message;
+    chatMessages.appendChild(messageElement);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+
+function saveSession() {
+    // Implementation for saving the current session
+    console.log('Saving session...');
+}
+
+function startNewSession() {
+    // Implementation for starting a new session
+    console.log('Starting new session...');
+}
 
 function loadUserProfile() {
   chrome.storage.sync.get(['username', 'email', 'bio', 'githubToken', 'openaiApiKey', 'anthropicApiKey'], data => {
