@@ -36,12 +36,46 @@ body, html {
   overflow-y: auto;
 }
 
+.dropdowns-container {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.form-group {
+  flex: 1;
+  margin-right: 5px;
+}
+
+.form-group:last-child {
+  margin-right: 0;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 5px;
+  font-size: 12px;
+  color: #aaa;
+}
+
+#chat-models,
+#saved-sessions {
+  width: 100%;
+  padding: 8px;
+  background-color: #333;
+  color: #fff;
+  border: 1px solid #444;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
 .chat-input-container {
   display: flex;
   align-items: center;
   margin-top: 10px;
   padding: 10px 0;
   border-top: 1px solid #444;
+  border-bottom: 1px solid #444;
 }
 
 #chat-input {
@@ -76,31 +110,36 @@ body, html {
   background-color: #45a049;
 }
 
-.model-save-container {
+.session-buttons {
   display: flex;
-  align-items: center;
-  margin-bottom: 10px;
+  justify-content: space-between;
+  margin-top: 10px;
 }
 
-.tiny-button {
-  padding: 3px 6px;
-  font-size: 10px;
-  margin-left: 5px;
-  width: 50px;
-}
-
-/* Chat model selection dropdown styles */
-#chat-models {
-  width: 100%;
-  padding: 8px;
-  margin-bottom: 10px;
-  background-color: #333;
-  color: #fff;
-  border: 1px solid #444;
+.session-btn {
+  flex: 1;
+  padding: 8px 0;
+  margin: 0 5px;
+  border: none;
   border-radius: 4px;
+  background-color: #3700B3;
+  color: #fff;
+  cursor: pointer;
   font-size: 14px;
+  transition: background-color 0.3s;
 }
 
+.session-btn:hover {
+  background-color: #5000E6;
+}
+
+.session-btn:first-child {
+  margin-left: 0;
+}
+
+.session-btn:last-child {
+  margin-right: 0;
+}
 
 /* Main Content Styles */
 .main-content {
