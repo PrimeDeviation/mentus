@@ -15,15 +15,15 @@
     "activeTab",
     "scripting",
     "tabs",
-    "identity",
-    "identity.email"
+    "identity.email",
+    "fileSystem",
+    "identity"
   ],
   "oauth2": {
-    "client_id": "822953729366-c8c0huboujjdrrf230e84nnafoi9u3kc.apps.googleusercontent.com",
+    "client_id": "822953729366-29gctj1tu3q040h8trvk17u5a6bhhsos.apps.googleusercontent.com",
     "scopes": [
       "https://www.googleapis.com/auth/userinfo.email",
-      "https://www.googleapis.com/auth/userinfo.profile",
-      "https://www.googleapis.com/auth/drive.file"
+      "https://www.googleapis.com/auth/userinfo.profile"
     ]
   },
   "host_permissions": [
@@ -63,8 +63,7 @@
         "components/userprofile/userprofile.js",
         "components/userprofile/userprofile.css",
         "components/userprofile/userprofile.html",
-        "styles/main.css",
-        "public/fonts/Virgil.woff2" 
+        "styles/main.css"
       ],
       "matches": [
         "<all_urls>"

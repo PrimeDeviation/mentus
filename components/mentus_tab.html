@@ -4,14 +4,16 @@
 <head>
   <title>Mentus Tab</title>
   <link rel="stylesheet" type="text/css" href="../styles/main.css">
-  <link rel="stylesheet" type="text/css" href="settings/settings.css">
+  <script type="text/javascript" src="oauth.js"></script>
 </head>
 
 <body>
   <div class="container">
     <div id="chatbar" class="chatbar">
       <div id="chatbar-content">
-        <input type="text" id="session-name" placeholder="Session Name">
+        <div class="session-container">
+          <input type="text" id="session-name-input" placeholder="Session Name">
+        </div>
         <div id="chat-messages" class="chat-messages"></div>
         <div class="dropdowns-container">
           <div class="form-group">
@@ -38,70 +40,72 @@
       </div>
     </div>
     <div id="main-content" class="main-content">
-    <div class="tabs">
-      <button class="tab-button" data-tab="graph">Graph</button>
-      <button class="tab-button" data-tab="docs">Docs</button>
-      <button class="tab-button" data-tab="editor">Editor</button>
-      <button class="tab-button" data-tab="settings">Settings</button>
-      <button class="tab-button" data-tab="userprofile">User Profile</button>
-    </div>
-    <div id="tab-content">
-      <div id="graph" class="tab-content active">Graph Content</div>
-      <div id="docs" class="tab-content">Docs Content</div>
-      <div id="editor" class="tab-content">Editor Content</div>
-      <div id="settings" class="tab-content">
-        <div class="settings-container">
-          <h1>Settings</h1>
-          <form id="settings-form">
-            <div class="form-group">
-              <label for="openai-api-key">OpenAI API Key:</label>
-              <input type="password" id="openai-api-key" placeholder="Enter OpenAI API Key">
-              <div id="openai-api-key-display" class="current-value"></div>
-            </div>
-            <div class="form-group">
-              <label for="anthropic-api-key">Anthropic API Key:</label>
-              <input type="password" id="anthropic-api-key" placeholder="Enter Anthropic API Key">
-              <div id="anthropic-api-key-display" class="current-value"></div>
-            </div>
-            <div class="form-group">
-              <label for="graphdb-endpoint">GraphDB Endpoint:</label>
-              <input type="text" id="graphdb-endpoint" placeholder="Enter GraphDB Endpoint">
-              <span id="graphdb-endpoint-display" class="current-value"></span>
-            </div>
-            <div class="form-group">
-              <label for="graphdb-creds">GraphDB Credentials:</label>
-              <input type="text" id="graphdb-creds" placeholder="Enter GraphDB Credentials">
-              <span id="graphdb-creds-display" class="current-value"></span>
-            </div>
-            <div class="form-group">
-              <label for="local-storage-location">Local Storage Location:</label>
-              <input type="text" id="local-storage-location" placeholder="Enter Local Storage Location">
-              <span id="local-storage-location-display" class="current-value"></span>
-            </div>
-            <div class="form-group">
-              <label for="github-token">GitHub Token:</label>
-              <input type="password" id="github-token" placeholder="Enter GitHub Token">
-              <span id="github-token-display" class="current-value"></span>
-            </div>
-          </form>
-        </div>
+      <div class="tabs">
+        <button class="tab-button" data-tab="graph">Graph</button>
+        <button class="tab-button" data-tab="docs">Docs</button>
+        <button class="tab-button" data-tab="editor">Editor</button>
+        <button class="tab-button" data-tab="settings">Settings</button>
+        <button class="tab-button" data-tab="userprofile">User Profile</button>
       </div>
-    </div>
-      <div id="userprofile" class="tab-content">
-        <form id="user-profile-form">
-          <input type="text" id="username" placeholder="Username">
-          <input type="email" id="email" placeholder="Email">
-          <textarea id="bio" placeholder="Bio"></textarea>
-          <input type="password" id="github-token" placeholder="GitHub Token">
-          <input type="text" id="google-account" placeholder="Google Account" readonly>
-          <button type="button" id="google-auth-button">Connect Google Account</button>
-          <button type="submit">Save Profile</button>
-        </form>
+      <div id="tab-content">
+        <div id="graph" class="tab-content active">Graph Content</div>
+        <div id="docs" class="tab-content">Docs Content</div>
+        <div id="editor" class="tab-content">Editor Content</div>
+        <div id="settings" class="tab-content">
+          <div class="centered-content">
+            <h2>Settings</h2>
+            <div id="settings-form">
+              <div class="form-group">
+                <label for="openai-api-key">OpenAI API Key:</label>
+                <input type="password" id="openai-api-key" name="openai-api-key">
+              </div>
+              <div class="form-group">
+                <label for="anthropic-api-key">Anthropic API Key:</label>
+                <input type="password" id="anthropic-api-key" name="anthropic-api-key">
+              </div>
+              <div class="form-group">
+                <label for="graphdb-endpoint">GraphDB Endpoint:</label>
+                <input type="text" id="graphdb-endpoint" name="graphdb-endpoint">
+              </div>
+              <div class="form-group">
+                <label for="graphdb-creds">GraphDB Credentials:</label>
+                <input type="password" id="graphdb-creds" name="graphdb-creds">
+              </div>
+              <div class="form-group">
+                <label for="local-storage-location">Local Storage Location:</label>
+                <input type="text" id="local-storage-location" name="local-storage-location">
+              </div>
+              <button id="save-settings" class="btn">Save Settings</button>
+            </div>
+          </div>
+        </div>
+        <div id="userprofile" class="tab-content">
+          <div class="centered-content">
+            <h2>User Profile</h2>
+            <div id="user-profile-form">
+              <div class="form-group">
+                <label for="username">Username:</label>
+                <input type="text" id="username" name="username">
+              </div>
+              <div class="form-group">
+                <label for="email">Email:</label>
+                <input type="email" id="email" name="email">
+              </div>
+              <div class="form-group">
+                <label for="google-account">Google Account:</label>
+                <div id="google-account-display" class="current-value"></div>
+              </div>
+              <div class="form-group">
+                <button type="button" id="google-auth-button" class="btn">Connect Google Account</button>
+              </div>
+              <button id="save-profile" class="btn">Save Profile</button>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
   <script src="./mentus_tab.js"></script>
-  <script src="./userprofile/userprofile.js"></script>
 </body>
 
 </html>

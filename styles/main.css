@@ -26,20 +26,22 @@ body, html {
 
 /* Chatbar Styles */
 .chatbar {
-  background-color: #fff;
-  width: 20%;
-  min-width: 250px;
+  position: relative;
   display: flex;
   flex-direction: column;
+  width: 20%;
+  min-width: 250px;
   padding: 10px;
   box-sizing: border-box;
   border-right: 2px solid #333;
+  background-color: #fff;
 }
 
 #chatbar-content {
+  margin-top: 40px; 
   display: flex;
   flex-direction: column;
-  height: 100%;
+  flex-grow: 1;
 }
 
 .chat-messages {
@@ -75,11 +77,20 @@ body, html {
   display: flex;
   align-items: center;
   margin-top: 10px;
-  padding: 10px 0;
+  padding: 10px;
   border-top: 1px solid #333;
   border-bottom: 1px solid #333;
 }
 
+#chat-input {
+  flex-grow: 1;
+  margin-right: 10px;
+  padding: 8px;
+  border: 1px solid #333;
+  border-radius: 5px;
+  font-size: 16px;
+  font-family: 'Virgil', sans-serif;
+}
 
 #send-button {
   padding: 8px 12px;
@@ -91,6 +102,7 @@ body, html {
   font-size: 16px;
   font-family: 'Virgil', sans-serif;
   transition: background-color 0.3s;
+  white-space: nowrap;
 }
 
 #send-button:hover {
@@ -213,4 +225,77 @@ object {
   font-family: 'Roboto Mono', monospace;
   background-color: #f0f0f0; /* Light gray for assistant messages */
   text-align: left;
+}
+
+.session-container {
+  top: 10px;
+  left: 10px;
+  right: 10px;
+}
+
+#session-name-input {
+  width: 40%;
+  padding: 5px;
+  font-size: 14px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+/* Centered content styles */
+.centered-content {
+  max-width: 500px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.centered-content h2 {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+/* Form styles */
+.form-group {
+  margin-bottom: 15px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: bold;
+}
+
+.form-group input {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 14px;
+  font-family: 'Virgil', sans-serif;
+}
+
+/* Button styles */
+.btn {
+  display: block;
+  width: 100%;
+  padding: 10px;
+  background-color: #fff;
+  border: 1px solid #333;
+  border-radius: 4px;
+  color: #333;
+  font-size: 16px;
+  font-family: 'Virgil', sans-serif;
+  cursor: pointer;
+  transition: background-color 0.3s, color 0.3s;
+}
+
+.btn:hover {
+  background-color: #f0f0f0;
+}
+
+/* Tab content styles */
+.tab-content {
+  padding: 20px;
+  background-color: #fff;
+  border-radius: 0 0 5px 5px;
 }

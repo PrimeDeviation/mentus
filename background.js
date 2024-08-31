@@ -68,23 +68,21 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         });
         return true;
     } else if (request.action === 'openDirectoryPicker') {
-        chrome.fileSystem.chooseEntry({type: 'openDirectory'}, function(entry) {
-            if (chrome.runtime.lastError) {
-                sendResponse({ error: chrome.runtime.lastError.message });
-            } else if (entry) {
-                chrome.fileSystem.getDisplayPath(entry, function(path) {
-                    sendResponse({ path: path });
-                });
-            } else {
-                sendResponse({ error: 'No directory selected' });
-            }
-        });
-        return true;
+        // This functionality is not available in extensions
     } else if (request.action === 'configureGitHubIntegration') {
         configureGitHubIntegration(request.repoUrl, request.branch, request.token)
             .then(result => sendResponse({ success: true, data: result }))
             .catch(error => sendResponse({ success: false, error: error.message }));
         return true;
+    } else if (request.action === "authenticate") {
+        chrome.identity.getAuthToken({ interactive: true }, function(token) {
+            if (chrome.runtime.lastError) {
+                sendResponse({ success: false, error: chrome.runtime.lastError });
+            } else {
+                sendResponse({ success: true, token: token });
+            }
+        });
+        return true; // Indicates that the response is sent asynchronously
     }
 });
 

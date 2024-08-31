@@ -26,19 +26,21 @@ let currentSession = {
   model: null
 };
 
+let profileDataReady = false;
+
 // Initialize the Mentus Tab
 function initializeMentusTab() {
   try {
     initializeTabButtons();
-    loadSettings();
-    showTab('settings');
+    loadSessions();
     loadChatModels();
-    window.chatMessages = document.getElementById('chat-messages');
-    loadSessions().then(() => {
-      updateSessionList();
-    });
-    loadUserProfile();
     initializeChatListeners();
+    initializeSettingsListeners();
+    initializeProfileListeners();
+    loadUserProfileContent(() => {
+      profileDataReady = true;
+      // Any other initialization that depends on profile data
+    });
     
     // Set up event listeners for session management
     const saveSessionButton = document.getElementById('save-session-button');
@@ -198,12 +200,12 @@ function loadSession(sessionId) {
     if (chatModelsDropdown) {
       chatModelsDropdown.value = session.model;
     }
-
-  // Update the session dropdown to reflect the loaded session
-  const sessionDropdown = document.getElementById('saved-sessions');
-  if (sessionDropdown) {
-    sessionDropdown.value = sessionId;
-  }
+    
+    // Update the session dropdown to reflect the loaded session
+    const sessionDropdown = document.getElementById('saved-sessions');
+    if (sessionDropdown) {
+      sessionDropdown.value = sessionId;
+    }
 
     // Update session name input field
     const sessionNameInput = document.getElementById('session-name-input');
@@ -237,9 +239,10 @@ function startNewSession() {
 
 // Update the chat session in the UI
 function updateChatSession() {
-  if (!window.chatMessages) return;
+  const chatMessages = document.getElementById('chat-messages');
+  if (!chatMessages) return;
   
-  window.chatMessages.innerHTML = '';
+  chatMessages.innerHTML = '';
   currentSession.messages.forEach(msg => {
     addMessageToChat(msg.role === 'user' ? 'user-message' : 'assistant-message', msg.content);
   });
@@ -266,73 +269,116 @@ function showTab(tabName) {
     activeTab.classList.add('active');
     if (tabName === 'settings') {
       loadSettingsContent();
+    } else if (tabName === 'userprofile') {
+      loadUserProfileContent();
     }
   }
 }
 
-// Load settings content
-function loadSettingsContent() {
-  loadSettings();
+// Update the loadSettingsContent function
+function initializeSettingsListeners() {
+  // Load existing settings
+  loadExistingSettings();
+  
+  // Add event listener for saving settings
+  document.getElementById('save-settings').addEventListener('click', saveSettings);
+}
+
+// Load existing settings
+async function loadExistingSettings() {
+  const result = await chrome.storage.local.get(SETTINGS);
   SETTINGS.forEach(setting => {
-    const inputElement = document.getElementById(setting);
-    if (inputElement) {
-      inputElement.addEventListener('input', debounce(() => saveSetting(setting, inputElement.value), 500));
+    const input = document.getElementById(setting);
+    if (input) {
+      input.value = result[setting] ? atob(result[setting]) : '';
     }
   });
 }
 
-// Load settings from storage
-async function loadSettings() {
+// Save settings
+async function saveSettings() {
+  const settingsToSave = {};
+  SETTINGS.forEach(setting => {
+    const input = document.getElementById(setting);
+    if (input && input.value) {
+      settingsToSave[setting] = btoa(input.value);
+    }
+  });
+
   try {
-    const result = await chrome.storage.local.get(SETTINGS);
-    SETTINGS.forEach(setting => updateSettingDisplay(setting, result[setting] || ''));
+    await chrome.storage.local.set(settingsToSave);
+    alert('Settings saved successfully!');
+    loadChatModels(); // Reload chat models after saving settings
   } catch (error) {
-    console.error('Error loading settings:', error);
+    console.error('Error saving settings:', error);
+    alert('Error saving settings. Please try again.');
   }
 }
 
-// Update setting display
-function updateSettingDisplay(setting, value) {
-  const inputElement = document.getElementById(setting);
-  const displayElement = document.getElementById(`${setting}-display`);
-  
-  if (!inputElement || !displayElement) {
-    console.error(`Element not found for setting: ${setting}`);
-    return;
+// Initialize profile listeners
+function initializeProfileListeners() {
+  const saveProfileButton = document.getElementById('save-profile');
+  if (saveProfileButton) {
+    saveProfileButton.addEventListener('click', saveProfile);
   }
 
-  if (setting.includes('api-key') && value) {
-    try {
-      const decodedValue = atob(value);
-      inputElement.value = '';
-      displayElement.textContent = `${decodedValue.substring(0, 4)}${'*'.repeat(Math.max(0, decodedValue.length - 4))}`;
-    } catch (e) {
-      console.error('Error processing API key:', e);
-      displayElement.textContent = 'Error: Invalid API key';
-    }
-  } else {
-    inputElement.value = value;
-    displayElement.textContent = value || 'No value set';
+  const googleAuthButton = document.getElementById('google-auth-button');
+  if (googleAuthButton) {
+    googleAuthButton.addEventListener('click', initiateGoogleSignIn);
   }
 }
 
-// Save a setting
-async function saveSetting(setting, value) {
-  try {
-    let storedValue = value;
-    if (setting.includes('api-key')) {
-      storedValue = btoa(value);
+// Load user profile content
+function loadUserProfileContent(callback) {
+  chrome.storage.local.get(['userProfile', 'userInfo'], function(result) {
+    const userProfile = result.userProfile || {};
+    const userInfo = result.userInfo || {};
+    
+    const usernameElement = document.getElementById('username');
+    const emailElement = document.getElementById('email');
+    const googleAccountDisplay = document.getElementById('google-account-display');
+    
+    if (usernameElement) {
+      usernameElement.value = userProfile.username || '';
     }
-    const updatedSetting = { [setting]: storedValue };
-    await chrome.storage.local.set(updatedSetting);
-    console.log(`${setting} saved successfully.`);
-    await loadSettings();
-    if (setting.includes('api-key')) {
-      loadChatModels();
+    if (emailElement) {
+      emailElement.value = userProfile.email || '';
     }
-  } catch (error) {
-    console.error(`Error saving setting ${setting}:`, error);
-  }
+    if (googleAccountDisplay) {
+      googleAccountDisplay.textContent = userInfo.email || 'Not connected';
+    }
+
+    if (typeof callback === 'function') {
+      callback();
+    }
+  });
+}
+
+function initiateGoogleSignIn() {
+  chrome.runtime.sendMessage({action: "authenticate"}, function(response) {
+    if (response.success) {
+      console.log('Authentication successful');
+      // Reload user profile content after successful sign-in
+      loadUserProfileContent();
+    } else {
+      console.error('Authentication failed:', response.error);
+    }
+  });
+}
+
+// Save profile
+function saveProfile() {
+  const username = document.getElementById('username').value;
+  const email = document.getElementById('email').value;
+
+  chrome.storage.local.set({ userProfile: { username, email } }, function() {
+    if (chrome.runtime.lastError) {
+      console.error('Error saving profile:', chrome.runtime.lastError);
+      alert('Failed to save profile. Please try again.');
+    } else {
+      alert('Profile saved successfully!');
+    }
+  });
 }
 
 // Load chat models
@@ -425,7 +471,7 @@ async function sendMessage(message) {
     currentSession.messages.push({ role: 'user', content: message });
     
     const response = await (selectedModel.includes('gpt') ? sendMessageToOpenAI : sendMessageToAnthropic)(selectedModel, apiKey, currentSession.messages);
-    displayAssistantReply(response);
+    addMessageToChat('assistant-message', response);
     
     currentSession.messages.push({ role: 'assistant', content: response });
     
@@ -433,17 +479,22 @@ async function sendMessage(message) {
     updateSessionList();
   } catch (error) {
     console.error('Error:', error);
-    displayAssistantReply(`Error: ${error.message}`);
+    addMessageToChat('assistant-message', `Error: ${error.message}`);
   }
 }
 
-// Add a message to the chat
+// Add this function to display messages in the chat history
 function addMessageToChat(className, message) {
-  const messageElement = document.createElement('div');
-  messageElement.className = `chat-message ${className}`;
-  messageElement.textContent = message;
-  chatMessages.appendChild(messageElement);
-  chatMessages.scrollTop = chatMessages.scrollHeight;
+  const chatMessages = document.getElementById('chat-messages');
+  if (chatMessages) {
+    const messageElement = document.createElement('div');
+    messageElement.className = `chat-message ${className}`;
+    messageElement.textContent = message;
+    chatMessages.appendChild(messageElement);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+  } else {
+    console.error('Chat messages container not found');
+  }
 }
 
 // Send a message to OpenAI
@@ -504,13 +555,6 @@ async function getApiKey(key) {
     console.error('Error decoding API key:', error);
     return null;
   }
-}
-
-// Load user profile
-function loadUserProfile() {
-  chrome.storage.sync.get(['username', 'email', 'bio', 'githubToken', 'openaiApiKey', 'anthropicApiKey'], data => {
-    console.log('User profile loaded:', data);
-  });
 }
 
 // Debounce function

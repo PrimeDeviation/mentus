@@ -8,20 +8,10 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     // Load existing profile data
-    chrome.storage.sync.get(['username', 'email', 'bio', 'githubToken', 'googleAccount'], function(data) {
-        const elements = ['username', 'email', 'bio', 'github-token', 'google-account'];
-        elements.forEach(id => {
-            const element = document.getElementById(id);
-            if (element) {
-                element.value = data[id.replace('-', '')] || '';
-            } else {
-                console.error(`Element with id '${id}' not found`);
-            }
-        });
-    });
+    loadProfileData();
 
     // Ensure all elements are present
-    const requiredElements = ['username', 'email', 'bio', 'github-token', 'google-account', 'google-auth-button'];
+    const requiredElements = ['username', 'email', 'bio', 'google-account', 'google-auth-button'];
     let allElementsPresent = true;
     requiredElements.forEach(id => {
         if (!document.getElementById(id)) {
@@ -35,7 +25,32 @@ document.addEventListener('DOMContentLoaded', function() {
         return;
     }
 
-    // Define handleGoogleAuth function
+    // Add event listeners
+    if (googleAuthButton) {
+        googleAuthButton.addEventListener('click', handleGoogleAuth);
+    }
+
+    if (form) {
+        form.addEventListener('submit', handleFormSubmit);
+    }
+
+    function loadProfileData() {
+        chrome.storage.sync.get(['username', 'email', 'bio', 'googleAccount'], function(data) {
+            const elements = ['username', 'email', 'bio', 'google-account'];
+            elements.forEach(id => {
+                const inputElement = document.getElementById(id);
+                const displayElement = document.getElementById(`${id}-display`);
+                if (inputElement && displayElement) {
+                    const value = data[id.replace('-', '')] || '';
+                    inputElement.value = value;
+                    displayElement.textContent = value || 'No value set';
+                } else {
+                    console.error(`Element with id '${id}' not found`);
+                }
+            });
+        });
+    }
+
     function handleGoogleAuth() {
         console.log('Initiating Google Auth...');
         chrome.identity.getAuthToken({ interactive: true }, function(token) {
@@ -61,7 +76,10 @@ document.addEventListener('DOMContentLoaded', function() {
         .then(response => response.json())
         .then(data => {
             console.log('User info retrieved:', data);
-            document.getElementById('google-account').value = data.email;
+            const googleAccountInput = document.getElementById('google-account');
+            const googleAccountDisplay = document.getElementById('google-account-display');
+            googleAccountInput.value = data.email;
+            googleAccountDisplay.textContent = data.email;
             chrome.storage.sync.set({ googleAccount: data.email });
             console.log('Google account set:', data.email);
         })
@@ -70,72 +88,22 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Define handleFormSubmit function
     function handleFormSubmit(e) {
         e.preventDefault();
         
         const username = document.getElementById('username').value;
         const email = document.getElementById('email').value;
         const bio = document.getElementById('bio').value;
-        const githubToken = document.getElementById('github-token').value;
         const googleAccount = document.getElementById('google-account').value;
 
         chrome.storage.sync.set({
             username: username,
             email: email,
             bio: bio,
-            githubToken: githubToken,
             googleAccount: googleAccount
         }, function() {
             alert('Profile saved successfully!');
+            loadProfileData(); // Reload profile data after saving
         });
     }
-
-    // Only add event listeners if all elements are present
-    if (googleAuthButton) {
-        googleAuthButton.addEventListener('click', handleGoogleAuth);
-    }
-
-    if (form) {
-        form.addEventListener('submit', handleFormSubmit);
-    }
-
-    googleAuthButton.addEventListener('click', function() {
-        chrome.identity.getAuthToken({ interactive: true }, function(token) {
-            if (chrome.runtime.lastError) {
-                console.error(chrome.runtime.lastError);
-                return;
-            }
-            
-            fetch('https://www.googleapis.com/oauth2/v1/userinfo?alt=json', {
-                headers: { Authorization: `Bearer ${token}` }
-            })
-            .then(response => response.json())
-            .then(data => {
-                document.getElementById('google-account').value = data.email;
-                chrome.storage.sync.set({ googleAccount: data.email });
-            })
-            .catch(error => console.error('Error fetching Google user info:', error));
-        });
-    });
-
-    form.addEventListener('submit', function(e) {
-        e.preventDefault();
-        
-        const username = document.getElementById('username').value;
-        const email = document.getElementById('email').value;
-        const bio = document.getElementById('bio').value;
-        const githubToken = document.getElementById('github-token').value;
-        const googleAccount = document.getElementById('google-account').value;
-
-        chrome.storage.sync.set({
-            username: username,
-            email: email,
-            bio: bio,
-            githubToken: githubToken,
-            googleAccount: googleAccount
-        }, function() {
-            alert('Profile saved successfully!');
-        });
-    });
 });
