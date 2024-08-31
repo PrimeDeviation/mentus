@@ -1,6 +1,6 @@
 /* Settings styles */
 .settings-container {
-    background-color: #2F3136;
+    background-color: #fff;
     padding: 30px;
     border-radius: 8px;
     width: 100%;
@@ -8,12 +8,15 @@
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     overflow-y: auto;
     box-sizing: border-box;
+    border: 2px solid #333;
 }
 
 .settings-container h1 {
-    color: #fff;
+    color: #333;
     margin-bottom: 30px;
     text-align: center;
+    font-family: 'Permanent Marker', cursive;
+    font-size: 28px;
 }
 
 #settings-form {
@@ -31,43 +34,47 @@
 label {
     display: block;
     margin-bottom: 8px;
-    color: #fff;
+    color: #333;
     font-weight: bold;
+    font-family: 'Permanent Marker', cursive;
+    font-size: 18px;
 }
 
 input[type="text"],
 input[type="password"] {
     width: 100%;
     padding: 12px;
-    border: 1px solid #444;
-    background-color: #40444b;
-    color: #fff;
-    border-radius: 4px;
-    font-size: 14px;
+    border: 1px solid #333;
+    background-color: #fff;
+    color: #333;
+    border-radius: 5px;
+    font-size: 16px;
     transition: border-color 0.3s, box-shadow 0.3s;
+    font-family: 'Caveat', cursive;
 }
 
 input[type="text"]:focus,
 input[type="password"]:focus {
-    border-color: #7289da;
-    box-shadow: 0 0 0 2px rgba(114, 137, 218, 0.3);
+    border-color: #5e77d4;
+    box-shadow: 0 0 0 2px rgba(94, 119, 212, 0.3);
     outline: none;
 }
 
 button {
     padding: 12px;
-    background-color: #7289da;
-    color: #fff;
-    border: none;
-    border-radius: 4px;
+    background-color: #fff;
+    color: #333;
+    border: 1px solid #333;
+    border-radius: 5px;
     cursor: pointer;
     transition: background-color 0.3s;
     font-size: 16px;
     font-weight: bold;
+    font-family: 'Permanent Marker', cursive;
 }
 
 button:hover {
-    background-color: #5e77d4;
+    background-color: #f0f0f0;
 }
 
 .input-with-button {
@@ -87,10 +94,11 @@ button:hover {
 .current-value {
     display: block;
     margin-top: 5px;
-    color: #aaa;
-    font-size: 0.9em;
+    color: #666;
+    font-size: 16px;
     font-style: italic;
     word-break: break-all;
+    font-family: 'Caveat', cursive;
 }
 
 .current-value:empty {

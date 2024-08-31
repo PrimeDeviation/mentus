@@ -1,4 +1,4 @@
-// Constants
+// Constants for settings and chat models
 const SETTINGS = [
   'openai-api-key',
   'anthropic-api-key',
@@ -18,12 +18,15 @@ const CHAT_MODELS = {
   anthropic: ['claude-3-5-sonnet-20240620', 'claude-3-opus-20240229', 'claude-3-haiku-20240307', 'claude-2.1']
 };
 
-const MAX_CONTEXT_MESSAGES = 50;
-const MAX_SAVED_SESSIONS = 10;
-
+// Global variables for managing sessions
 let sessions = {};
-let currentSessionId = null;
+let currentSession = {
+  id: null,
+  messages: [],
+  model: null
+};
 
+// Initialize the Mentus Tab
 function initializeMentusTab() {
   try {
     initializeTabButtons();
@@ -31,25 +34,231 @@ function initializeMentusTab() {
     showTab('settings');
     loadChatModels();
     window.chatMessages = document.getElementById('chat-messages');
-    loadSessions();
+    loadSessions().then(() => {
+      updateSessionList();
+    });
     loadUserProfile();
     initializeChatListeners();
     
+    // Set up event listeners for session management
+    const saveSessionButton = document.getElementById('save-session-button');
+    if (saveSessionButton) {
+      saveSessionButton.addEventListener('click', saveCurrentSession);
+    }
+
     const newSessionButton = document.getElementById('new-session-button');
     if (newSessionButton) {
       newSessionButton.addEventListener('click', startNewSession);
+    }
+
+    const chatModelsDropdown = document.getElementById('chat-models');
+    if (chatModelsDropdown) {
+      chatModelsDropdown.addEventListener('change', handleModelChange);
+    }
+
+    const savedSessionsDropdown = document.getElementById('saved-sessions');
+    if (savedSessionsDropdown) {
+      savedSessionsDropdown.addEventListener('change', handleSessionChange);
     }
   } catch (error) {
     console.error('Error in initializeMentusTab:', error);
   }
 }
 
+// Handle chat model change
+function handleModelChange(event) {
+  const newModel = event.target.value;
+  currentSession.model = newModel;
+  console.log(`Model changed to: ${newModel}`);
+}
+
+// Handle session change
+function handleSessionChange(event) {
+  const sessionId = event.target.value;
+  if (sessionId) {
+    loadSession(sessionId);
+  } else {
+    startNewSession();
+  }
+}
+
+// Save the current session
+async function saveCurrentSession() {
+  if (!currentSession.id) return;
+
+  const sessionNameInput = document.getElementById('session-name-input');
+  currentSession.name = sessionNameInput ? sessionNameInput.value : '';
+
+  sessions[currentSession.id] = {
+    id: currentSession.id,
+    name: currentSession.name,
+    model: currentSession.model,
+    messages: currentSession.messages
+  };
+
+  try {
+    await saveSessions();
+    updateSessionList();
+  } catch (error) {
+    console.error('Error saving current session:', error);
+  }
+}
+
+// Save all sessions to storage
+async function saveSessions() {
+  if (!chrome.storage) {
+    console.error('Chrome storage API not available');
+    return;
+  }
+
+  try {
+    const sessionsToSave = [currentSession, ...Object.values(sessions)];
+    const recentSessions = sessionsToSave
+      .filter(session => session.messages.length > 0)
+      .sort((a, b) => (b.id || 0) - (a.id || 0))
+      .slice(0, 1000)
+      .map(session => ({
+        id: session.id,
+        model: session.model,
+        messages: session.messages,
+        name: session.name
+      }));
+    
+    await chrome.storage.local.set({ chatSessions: recentSessions });
+    sessions = recentSessions.reduce((acc, session) => {
+      acc[session.id] = session;
+      return acc;
+    }, {});
+  } catch (error) {
+    console.error('Error saving sessions:', error);
+  }
+}
+
+// Load sessions from storage
+async function loadSessions() {
+  if (!chrome.storage) {
+    console.error('Chrome storage API not available');
+    return;
+  }
+
+  try {
+    const result = await chrome.storage.local.get(['chatSessions']);
+    const loadedSessions = result.chatSessions || [];
+    sessions = loadedSessions.reduce((acc, session) => {
+      acc[session.id] = session;
+      return acc;
+    }, {});
+    updateSessionList();
+  } catch (error) {
+    console.error('Error loading sessions:', error);
+  }
+}
+
+// Update the session list in the UI
+function updateSessionList() {
+  const sessionList = document.getElementById('session-list');
+  const sessionDropdown = document.getElementById('saved-sessions');
+  
+  if (sessionList) sessionList.innerHTML = '';
+  if (sessionDropdown) sessionDropdown.innerHTML = '<option value="">Select a session</option>';
+
+  Object.entries(sessions).forEach(([id, session]) => {
+    const sessionName = session.name || `Session ${id}`;
+    
+    if (sessionList) {
+      const li = document.createElement('li');
+      li.textContent = sessionName;
+      li.onclick = () => loadSession(id);
+      sessionList.appendChild(li);
+    }
+    
+    if (sessionDropdown) {
+      const option = document.createElement('option');
+      option.value = id;
+      option.textContent = sessionName;
+      sessionDropdown.appendChild(option);
+    }
+  });
+
+  // Set the current session in the dropdown
+  if (currentSession.id) {
+    sessionDropdown.value = currentSession.id;
+  }
+}
+
+// Load a specific session
+function loadSession(sessionId) {
+  const session = sessions[sessionId];
+  if (session) {
+    currentSession = session;
+    updateChatSession();
+    
+    // Update the chat model dropdown
+    const chatModelsDropdown = document.getElementById('chat-models');
+    if (chatModelsDropdown) {
+      chatModelsDropdown.value = session.model;
+    }
+
+  // Update the session dropdown to reflect the loaded session
+  const sessionDropdown = document.getElementById('saved-sessions');
+  if (sessionDropdown) {
+    sessionDropdown.value = sessionId;
+  }
+
+    // Update session name input field
+    const sessionNameInput = document.getElementById('session-name-input');
+    if (sessionNameInput) {
+      sessionNameInput.value = session.name || `Session ${sessionId}`;
+    }
+
+    // Update session name display
+    const sessionNameDisplay = document.getElementById('session-name-display');
+    if (sessionNameDisplay) {
+      sessionNameDisplay.textContent = session.name || `Session ${sessionId}`;
+    }
+  }
+}
+
+// Start a new session
+function startNewSession() {
+  currentSession = { id: null, messages: [], model: null };
+  const chatModelsDropdown = document.getElementById('chat-models');
+  if (chatModelsDropdown) {
+    chatModelsDropdown.selectedIndex = 0;
+  }
+  updateChatSession();
+
+  // Reset the session dropdown
+  const sessionDropdown = document.getElementById('saved-sessions');
+  if (sessionDropdown) {
+    sessionDropdown.selectedIndex = 0;
+  }
+}
+
+// Update the chat session in the UI
+function updateChatSession() {
+  if (!window.chatMessages) return;
+  
+  window.chatMessages.innerHTML = '';
+  currentSession.messages.forEach(msg => {
+    addMessageToChat(msg.role === 'user' ? 'user-message' : 'assistant-message', msg.content);
+  });
+
+  // Update session name display
+  const sessionNameDisplay = document.getElementById('session-name-display');
+  if (sessionNameDisplay) {
+    sessionNameDisplay.textContent = currentSession.name || `Session ${currentSession.id}`;
+  }
+}
+
+// Initialize tab buttons
 function initializeTabButtons() {
   document.querySelectorAll('.tab-button').forEach(button => {
     button.addEventListener('click', (event) => showTab(event.target.getAttribute('data-tab')));
   });
 }
 
+// Show a specific tab
 function showTab(tabName) {
   document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
   const activeTab = document.getElementById(tabName);
@@ -61,6 +270,7 @@ function showTab(tabName) {
   }
 }
 
+// Load settings content
 function loadSettingsContent() {
   loadSettings();
   SETTINGS.forEach(setting => {
@@ -71,6 +281,7 @@ function loadSettingsContent() {
   });
 }
 
+// Load settings from storage
 async function loadSettings() {
   try {
     const result = await chrome.storage.local.get(SETTINGS);
@@ -80,6 +291,7 @@ async function loadSettings() {
   }
 }
 
+// Update setting display
 function updateSettingDisplay(setting, value) {
   const inputElement = document.getElementById(setting);
   const displayElement = document.getElementById(`${setting}-display`);
@@ -104,6 +316,7 @@ function updateSettingDisplay(setting, value) {
   }
 }
 
+// Save a setting
 async function saveSetting(setting, value) {
   try {
     let storedValue = value;
@@ -122,6 +335,7 @@ async function saveSetting(setting, value) {
   }
 }
 
+// Load chat models
 async function loadChatModels() {
   try {
     const result = await chrome.storage.local.get(['openai-api-key', 'anthropic-api-key']);
@@ -147,6 +361,7 @@ async function loadChatModels() {
   }
 }
 
+// Add model options to dropdown
 function addModelOptions(dropdown, label, models) {
   const group = document.createElement('optgroup');
   group.label = label;
@@ -158,6 +373,7 @@ function addModelOptions(dropdown, label, models) {
   dropdown.appendChild(group);
 }
 
+// Add no API key option to dropdown
 function addNoApiKeyOption(dropdown) {
   const option = document.createElement('option');
   option.value = '';
@@ -166,6 +382,7 @@ function addNoApiKeyOption(dropdown) {
   dropdown.appendChild(option);
 }
 
+// Initialize chat listeners
 function initializeChatListeners() {
   const chatInput = document.getElementById('chat-input');
   const sendButton = document.getElementById('send-button');
@@ -186,6 +403,7 @@ function initializeChatListeners() {
   });
 }
 
+// Send a message
 async function sendMessage(message) {
   const selectedModel = document.getElementById('chat-models').value;
   const apiKey = await getApiKey(selectedModel.includes('gpt') ? 'openai-api-key' : 'anthropic-api-key');
@@ -196,27 +414,22 @@ async function sendMessage(message) {
   }
 
   try {
-    if (!currentSessionId || sessions[currentSessionId].model !== selectedModel) {
-      currentSessionId = Date.now().toString();
-      sessions[currentSessionId] = {
-        model: selectedModel,
-        messages: []
-      };
+    if (!currentSession.id || sessions[currentSession.id].model !== selectedModel) {
+      currentSession.id = Date.now().toString();
+      currentSession.model = selectedModel;
+      currentSession.messages = [];
+      sessions[currentSession.id] = currentSession;
     }
 
     addMessageToChat('user-message', message);
-    sessions[currentSessionId].messages.push({ role: 'user', content: message });
+    currentSession.messages.push({ role: 'user', content: message });
     
-    if (sessions[currentSessionId].messages.length > MAX_CONTEXT_MESSAGES) {
-      sessions[currentSessionId].messages = sessions[currentSessionId].messages.slice(-MAX_CONTEXT_MESSAGES);
-    }
-
-    const response = await (selectedModel.includes('gpt') ? sendMessageToOpenAI : sendMessageToAnthropic)(selectedModel, apiKey, sessions[currentSessionId].messages);
+    const response = await (selectedModel.includes('gpt') ? sendMessageToOpenAI : sendMessageToAnthropic)(selectedModel, apiKey, currentSession.messages);
     displayAssistantReply(response);
     
-    sessions[currentSessionId].messages.push({ role: 'assistant', content: response });
+    currentSession.messages.push({ role: 'assistant', content: response });
     
-    await saveSessions();
+    await saveCurrentSession();
     updateSessionList();
   } catch (error) {
     console.error('Error:', error);
@@ -224,6 +437,7 @@ async function sendMessage(message) {
   }
 }
 
+// Add a message to the chat
 function addMessageToChat(className, message) {
   const messageElement = document.createElement('div');
   messageElement.className = `chat-message ${className}`;
@@ -232,6 +446,7 @@ function addMessageToChat(className, message) {
   chatMessages.scrollTop = chatMessages.scrollHeight;
 }
 
+// Send a message to OpenAI
 async function sendMessageToOpenAI(model, apiKey, messages) {
   const response = await fetch('https://api.openai.com/v1/chat/completions', {
     method: 'POST',
@@ -252,6 +467,7 @@ async function sendMessageToOpenAI(model, apiKey, messages) {
   return data.choices[0].message.content;
 }
 
+// Send a message to Anthropic
 async function sendMessageToAnthropic(model, apiKey, messages) {
   const response = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
@@ -273,11 +489,12 @@ async function sendMessageToAnthropic(model, apiKey, messages) {
   return data.content[0].text;
 }
 
+// Display assistant reply
 function displayAssistantReply(reply) {
   addMessageToChat('assistant-message', reply);
-  saveChatSession();
 }
 
+// Get API key
 async function getApiKey(key) {
   const { [key]: encodedKey } = await chrome.storage.local.get(key);
   if (!encodedKey) return null;
@@ -289,82 +506,14 @@ async function getApiKey(key) {
   }
 }
 
+// Load user profile
 function loadUserProfile() {
   chrome.storage.sync.get(['username', 'email', 'bio', 'githubToken', 'openaiApiKey', 'anthropicApiKey'], data => {
     console.log('User profile loaded:', data);
   });
 }
 
-async function saveSessions() {
-  const sessionsArray = Object.entries(sessions).map(([id, session]) => ({
-    id,
-    model: session.model,
-    messages: session.messages
-  }));
-  
-  const recentSessions = sessionsArray.sort((a, b) => b.id - a.id).slice(0, MAX_SAVED_SESSIONS);
-  
-  await chrome.storage.local.set({ chatSessions: recentSessions });
-}
-
-async function loadSessions() {
-  const result = await chrome.storage.local.get(['chatSessions']);
-  const loadedSessions = result.chatSessions || [];
-  sessions = loadedSessions.reduce((acc, session) => {
-    acc[session.id] = { model: session.model, messages: session.messages };
-    return acc;
-  }, {});
-  updateSessionList();
-}
-
-function updateSessionList() {
-  const sessionList = document.getElementById('session-list');
-  if (!sessionList) return;
-
-  sessionList.innerHTML = '';
-  Object.entries(sessions).forEach(([id, session]) => {
-    const li = document.createElement('li');
-    li.textContent = `${session.model} - ${new Date(parseInt(id)).toLocaleString()}`;
-    li.onclick = () => loadSession(id);
-    sessionList.appendChild(li);
-  });
-}
-
-function loadSession(sessionId) {
-  currentSessionId = sessionId;
-  const session = sessions[sessionId];
-  document.getElementById('chat-models').value = session.model;
-  
-  window.chatMessages.innerHTML = '';
-  
-  session.messages.forEach(msg => {
-    addMessageToChat(msg.role === 'user' ? 'user-message' : 'assistant-message', msg.content);
-  });
-}
-
-function startNewSession() {
-  currentSessionId = null;
-  document.getElementById('chat-models').selectedIndex = 0;
-  window.chatMessages.innerHTML = '';
-}
-
-function saveChatSession() {
-  console.log('Saving chat session...');
-  // Implementation for saving chat session
-}
-
-function displaySavedChatSessions() {
-  console.log('Saved Chat Sessions:');
-  Object.entries(sessions).forEach(([id, session]) => {
-    console.log(`Session ${id}:`);
-    console.log(`  Model: ${session.model}`);
-    console.log(`  Messages: ${session.messages.length}`);
-    session.messages.forEach((msg, index) => {
-      console.log(`    Message ${index + 1}: ${msg.role} - ${msg.content.substring(0, 50)}...`);
-    });
-  });
-}
-
+// Debounce function
 function debounce(func, wait) {
   let timeout;
   return function(...args) {
@@ -373,4 +522,5 @@ function debounce(func, wait) {
   };
 }
 
+// Initialize the Mentus Tab when the DOM is loaded
 document.addEventListener("DOMContentLoaded", initializeMentusTab);

@@ -1,10 +1,19 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto+Mono&display=swap');
+
+@font-face {
+  font-family: 'Virgil';
+  src: url('../public/fonts/Virgil.woff2') format('woff2');
+  font-weight: normal;
+  font-style: normal;
+}
+
 /* General Styles */
 body, html {
   margin: 0;
   padding: 0;
-  font-family: Arial, sans-serif;
-  background-color: #2e2e2e;
-  color: #fff;
+  font-family: 'Virgil', sans-serif;
+  background-color: #f5f5f5;
+  color: #333;
   height: 100%;
   overflow: hidden;
 }
@@ -12,17 +21,19 @@ body, html {
 .container {
   display: flex;
   height: 100vh;
+  border: 2px solid #333;
 }
 
 /* Chatbar Styles */
 .chatbar {
-  background-color: #1e1e1e;
+  background-color: #fff;
   width: 20%;
   min-width: 250px;
   display: flex;
   flex-direction: column;
   padding: 10px;
   box-sizing: border-box;
+  border-right: 2px solid #333;
 }
 
 #chatbar-content {
@@ -34,6 +45,7 @@ body, html {
 .chat-messages {
   flex: 1;
   overflow-y: auto;
+  font-size: 18px;
 }
 
 .dropdowns-container {
@@ -54,19 +66,9 @@ body, html {
 .form-group label {
   display: block;
   margin-bottom: 5px;
-  font-size: 12px;
-  color: #aaa;
-}
-
-#chat-models,
-#saved-sessions {
-  width: 100%;
-  padding: 8px;
-  background-color: #333;
-  color: #fff;
-  border: 1px solid #444;
-  border-radius: 4px;
-  font-size: 14px;
+  font-size: 16px;
+  color: #333;
+  font-family: 'Virgil', sans-serif;
 }
 
 .chat-input-container {
@@ -74,40 +76,25 @@ body, html {
   align-items: center;
   margin-top: 10px;
   padding: 10px 0;
-  border-top: 1px solid #444;
-  border-bottom: 1px solid #444;
+  border-top: 1px solid #333;
+  border-bottom: 1px solid #333;
 }
 
-#chat-input {
-  flex: 1;
-  padding: 8px;
-  border: 1px solid #444;
-  border-radius: 20px;
-  background-color: #333;
-  color: #fff;
-  margin-right: 10px;
-  font-size: 14px;
-}
 
 #send-button {
-  width: 15%;
-  min-width: 60px;
-  max-width: 20%;
-  padding: 8px 0;
-  border: none;
-  border-radius: 20px;
-  background-color: #4CAF50;
-  color: #fff;
+  padding: 8px 12px;
+  border: 1px solid #333;
+  border-radius: 5px;
+  background-color: #fff;
+  color: #333;
   cursor: pointer;
-  font-size: 14px;
+  font-size: 16px;
+  font-family: 'Virgil', sans-serif;
   transition: background-color 0.3s;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 
 #send-button:hover {
-  background-color: #45a049;
+  background-color: #f0f0f0;
 }
 
 .session-buttons {
@@ -120,17 +107,18 @@ body, html {
   flex: 1;
   padding: 8px 0;
   margin: 0 5px;
-  border: none;
-  border-radius: 4px;
-  background-color: #3700B3;
-  color: #fff;
+  border: 1px solid #333;
+  border-radius: 5px;
+  background-color: #fff;
+  color: #333;
   cursor: pointer;
-  font-size: 14px;
+  font-size: 16px;
+  font-family: 'Virgil', sans-serif;
   transition: background-color 0.3s;
 }
 
 .session-btn:hover {
-  background-color: #5000E6;
+  background-color: #f0f0f0;
 }
 
 .session-btn:first-child {
@@ -152,27 +140,31 @@ body, html {
 .tabs {
   display: flex;
   justify-content: space-around;
-  background-color: #1e1e1e;
+  background-color: #fff;
   padding: 10px;
+  border-bottom: 2px solid #333;
 }
 
 .tab-button {
   flex: 1;
   padding: 10px;
-  background-color: #333;
-  border: 1px solid #444;
-  color: #fff;
+  background-color: #fff;
+  border: 1px solid #333;
+  color: #333;
   cursor: pointer;
   text-align: center;
   transition: background-color 0.3s, color 0.3s;
+  font-family: 'Virgil', sans-serif;
+  font-size: 18px;
 }
 
 .tab-button:hover {
-  background-color: #484C52;
+  background-color: #f0f0f0;
 }
 
 .tab-button.active {
-  background-color: #484C52;
+  background-color: #f0f0f0;
+  font-weight: bold;
 }
 
 #tab-content {
@@ -185,7 +177,7 @@ body, html {
   height: 100%;
   width: 100%;
   padding: 20px;
-  background-color: #2F3136;
+  background-color: #fff;
   box-sizing: border-box;
 }
 
@@ -203,4 +195,22 @@ object {
   width: 100%;
   height: 100%;
   border: none;
+}
+
+.chat-message {
+  padding: 10px;
+  border-radius: 5px;
+  margin-bottom: 10px;
+}
+
+.chat-message.user-message {
+  font-family: 'Virgil', sans-serif;
+  background-color: #fff; /* Light grey for user messages */
+  text-align: right;
+}
+
+.chat-message.assistant-message {
+  font-family: 'Roboto Mono', monospace;
+  background-color: #f0f0f0; /* Light gray for assistant messages */
+  text-align: left;
 }
