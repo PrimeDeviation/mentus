@@ -1,23 +1,67 @@
-#editor {
-    width: 100%;
+.editor-container {
+    display: flex;
+    flex-direction: column;
     height: 100%;
+    width: 100%;
+}
+
+.editor-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
     padding: 10px;
-    box-sizing: border-box;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    font-family: Arial, sans-serif;
-    font-size: 16px;
-    overflow-y: auto;
+    background-color: #f0f0f0;
+    border-bottom: 1px solid #ccc;
 }
 
-@media (max-width: 768px) {
-    #editor {
-        font-size: 14px;
-    }
+.editor-body {
+    flex-grow: 1;
+    display: flex;
+    overflow: hidden;
 }
 
-@media (max-width: 480px) {
-    #editor {
-        font-size: 12px;
-    }
+#editor-container {
+    flex-grow: 1;
+    overflow: auto;
+}
+
+.editor-footer {
+    padding: 10px;
+    background-color: #f0f0f0;
+    border-top: 1px solid #ccc;
+}
+
+.toolbar {
+    display: flex;
+    gap: 5px;
+    margin-bottom: 10px;
+}
+
+.toolbar button {
+    padding: 5px 10px;
+    background-color: #ffffff;
+    color: #000000;
+    border: 1px solid #000000;
+    cursor: pointer;
+}
+
+.editor-info {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+}
+
+.CodeMirror {
+    height: 100% !important;
+    font-family: 'Roboto Mono', monospace;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.CodeMirror-scroll {
+    height: 100%;
+}
+
+.CodeMirror-sizer {
+    min-height: 100% !important;
 }

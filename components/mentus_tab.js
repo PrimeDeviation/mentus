@@ -1,10 +1,7 @@
 // Constants for settings and chat models
 const SETTINGS = [
   'openai-api-key',
-  'anthropic-api-key',
-  'graphdb-endpoint',
-  'graphdb-creds',
-  'local-storage-location'
+  'anthropic-api-key'
 ];
 
 const CHAT_MODELS = {
@@ -31,354 +28,146 @@ let profileDataReady = false;
 // Initialize the Mentus Tab
 function initializeMentusTab() {
   try {
+    console.log('Initializing Mentus Tab');
     initializeTabButtons();
-    loadSessions();
+    loadSessions(); // Load sessions from Google Drive
     loadChatModels();
     initializeChatListeners();
     initializeSettingsListeners();
-    initializeProfileListeners();
-    loadUserProfileContent(() => {
-      profileDataReady = true;
-      // Any other initialization that depends on profile data
-    });
-    
-    // Set up event listeners for session management
-    const saveSessionButton = document.getElementById('save-session-button');
-    if (saveSessionButton) {
-      saveSessionButton.addEventListener('click', saveCurrentSession);
+    initializeDocumentsListeners();
+    initializeSessionListeners();
+    loadExistingSettings();
+
+    // Create a new session if one doesn't exist
+    if (!currentSession.id) {
+      startNewSession();
     }
 
-    const newSessionButton = document.getElementById('new-session-button');
-    if (newSessionButton) {
-      newSessionButton.addEventListener('click', startNewSession);
-    }
-
-    const chatModelsDropdown = document.getElementById('chat-models');
-    if (chatModelsDropdown) {
-      chatModelsDropdown.addEventListener('change', handleModelChange);
-    }
-
-    const savedSessionsDropdown = document.getElementById('saved-sessions');
-    if (savedSessionsDropdown) {
-      savedSessionsDropdown.addEventListener('change', handleSessionChange);
-    }
+    console.log('About to show settings tab');
+    showTab('settings'); // Show settings tab by default
+    console.log('Mentus Tab initialization complete');
   } catch (error) {
     console.error('Error in initializeMentusTab:', error);
-  }
-}
-
-// Handle chat model change
-function handleModelChange(event) {
-  const newModel = event.target.value;
-  currentSession.model = newModel;
-  console.log(`Model changed to: ${newModel}`);
-}
-
-// Handle session change
-function handleSessionChange(event) {
-  const sessionId = event.target.value;
-  if (sessionId) {
-    loadSession(sessionId);
-  } else {
-    startNewSession();
-  }
-}
-
-// Save the current session
-async function saveCurrentSession() {
-  if (!currentSession.id) return;
-
-  const sessionNameInput = document.getElementById('session-name-input');
-  currentSession.name = sessionNameInput ? sessionNameInput.value : '';
-
-  sessions[currentSession.id] = {
-    id: currentSession.id,
-    name: currentSession.name,
-    model: currentSession.model,
-    messages: currentSession.messages
-  };
-
-  try {
-    await saveSessions();
-    updateSessionList();
-  } catch (error) {
-    console.error('Error saving current session:', error);
-  }
-}
-
-// Save all sessions to storage
-async function saveSessions() {
-  if (!chrome.storage) {
-    console.error('Chrome storage API not available');
-    return;
-  }
-
-  try {
-    const sessionsToSave = [currentSession, ...Object.values(sessions)];
-    const recentSessions = sessionsToSave
-      .filter(session => session.messages.length > 0)
-      .sort((a, b) => (b.id || 0) - (a.id || 0))
-      .slice(0, 1000)
-      .map(session => ({
-        id: session.id,
-        model: session.model,
-        messages: session.messages,
-        name: session.name
-      }));
-    
-    await chrome.storage.local.set({ chatSessions: recentSessions });
-    sessions = recentSessions.reduce((acc, session) => {
-      acc[session.id] = session;
-      return acc;
-    }, {});
-  } catch (error) {
-    console.error('Error saving sessions:', error);
-  }
-}
-
-// Load sessions from storage
-async function loadSessions() {
-  if (!chrome.storage) {
-    console.error('Chrome storage API not available');
-    return;
-  }
-
-  try {
-    const result = await chrome.storage.local.get(['chatSessions']);
-    const loadedSessions = result.chatSessions || [];
-    sessions = loadedSessions.reduce((acc, session) => {
-      acc[session.id] = session;
-      return acc;
-    }, {});
-    updateSessionList();
-  } catch (error) {
-    console.error('Error loading sessions:', error);
-  }
-}
-
-// Update the session list in the UI
-function updateSessionList() {
-  const sessionList = document.getElementById('session-list');
-  const sessionDropdown = document.getElementById('saved-sessions');
-  
-  if (sessionList) sessionList.innerHTML = '';
-  if (sessionDropdown) sessionDropdown.innerHTML = '<option value="">Select a session</option>';
-
-  Object.entries(sessions).forEach(([id, session]) => {
-    const sessionName = session.name || `Session ${id}`;
-    
-    if (sessionList) {
-      const li = document.createElement('li');
-      li.textContent = sessionName;
-      li.onclick = () => loadSession(id);
-      sessionList.appendChild(li);
-    }
-    
-    if (sessionDropdown) {
-      const option = document.createElement('option');
-      option.value = id;
-      option.textContent = sessionName;
-      sessionDropdown.appendChild(option);
-    }
-  });
-
-  // Set the current session in the dropdown
-  if (currentSession.id) {
-    sessionDropdown.value = currentSession.id;
-  }
-}
-
-// Load a specific session
-function loadSession(sessionId) {
-  const session = sessions[sessionId];
-  if (session) {
-    currentSession = session;
-    updateChatSession();
-    
-    // Update the chat model dropdown
-    const chatModelsDropdown = document.getElementById('chat-models');
-    if (chatModelsDropdown) {
-      chatModelsDropdown.value = session.model;
-    }
-    
-    // Update the session dropdown to reflect the loaded session
-    const sessionDropdown = document.getElementById('saved-sessions');
-    if (sessionDropdown) {
-      sessionDropdown.value = sessionId;
-    }
-
-    // Update session name input field
-    const sessionNameInput = document.getElementById('session-name-input');
-    if (sessionNameInput) {
-      sessionNameInput.value = session.name || `Session ${sessionId}`;
-    }
-
-    // Update session name display
-    const sessionNameDisplay = document.getElementById('session-name-display');
-    if (sessionNameDisplay) {
-      sessionNameDisplay.textContent = session.name || `Session ${sessionId}`;
-    }
-  }
-}
-
-// Start a new session
-function startNewSession() {
-  currentSession = { id: null, messages: [], model: null };
-  const chatModelsDropdown = document.getElementById('chat-models');
-  if (chatModelsDropdown) {
-    chatModelsDropdown.selectedIndex = 0;
-  }
-  updateChatSession();
-
-  // Reset the session dropdown
-  const sessionDropdown = document.getElementById('saved-sessions');
-  if (sessionDropdown) {
-    sessionDropdown.selectedIndex = 0;
-  }
-}
-
-// Update the chat session in the UI
-function updateChatSession() {
-  const chatMessages = document.getElementById('chat-messages');
-  if (!chatMessages) return;
-  
-  chatMessages.innerHTML = '';
-  currentSession.messages.forEach(msg => {
-    addMessageToChat(msg.role === 'user' ? 'user-message' : 'assistant-message', msg.content);
-  });
-
-  // Update session name display
-  const sessionNameDisplay = document.getElementById('session-name-display');
-  if (sessionNameDisplay) {
-    sessionNameDisplay.textContent = currentSession.name || `Session ${currentSession.id}`;
   }
 }
 
 // Initialize tab buttons
 function initializeTabButtons() {
   document.querySelectorAll('.tab-button').forEach(button => {
-    button.addEventListener('click', (event) => showTab(event.target.getAttribute('data-tab')));
+    button.addEventListener('click', (event) => {
+      const tabName = event.target.getAttribute('data-tab');
+      showTab(tabName);
+    });
   });
 }
 
 // Show a specific tab
 function showTab(tabName) {
-  document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+  console.log(`Showing tab: ${tabName}`);
+  
+  document.querySelectorAll('.tab-content').forEach(tab => {
+    tab.style.display = 'none';
+  });
+  
+  document.querySelectorAll('.tab-button').forEach(button => {
+    button.classList.remove('active');
+  });
+  
   const activeTab = document.getElementById(tabName);
-  if (activeTab) {
-    activeTab.classList.add('active');
-    if (tabName === 'settings') {
-      loadSettingsContent();
-    } else if (tabName === 'userprofile') {
-      loadUserProfileContent();
+  const activeButton = document.querySelector(`.tab-button[data-tab="${tabName}"]`);
+  
+  if (activeTab && activeButton) {
+    activeTab.style.display = 'block';
+    activeButton.classList.add('active');
+    console.log(`Tab ${tabName} is now visible`);
+
+    if (tabName === 'docs') {
+      console.log('Initializing documents for docs tab');
+      if (typeof window.showDocumentsTab === 'function') {
+        window.showDocumentsTab();
+      } else {
+        console.error('showDocumentsTab function not found');
+      }
+    } else if (tabName === 'editor') {
+      console.log('Initializing editor for editor tab');
+      if (typeof window.editorModule !== 'undefined' && typeof window.editorModule.ensureEditorInitialized === 'function') {
+        window.editorModule.ensureEditorInitialized();
+      } else {
+        console.error('Editor module not found');
+      }
     }
+  } else {
+    console.error(`Tab content or button not found for: ${tabName}`);
   }
 }
 
-// Update the loadSettingsContent function
+// Initialize settings listeners
 function initializeSettingsListeners() {
-  // Load existing settings
-  loadExistingSettings();
-  
-  // Add event listener for saving settings
-  document.getElementById('save-settings').addEventListener('click', saveSettings);
+  console.log('Initializing settings listeners');
+  SETTINGS.forEach(setting => {
+    const input = document.getElementById(setting);
+    if (input) {
+      input.addEventListener('input', function() {
+        updateApiKeyDisplay(setting, input.value);
+      });
+      input.addEventListener('keyup', debounce(function(event) {
+        if (event.key === 'Enter') {
+          saveSetting(setting, input.value);
+        }
+      }, 300));
+      input.addEventListener('blur', function() {
+        saveSetting(setting, input.value);
+      });
+    } else {
+      console.error(`Setting input not found: ${setting}`);
+    }
+  });
 }
 
 // Load existing settings
 async function loadExistingSettings() {
+  console.log('Loading existing settings');
   const result = await chrome.storage.local.get(SETTINGS);
   SETTINGS.forEach(setting => {
     const input = document.getElementById(setting);
     if (input) {
-      input.value = result[setting] ? atob(result[setting]) : '';
+      const value = result[setting] ? atob(result[setting]) : '';
+      input.value = value;
+      updateApiKeyDisplay(setting, value);
+    } else {
+      console.error(`Setting input not found: ${setting}`);
     }
   });
 }
 
-// Save settings
-async function saveSettings() {
-  const settingsToSave = {};
-  SETTINGS.forEach(setting => {
-    const input = document.getElementById(setting);
-    if (input && input.value) {
-      settingsToSave[setting] = btoa(input.value);
-    }
-  });
+// Save a single setting
+async function saveSetting(setting, value) {
+  console.log(`Saving setting: ${setting}`);
+  const settingToSave = {};
+  settingToSave[setting] = value ? btoa(value) : '';
 
   try {
-    await chrome.storage.local.set(settingsToSave);
-    alert('Settings saved successfully!');
+    await chrome.storage.local.set(settingToSave);
+    updateApiKeyDisplay(setting, value);
     loadChatModels(); // Reload chat models after saving settings
   } catch (error) {
-    console.error('Error saving settings:', error);
-    alert('Error saving settings. Please try again.');
+    console.error(`Error saving setting ${setting}:`, error);
   }
 }
 
-// Initialize profile listeners
-function initializeProfileListeners() {
-  const saveProfileButton = document.getElementById('save-profile');
-  if (saveProfileButton) {
-    saveProfileButton.addEventListener('click', saveProfile);
-  }
-
-  const googleAuthButton = document.getElementById('google-auth-button');
-  if (googleAuthButton) {
-    googleAuthButton.addEventListener('click', initiateGoogleSignIn);
-  }
-}
-
-// Load user profile content
-function loadUserProfileContent(callback) {
-  chrome.storage.local.get(['userProfile', 'userInfo'], function(result) {
-    const userProfile = result.userProfile || {};
-    const userInfo = result.userInfo || {};
-    
-    const usernameElement = document.getElementById('username');
-    const emailElement = document.getElementById('email');
-    const googleAccountDisplay = document.getElementById('google-account-display');
-    
-    if (usernameElement) {
-      usernameElement.value = userProfile.username || '';
-    }
-    if (emailElement) {
-      emailElement.value = userProfile.email || '';
-    }
-    if (googleAccountDisplay) {
-      googleAccountDisplay.textContent = userInfo.email || 'Not connected';
-    }
-
-    if (typeof callback === 'function') {
-      callback();
-    }
-  });
-}
-
-function initiateGoogleSignIn() {
-  chrome.runtime.sendMessage({action: "authenticate"}, function(response) {
-    if (response.success) {
-      console.log('Authentication successful');
-      // Reload user profile content after successful sign-in
-      loadUserProfileContent();
+// Update API key display
+function updateApiKeyDisplay(setting, value) {
+  const display = document.getElementById(`${setting}-display`);
+  if (display) {
+    if (value) {
+      const obfuscatedValue = value.substring(0, 4) + '*'.repeat(Math.max(0, value.length - 4));
+      display.textContent = obfuscatedValue;
     } else {
-      console.error('Authentication failed:', response.error);
+      display.textContent = 'No API key set';
     }
-  });
-}
-
-// Save profile
-function saveProfile() {
-  const username = document.getElementById('username').value;
-  const email = document.getElementById('email').value;
-
-  chrome.storage.local.set({ userProfile: { username, email } }, function() {
-    if (chrome.runtime.lastError) {
-      console.error('Error saving profile:', chrome.runtime.lastError);
-      alert('Failed to save profile. Please try again.');
-    } else {
-      alert('Profile saved successfully!');
-    }
-  });
+  } else {
+    console.warn(`Display element for ${setting} not found`);
+  }
 }
 
 // Load chat models
@@ -449,52 +238,33 @@ function initializeChatListeners() {
   });
 }
 
-// Send a message
-async function sendMessage(message) {
-  const selectedModel = document.getElementById('chat-models').value;
-  const apiKey = await getApiKey(selectedModel.includes('gpt') ? 'openai-api-key' : 'anthropic-api-key');
-
-  if (!apiKey || !selectedModel) {
-    displayAssistantReply('Error: API key is missing or invalid, or no model selected.');
-    return;
-  }
-
-  try {
-    if (!currentSession.id || sessions[currentSession.id].model !== selectedModel) {
-      currentSession.id = Date.now().toString();
-      currentSession.model = selectedModel;
-      currentSession.messages = [];
-      sessions[currentSession.id] = currentSession;
-    }
-
-    addMessageToChat('user-message', message);
-    currentSession.messages.push({ role: 'user', content: message });
-    
-    const response = await (selectedModel.includes('gpt') ? sendMessageToOpenAI : sendMessageToAnthropic)(selectedModel, apiKey, currentSession.messages);
-    addMessageToChat('assistant-message', response);
-    
-    currentSession.messages.push({ role: 'assistant', content: response });
-    
-    await saveCurrentSession();
-    updateSessionList();
-  } catch (error) {
-    console.error('Error:', error);
-    addMessageToChat('assistant-message', `Error: ${error.message}`);
-  }
-}
-
-// Add this function to display messages in the chat history
-function addMessageToChat(className, message) {
-  const chatMessages = document.getElementById('chat-messages');
-  if (chatMessages) {
-    const messageElement = document.createElement('div');
-    messageElement.className = `chat-message ${className}`;
-    messageElement.textContent = message;
-    chatMessages.appendChild(messageElement);
-    chatMessages.scrollTop = chatMessages.scrollHeight;
-  } else {
-    console.error('Chat messages container not found');
-  }
+// Helper function to get API key
+async function getApiKey(key) {
+    return new Promise((resolve) => {
+        chrome.storage.local.get([key], function(result) {
+            console.log(`Retrieving ${key} from storage`);
+            if (chrome.runtime.lastError) {
+                console.error('Error retrieving API key:', chrome.runtime.lastError);
+                resolve(null);
+            } else {
+                const encodedKey = result[key];
+                console.log(`Encoded key found: ${encodedKey ? 'Yes' : 'No'}`);
+                if (encodedKey) {
+                    try {
+                        const decodedKey = atob(encodedKey);
+                        console.log(`API key for ${key} retrieved and decoded successfully`);
+                        resolve(decodedKey);
+                    } catch (error) {
+                        console.error('Error decoding API key:', error);
+                        resolve(null);
+                    }
+                } else {
+                    console.warn(`No API key found for ${key}`);
+                    resolve(null);
+                }
+            }
+        });
+    });
 }
 
 // Send a message to OpenAI
@@ -545,18 +315,6 @@ function displayAssistantReply(reply) {
   addMessageToChat('assistant-message', reply);
 }
 
-// Get API key
-async function getApiKey(key) {
-  const { [key]: encodedKey } = await chrome.storage.local.get(key);
-  if (!encodedKey) return null;
-  try {
-    return atob(encodedKey);
-  } catch (error) {
-    console.error('Error decoding API key:', error);
-    return null;
-  }
-}
-
 // Debounce function
 function debounce(func, wait) {
   let timeout;
@@ -566,5 +324,474 @@ function debounce(func, wait) {
   };
 }
 
+// Initialize documents listeners
+function initializeDocumentsListeners() {
+  console.log('Initializing documents listeners');
+  // Remove the code that tries to add an event listener to the load button
+}
+
+// Load sessions from storage
+async function loadSessions() {
+  console.log('Loading sessions');
+  try {
+    const token = await new Promise((resolve, reject) => {
+      chrome.identity.getAuthToken({ interactive: true }, function(token) {
+        if (chrome.runtime.lastError) {
+          reject(chrome.runtime.lastError);
+        } else {
+          resolve(token);
+        }
+      });
+    });
+
+    const result = await new Promise((resolve) => {
+      chrome.storage.local.get(['mentusFolderId'], resolve);
+    });
+
+    if (!result.mentusFolderId) {
+      console.error('Mentus folder not initialized');
+      return;
+    }
+
+    const response = await fetch(`https://www.googleapis.com/drive/v3/files?q='${result.mentusFolderId}' in parents and mimeType='text/markdown'&fields=files(id,name,modifiedTime)`, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    const data = await response.json();
+
+    sessions = {};
+    data.files.forEach(file => {
+      // Use the file ID as the key to prevent duplicates
+      sessions[file.id] = { 
+        id: file.id, 
+        name: file.name.replace('.md', ''), 
+        modifiedTime: file.modifiedTime,
+        messages: [] // We'll load messages when the session is selected
+      };
+    });
+
+    updateSessionList();
+  } catch (error) {
+    console.error('Error loading sessions:', error);
+  }
+}
+
+// Update the session list in the UI
+function updateSessionList() {
+  console.log('Updating session list');
+  const sessionDropdown = document.getElementById('saved-sessions');
+  
+  if (sessionDropdown) {
+    sessionDropdown.innerHTML = '<option value="">Select a session</option>';
+
+    // Sort sessions by modified time, most recent first
+    const sortedSessions = Object.values(sessions).sort((a, b) => 
+      new Date(b.modifiedTime) - new Date(a.modifiedTime)
+    );
+
+    sortedSessions.forEach(session => {
+      const option = document.createElement('option');
+      option.value = session.id;
+      option.textContent = session.name;
+      sessionDropdown.appendChild(option);
+    });
+
+    // Set the current session in the dropdown
+    if (currentSession.id) {
+      sessionDropdown.value = currentSession.id;
+    }
+  }
+}
+
+// Load a specific session
+async function loadSession(sessionId) {
+  console.log(`Loading session: ${sessionId}`);
+  const session = sessions[sessionId];
+  if (session) {
+    try {
+      const token = await new Promise((resolve, reject) => {
+        chrome.identity.getAuthToken({ interactive: true }, function(token) {
+          if (chrome.runtime.lastError) {
+            reject(chrome.runtime.lastError);
+          } else {
+            resolve(token);
+          }
+        });
+      });
+
+      const response = await fetch(`https://www.googleapis.com/drive/v3/files/${sessionId}?alt=media`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const content = await response.text();
+      session.messages = parseMarkdownToMessages(content);
+      session.model = extractModelFromMarkdown(content);
+
+      currentSession = session;
+      currentSession.fileId = sessionId; // Store the file ID
+      updateChatSession();
+      
+      // Update the chat model dropdown
+      const chatModelsDropdown = document.getElementById('chat-models');
+      if (chatModelsDropdown) {
+        chatModelsDropdown.value = session.model;
+      }
+      
+      // Update the session dropdown to reflect the loaded session
+      const sessionDropdown = document.getElementById('saved-sessions');
+      if (sessionDropdown) {
+        sessionDropdown.value = sessionId;
+      }
+
+      // Update session name input field
+      const sessionNameInput = document.getElementById('session-name-input');
+      if (sessionNameInput) {
+        sessionNameInput.value = session.name;
+      }
+    } catch (error) {
+      console.error('Error loading session content:', error);
+    }
+  }
+}
+
+function parseMarkdownToMessages(markdown) {
+  const lines = markdown.split('\n');
+  const messages = [];
+  let currentMessage = null;
+
+  for (const line of lines) {
+    if (line.startsWith('## User') || line.startsWith('## Assistant')) {
+      if (currentMessage) {
+        messages.push(currentMessage);
+      }
+      currentMessage = {
+        role: line.startsWith('## User') ? 'user' : 'assistant',
+        content: ''
+      };
+    } else if (currentMessage) {
+      currentMessage.content += line + '\n';
+    }
+  }
+
+  if (currentMessage) {
+    messages.push(currentMessage);
+  }
+
+  return messages;
+}
+
+function extractModelFromMarkdown(markdown) {
+  const modelLine = markdown.split('\n').find(line => line.startsWith('Model:'));
+  return modelLine ? modelLine.split(':')[1].trim() : null;
+}
+
+// Update the chat session in the UI
+function updateChatSession() {
+  console.log('Updating chat session');
+  const chatMessages = document.getElementById('chat-messages');
+  if (!chatMessages) return;
+  
+  chatMessages.innerHTML = '';
+  currentSession.messages.forEach(msg => {
+    addMessageToChat(msg.role === 'user' ? 'user-message' : 'assistant-message', msg.content);
+  });
+}
+
+// Add a message to the chat UI
+function addMessageToChat(className, message) {
+  const chatMessages = document.getElementById('chat-messages');
+  if (chatMessages) {
+    const messageElement = document.createElement('div');
+    messageElement.className = `chat-message ${className}`;
+    messageElement.textContent = message;
+    chatMessages.appendChild(messageElement);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+    return messageElement;
+  } else {
+    console.error('Chat messages container not found');
+    return null;
+  }
+}
+
 // Initialize the Mentus Tab when the DOM is loaded
-document.addEventListener("DOMContentLoaded", initializeMentusTab);
+document.addEventListener("DOMContentLoaded", function() {
+  console.log("DOM fully loaded and parsed");
+  initializeMentusTab();
+});
+
+// Initialize session listeners
+function initializeSessionListeners() {
+  console.log('Initializing session listeners');
+  const saveSessionButton = document.getElementById('save-session-button');
+  if (saveSessionButton) {
+    saveSessionButton.addEventListener('click', saveCurrentSession);
+  }
+
+  const newSessionButton = document.getElementById('new-session-button');
+  if (newSessionButton) {
+    newSessionButton.addEventListener('click', startNewSession);
+  }
+
+  const chatModelsDropdown = document.getElementById('chat-models');
+  if (chatModelsDropdown) {
+    chatModelsDropdown.addEventListener('change', handleModelChange);
+  }
+
+  const savedSessionsDropdown = document.getElementById('saved-sessions');
+  if (savedSessionsDropdown) {
+    savedSessionsDropdown.addEventListener('change', handleSessionChange);
+  }
+
+  const sessionNameInput = document.getElementById('session-name-input');
+  if (sessionNameInput) {
+    sessionNameInput.addEventListener('change', saveCurrentSession);
+  }
+}
+
+// Start a new session
+function startNewSession() {
+  console.log('Starting new session');
+  const timestamp = new Date().toISOString().slice(0, 19).replace('T', ' '); // Format: YYYY-MM-DD HH:mm:ss
+  currentSession = {
+    id: Date.now().toString(),
+    messages: [],
+    model: null,
+    name: `New Chat- ${timestamp}`
+  };
+  sessions[currentSession.id] = currentSession;
+  updateSessionList();
+  updateChatSession();
+
+  // Update the session name input
+  const sessionNameInput = document.getElementById('session-name-input');
+  if (sessionNameInput) {
+    sessionNameInput.value = currentSession.name;
+  }
+}
+
+// Save the current session
+async function saveCurrentSession() {
+  console.log('Saving current session');
+  if (!currentSession.id) {
+    console.warn('No current session to save, creating a new one');
+    startNewSession();
+    return;
+  }
+
+  const sessionNameInput = document.getElementById('session-name-input');
+  if (sessionNameInput) {
+    const newSessionName = sessionNameInput.value.trim();
+    
+    // Check for existing session with the same name, excluding the current session
+    const existingSession = Object.values(sessions).find(session => session.name === newSessionName && session.id !== currentSession.id);
+    if (existingSession) {
+      alert('A session with this name already exists. Please choose a different name.');
+      return;
+    }
+
+    currentSession.name = newSessionName;
+  }
+
+  // Create markdown content
+  const markdownContent = createMarkdownFromSession(currentSession);
+
+  // Save to Google Drive
+  try {
+    const token = await new Promise((resolve, reject) => {
+      chrome.identity.getAuthToken({ interactive: true }, function(token) {
+        if (chrome.runtime.lastError) {
+          reject(chrome.runtime.lastError);
+        } else {
+          resolve(token);
+        }
+      });
+    });
+
+    // Ensure the fileName always has the .md extension
+    const fileName = `${currentSession.name || 'Untitled Session'}${currentSession.name.endsWith('.md') ? '' : '.md'}`;
+    let file;
+    if (currentSession.fileId) {
+      // Update existing file
+      file = await updateMarkdownFile(token, currentSession.fileId, fileName, markdownContent);
+    } else {
+      // Create new file
+      file = await window.createMarkdownFile(token, fileName, markdownContent);
+      currentSession.fileId = file.id;
+    }
+    console.log('Session saved as markdown in Google Drive');
+
+    // Update local storage
+    sessions[currentSession.id] = currentSession;
+    await saveSessions();
+    updateSessionList();
+
+    // Refresh the documents list
+    if (typeof window.initializeDocuments === 'function') {
+      window.initializeDocuments();
+    }
+  } catch (error) {
+    console.error('Error saving session to Google Drive:', error);
+    alert('Failed to save the session. Please try again.');
+  }
+}
+
+// Add this new function to update existing files
+async function updateMarkdownFile(token, fileId, fileName, content) {
+  const metadata = {
+    name: fileName,
+    mimeType: 'text/markdown'
+  };
+
+  const form = new FormData();
+  form.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }));
+  form.append('file', new Blob([content], { type: 'text/markdown' }));
+
+  const response = await fetch(`https://www.googleapis.com/upload/drive/v3/files/${fileId}?uploadType=multipart`, {
+    method: 'PATCH',
+    headers: { Authorization: `Bearer ${token}` },
+    body: form
+  });
+
+  return response.json();
+}
+
+// Helper function to create markdown content from a session
+function createMarkdownFromSession(session) {
+  let markdown = `# ${session.name || 'Untitled Session'}\n\n`;
+  markdown += `Model: ${session.model}\n\n`;
+  session.messages.forEach(msg => {
+    markdown += `## ${msg.role === 'user' ? 'User' : 'Assistant'}\n\n${msg.content}\n\n`;
+  });
+  return markdown;
+}
+
+// Save all sessions to storage
+async function saveSessions() {
+  console.log('Saving all sessions');
+  if (!chrome.storage) {
+    console.error('Chrome storage API not available');
+    return;
+  }
+
+  try {
+    await chrome.storage.local.set({ chatSessions: Object.values(sessions) });
+    console.log('Sessions saved successfully');
+  } catch (error) {
+    console.error('Error saving sessions:', error);
+  }
+}
+
+// Handle model change
+function handleModelChange(event) {
+  console.log('Model changed:', event.target.value);
+  if (!currentSession.id) {
+    console.warn('No current session, creating a new one');
+    startNewSession();
+  }
+  currentSession.model = event.target.value;
+  saveCurrentSession();
+}
+
+// Handle session change
+function handleSessionChange(event) {
+  console.log('Session changed:', event.target.value);
+  loadSession(event.target.value);
+}
+
+async function sendMessage() {
+    const input = document.getElementById('chat-input');
+    const message = input.value.trim();
+    if (message === '') return;
+
+    input.value = '';
+    addMessageToChat('user-message', message);
+
+    const model = document.getElementById('chat-models').value;
+    if (!model) {
+        alert('Please select a model');
+        return;
+    }
+
+    currentSession.messages.push({ role: 'user', content: message });
+    currentSession.model = model;
+
+    try {
+        let apiKey;
+        if (model.includes('gpt')) {
+            apiKey = await getApiKey('openai-api-key');
+        } else if (model.startsWith('claude')) {
+            apiKey = await getApiKey('anthropic-api-key');
+        }
+
+        if (!apiKey) {
+            alert('API key not found. Please check your settings.');
+            return;
+        }
+
+        let response;
+        if (model.includes('gpt')) {
+            response = await sendMessageToOpenAI(model, apiKey, currentSession.messages);
+        } else if (model.startsWith('claude')) {
+            response = await sendMessageToAnthropic(model, apiKey, currentSession.messages);
+        }
+
+        addMessageToChat('assistant-message', response);
+        currentSession.messages.push({ role: 'assistant', content: response });
+        saveCurrentSession();
+    } catch (error) {
+        console.error('Error sending message:', error);
+        alert('Error sending message. Please try again.');
+    }
+}
+
+async function sendMessage() {
+    const input = document.getElementById('chat-input');
+    const message = input.value.trim();
+    if (message === '') return;
+
+    input.value = '';
+    addMessageToChat('user-message', message);
+
+    const model = document.getElementById('chat-models').value;
+    if (!model) {
+        alert('Please select a model');
+        return;
+    }
+
+    currentSession.messages.push({ role: 'user', content: message });
+    currentSession.model = model;
+
+    try {
+        let apiKey;
+        if (model.includes('gpt')) {
+            apiKey = await getApiKey('openai-api-key');
+        } else if (model.startsWith('claude')) {
+            apiKey = await getApiKey('anthropic-api-key');
+        }
+
+        if (!apiKey) {
+            alert('API key not found. Please check your settings.');
+            return;
+        }
+
+        let response;
+        if (model.includes('gpt')) {
+            response = await sendMessageToOpenAI(model, apiKey, currentSession.messages);
+        } else if (model.startsWith('claude')) {
+            response = await sendMessageToAnthropic(model, apiKey, currentSession.messages);
+        }
+
+        addMessageToChat('assistant-message', response);
+        currentSession.messages.push({ role: 'assistant', content: response });
+        saveCurrentSession();
+    } catch (error) {
+        console.error('Error sending message:', error);
+        alert('Error sending message. Please try again.');
+    }
+}
+
+// ... (rest of the code remains unchanged)
+

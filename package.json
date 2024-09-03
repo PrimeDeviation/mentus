@@ -7,10 +7,16 @@
     "build": "echo 'Building the project...'",
     "start": "echo 'Starting the project...'",
     "test": "echo 'Running tests...'"
-    },
+  },
   "license": "MIT",
   "dependencies": {
-    "langchain": "^0.2.5"
+    "codemirror": "^5.65.17",
+    "langchain": "^0.2.5",
+    "marked": "^14.1.0"
   },
-  "devDependencies": {}
+  "keywords": [],
+  "author": "",
+  "directories": {
+    "lib": "lib"
+  }
 }

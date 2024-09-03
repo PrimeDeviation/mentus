@@ -11,22 +11,19 @@
     }
   },
   "permissions": [
-    "storage",
-    "activeTab",
-    "scripting",
-    "tabs",
-    "identity.email",
-    "fileSystem",
-    "identity"
+    "identity",
+    "storage"
   ],
   "oauth2": {
     "client_id": "822953729366-29gctj1tu3q040h8trvk17u5a6bhhsos.apps.googleusercontent.com",
     "scopes": [
       "https://www.googleapis.com/auth/userinfo.email",
-      "https://www.googleapis.com/auth/userinfo.profile"
+      "https://www.googleapis.com/auth/userinfo.profile",
+      "https://www.googleapis.com/auth/drive.file"
     ]
   },
   "host_permissions": [
+    "https://www.googleapis.com/*",
     "http://*/*",
     "https://*/*"
   ],

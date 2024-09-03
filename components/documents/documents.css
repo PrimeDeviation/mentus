@@ -54,3 +54,36 @@ button {
 button:hover {
     background-color: #677BC4;
 }
+
+#workspace-dropdown {
+    margin-bottom: 20px;
+    padding: 5px;
+    background-color: #40444B;
+    color: #ffffff;
+    border: none;
+    border-radius: 5px;
+}
+
+.file-tree {
+    list-style-type: none;
+    padding-left: 20px;
+}
+
+.file-tree li {
+    margin: 5px 0;
+    cursor: pointer;
+}
+
+.folder-icon::before {
+    content: '📁';
+    margin-right: 5px;
+}
+
+.file-icon::before {
+    content: '📄';
+    margin-right: 5px;
+}
+
+.file-tree ul {
+    padding-left: 20px;
+}

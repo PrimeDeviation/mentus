@@ -51,40 +51,61 @@ chrome.action.onClicked.addListener(() => {
     chrome.tabs.create({ url: chrome.runtime.getURL("components/mentus_tab.html") });
 });
 
+let userInfo = null;
+
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-    if (request.action === 'initializeAuth') {
-        initializeAuth()
-            .then(token => sendResponse({ success: true, token: token }))
-            .catch(error => sendResponse({ success: false, error: error.message }));
-        return true;
-    } else if (request.action === 'saveFile') {
-        const { filePath, content } = request;
-        chrome.storage.local.set({ [filePath]: content }, function() {
-            if (chrome.runtime.lastError) {
-                sendResponse({ success: false, error: chrome.runtime.lastError });
-            } else {
-                sendResponse({ success: true });
-            }
-        });
-        return true;
-    } else if (request.action === 'openDirectoryPicker') {
-        // This functionality is not available in extensions
-    } else if (request.action === 'configureGitHubIntegration') {
-        configureGitHubIntegration(request.repoUrl, request.branch, request.token)
-            .then(result => sendResponse({ success: true, data: result }))
-            .catch(error => sendResponse({ success: false, error: error.message }));
-        return true;
-    } else if (request.action === "authenticate") {
+    if (request.action === "authenticate") {
         chrome.identity.getAuthToken({ interactive: true }, function(token) {
             if (chrome.runtime.lastError) {
-                sendResponse({ success: false, error: chrome.runtime.lastError });
+                sendResponse({ success: false, error: chrome.runtime.lastError.message });
             } else {
-                sendResponse({ success: true, token: token });
+                fetchUserInfo(token, sendResponse);
             }
         });
         return true; // Indicates that the response is sent asynchronously
+    } else if (request.action === "disconnect") {
+        handleDisconnect(sendResponse);
+        return true;
+    } else if (request.action === "updateUI") {
+        chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
+            chrome.tabs.sendMessage(tabs[0].id, {
+                action: "updateGoogleAuthUI",
+                isConnected: request.isConnected,
+                email: request.email
+            });
+        });
     }
 });
+
+function fetchUserInfo(token, sendResponse) {
+    fetch('https://www.googleapis.com/oauth2/v1/userinfo', {
+        headers: { Authorization: `Bearer ${token}` }
+    })
+    .then(response => response.json())
+    .then(data => {
+        chrome.storage.local.set({ 'userInfo': data }, function() {
+            sendResponse({ success: true, userInfo: data });
+        });
+    })
+    .catch(error => {
+        console.error('Error fetching user info:', error);
+        sendResponse({ success: false, error: error.message });
+    });
+}
+
+function handleDisconnect(sendResponse) {
+    chrome.identity.getAuthToken({ interactive: false }, function(token) {
+        if (chrome.runtime.lastError) {
+            sendResponse({ success: false, error: chrome.runtime.lastError.message });
+        } else {
+            chrome.identity.removeCachedAuthToken({ token: token }, function() {
+                chrome.storage.local.remove(['userInfo'], function() {
+                    sendResponse({ success: true });
+                });
+            });
+        }
+    });
+}
 
 async function configureGitHubIntegration(repoUrl, branch, token) {
     try {

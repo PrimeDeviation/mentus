@@ -4,7 +4,7 @@
 <head>
   <title>Mentus Tab</title>
   <link rel="stylesheet" type="text/css" href="../styles/main.css">
-  <script type="text/javascript" src="oauth.js"></script>
+  <link rel="stylesheet" type="text/css" href="../lib/codemirror.css">
 </head>
 
 <body>
@@ -44,39 +44,70 @@
         <button class="tab-button" data-tab="graph">Graph</button>
         <button class="tab-button" data-tab="docs">Docs</button>
         <button class="tab-button" data-tab="editor">Editor</button>
-        <button class="tab-button" data-tab="settings">Settings</button>
+        <button class="tab-button active" data-tab="settings">Settings</button>
         <button class="tab-button" data-tab="userprofile">User Profile</button>
       </div>
       <div id="tab-content">
-        <div id="graph" class="tab-content active">Graph Content</div>
-        <div id="docs" class="tab-content">Docs Content</div>
-        <div id="editor" class="tab-content">Editor Content</div>
+        <div id="graph" class="tab-content">
+          <div class="centered-content">
+            <h2>Graph Content</h2>
+            <!-- Add graph content here -->
+          </div>
+        </div>
+        <div id="docs" class="tab-content">
+          <div class="centered-content">
+            <h2>Documents</h2>
+            <div id="document-list"></div>
+          </div>
+        </div>
+        <div id="editor" class="tab-content">
+          <div class="editor-container">
+            <div class="editor-header">
+              <h2>Editor</h2>
+              <span id="file-name"></span>
+              <button id="create-new-file" class="btn">New File</button>
+            </div>
+            <div class="editor-body">
+              <div id="editor-container"></div>
+              <div id="preview-container" style="display: none;"></div>
+            </div>
+            <div class="editor-footer">
+              <div class="toolbar">
+                <button id="bold" title="Bold (Ctrl+B)">B</button>
+                <button id="italic" title="Italic (Ctrl+I)">I</button>
+                <button id="header" title="Header">H</button>
+                <button id="link" title="Insert Link">Link</button>
+                <button id="image" title="Insert Image">Image</button>
+                <button id="list" title="Unordered List">• List</button>
+                <button id="numbered-list" title="Ordered List">1. List</button>
+                <button id="wiki-link" title="Insert Wiki Link (Ctrl+[)">[[]]</button>
+                <button id="toggle-preview" title="Toggle Preview">Preview</button>
+                <button id="save-button" title="Save (Ctrl+S)">Save</button>
+              </div>
+              <div class="editor-info">
+                <span id="word-count"></span>
+                <span id="last-saved"></span>
+                <span id="syntax-hint"></span>
+                <span id="cursor-position"></span>
+              </div>
+            </div>
+          </div>
+        </div>
         <div id="settings" class="tab-content">
           <div class="centered-content">
             <h2>Settings</h2>
-            <div id="settings-form">
+            <form id="settings-form">
               <div class="form-group">
                 <label for="openai-api-key">OpenAI API Key:</label>
-                <input type="password" id="openai-api-key" name="openai-api-key">
+                <input type="password" id="openai-api-key" placeholder="Enter OpenAI API Key">
+                <div id="openai-api-key-display" class="api-key-display"></div>
               </div>
               <div class="form-group">
                 <label for="anthropic-api-key">Anthropic API Key:</label>
-                <input type="password" id="anthropic-api-key" name="anthropic-api-key">
+                <input type="password" id="anthropic-api-key" placeholder="Enter Anthropic API Key">
+                <div id="anthropic-api-key-display" class="api-key-display"></div>
               </div>
-              <div class="form-group">
-                <label for="graphdb-endpoint">GraphDB Endpoint:</label>
-                <input type="text" id="graphdb-endpoint" name="graphdb-endpoint">
-              </div>
-              <div class="form-group">
-                <label for="graphdb-creds">GraphDB Credentials:</label>
-                <input type="password" id="graphdb-creds" name="graphdb-creds">
-              </div>
-              <div class="form-group">
-                <label for="local-storage-location">Local Storage Location:</label>
-                <input type="text" id="local-storage-location" name="local-storage-location">
-              </div>
-              <button id="save-settings" class="btn">Save Settings</button>
-            </div>
+            </form>
           </div>
         </div>
         <div id="userprofile" class="tab-content">
@@ -84,28 +115,40 @@
             <h2>User Profile</h2>
             <div id="user-profile-form">
               <div class="form-group">
-                <label for="username">Username:</label>
-                <input type="text" id="username" name="username">
+                <label>Google Account Status:</label>
+                <div id="google-account" class="current-value"></div>
               </div>
               <div class="form-group">
-                <label for="email">Email:</label>
-                <input type="email" id="email" name="email">
+                <label>Email:</label>
+                <div id="google-email" class="current-value"></div>
               </div>
               <div class="form-group">
-                <label for="google-account">Google Account:</label>
-                <div id="google-account-display" class="current-value"></div>
+                <button type="button" id="google-auth-button">Connect Google Account</button>
+                <button type="button" id="google-disconnect-button">Disconnect Google Account</button>
               </div>
-              <div class="form-group">
-                <button type="button" id="google-auth-button" class="btn">Connect Google Account</button>
-              </div>
-              <button id="save-profile" class="btn">Save Profile</button>
+              <div id="google-drive-status"></div>
             </div>
           </div>
         </div>
       </div>
     </div>
+    <div id="documents-container"></div>
   </div>
-  <script src="./mentus_tab.js"></script>
+  <script src="../lib/codemirror.js"></script>
+  <script src="../lib/mode/markdown/markdown.js"></script>
+  <script src="../lib/addon/edit/continuelist.js"></script>
+  <script src="../lib/addon/fold/foldcode.js"></script>
+  <script src="../lib/addon/fold/foldgutter.js"></script>
+  <script src="../lib/addon/fold/markdown-fold.js"></script>
+  <script src="../lib/addon/mode/overlay.js"></script>
+  <script src="../lib/addon/mode/simple.js"></script>
+  <script src="../lib/addon/hint/show-hint.js"></script>
+  <script src="../lib/marked.min.js"></script>  <!-- Updated to use local file -->
+  <script src="./editor/editor.js"></script>
+  <script src="mentus_tab.js"></script>
+  <script src="./documents/documents.js"></script>
+  <script src="./userprofile/userprofile.js"></script>
+  <script src="../utils/auth.js"></script>
 </body>
 
 </html>
