@@ -1,6 +1,7 @@
 /* User Profile styles */
 .user-profile-container {
-    background-color: #fff;
+    background-color: var(--bg-color);
+    color: var(--text-color);
     padding: 30px;
     border-radius: 8px;
     width: 100%;
@@ -68,11 +69,10 @@ textarea:focus {
 }
 
 button {
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    border: 1px solid var(--border-color);
     padding: 12px;
-    background-color: #fff;
-    color: #333;
-    border: 1px solid #333;
-    border-radius: 5px;
     cursor: pointer;
     transition: background-color 0.3s;
     font-size: 16px;
@@ -81,7 +81,7 @@ button {
 }
 
 button:hover {
-    background-color: #f0f0f0;
+    background-color: var(--border-color);
 }
 
 .current-value {
@@ -104,4 +104,21 @@ button:hover {
     button {
         max-width: 100%;
     }
+}
+
+.form-group input[type="text"],
+.form-group input[type="email"] {
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    border: 1px solid var(--border-color);
+}
+
+button {
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    border: 1px solid var(--border-color);
+}
+
+button:hover {
+    background-color: var(--border-color);
 }

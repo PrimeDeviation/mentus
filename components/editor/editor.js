@@ -62,40 +62,74 @@ function ensureEditorInitialized() {
     }
 }
 
-function openFileInEditor(fileId, fileName) {
+function openFileInEditor(fileId, fileName, content = null) {
     currentFileId = fileId;
     currentFileName = fileName;
     const fileNameDisplay = document.getElementById("file-name");
     const createNewFileButton = document.getElementById("create-new-file");
 
-    // Fetch file content
-    chrome.identity.getAuthToken({ interactive: true }, function(token) {
-        if (chrome.runtime.lastError) {
-            console.error('Error getting auth token:', chrome.runtime.lastError);
-            return;
-        }
-        fetch(`https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`, {
-            headers: { Authorization: `Bearer ${token}` }
-        })
-        .then(response => response.text())
-        .then(content => {
-            ensureEditorInitialized();
-            if (editor) {
-                editor.setValue(content.trim());
+    ensureEditorInitialized();
+
+    if (content !== null) {
+        // This is an Obsidian file
+        if (editor) {
+            editor.setValue(content.trim());
+            editor.refresh();
+            editor.focus();
+            editor.setCursor(0, 0);
+            
+            // Force a redraw after a short delay
+            setTimeout(() => {
                 editor.refresh();
-                editor.focus();
-                editor.setCursor(0, 0);
-            } else {
-                console.error('Failed to initialize editor');
+            }, 100);
+        } else {
+            console.error('Failed to initialize editor');
+        }
+        if (fileNameDisplay) fileNameDisplay.textContent = fileName;
+        updateWordCount(content);
+        updateLastSaved();
+        if (createNewFileButton) createNewFileButton.style.display = 'none';
+        
+        // Set a flag to indicate we're in Obsidian mode
+        isObsidianMode = true;
+    } else {
+        // This is a Google Drive file
+        chrome.identity.getAuthToken({ interactive: true }, function(token) {
+            if (chrome.runtime.lastError) {
+                console.error('Error getting auth token:', chrome.runtime.lastError);
+                return;
             }
-            if (fileNameDisplay) fileNameDisplay.textContent = fileName;
-            updateWordCount(content);
-            updateLastSaved();
-            if (createNewFileButton) createNewFileButton.style.display = 'none';
-            chrome.storage.local.set({ 'lastOpenedFile': { id: fileId, name: fileName } });
-        })
-        .catch(error => console.error('Error fetching file content:', error));
-    });
+            
+            fetch(`https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`, {
+                headers: { Authorization: `Bearer ${token}` }
+            })
+            .then(response => response.text())
+            .then(fileContent => {
+                if (editor) {
+                    editor.setValue(fileContent.trim());
+                    editor.refresh();
+                    editor.focus();
+                    editor.setCursor(0, 0);
+                    
+                    // Force a redraw after a short delay
+                    setTimeout(() => {
+                        editor.refresh();
+                    }, 100);
+                } else {
+                    console.error('Failed to initialize editor');
+                }
+                if (fileNameDisplay) fileNameDisplay.textContent = fileName;
+                updateWordCount(fileContent);
+                updateLastSaved();
+                if (createNewFileButton) createNewFileButton.style.display = 'none';
+            })
+            .catch(error => {
+                console.error('Error fetching file content:', error);
+                alert('Failed to load file content. Please try again.');
+            });
+        });
+        isObsidianMode = false;
+    }
 }
 
 function createNewFile() {
@@ -121,36 +155,56 @@ function createNewFile() {
 }
 
 function saveFile(fileId, content) {
-    chrome.identity.getAuthToken({ interactive: true }, function(token) {
-        if (chrome.runtime.lastError) {
-            console.error('Error getting auth token:', chrome.runtime.lastError);
-            return;
-        }
-        
-        const metadata = {
-            mimeType: 'text/markdown'
-        };
+    if (isObsidianMode) {
+        saveObsidianFile(fileId, content);
+    } else {
+        saveGoogleDriveFile(fileId, content);
+    }
+}
 
-        const form = new FormData();
-        form.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }));
-        form.append('file', new Blob([content], { type: 'text/markdown' }));
+async function saveObsidianFile(path, content) {
+    const apiKey = await window.settingsModule.getSetting('obsidian-api-key');
+    const endpoint = await window.settingsModule.getSetting('obsidian-endpoint');
 
-        fetch(`https://www.googleapis.com/upload/drive/v3/files/${fileId}?uploadType=multipart`, {
-            method: 'PATCH',
-            headers: { Authorization: `Bearer ${token}` },
-            body: form
-        })
-        .then(response => response.json())
-        .then(file => {
-            console.log('File updated:', file);
-            alert('File saved successfully!');
-            updateLastSaved();
-        })
-        .catch(error => {
-            console.error('Error updating file:', error);
-            alert('Failed to save file. Please try again.');
+    console.log('Saving Obsidian file:', path);
+    console.log('Endpoint:', endpoint);
+    console.log('Content length:', content.length);
+
+    try {
+        // Encode each path segment separately
+        const encodedPath = path.split('/').map(segment => encodeURIComponent(segment)).join('/');
+        const url = `${endpoint}/vault/${encodedPath}`;
+        console.log('Request URL:', url);
+
+        const response = await fetch(url, {
+            method: 'PUT',
+            headers: {
+                'Authorization': `Bearer ${apiKey}`,
+                'Content-Type': 'text/markdown'
+            },
+            body: content
         });
-    });
+
+        console.log('Response status:', response.status);
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error('Error response from Obsidian API:', response.status, errorText);
+            throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
+        }
+
+        console.log('File saved successfully');
+        alert('File saved successfully!');
+        updateLastSaved();
+    } catch (error) {
+        console.error('Error saving file:', error);
+        alert(`Failed to save file. Error: ${error.message}\nPlease check the console for more details and try again.`);
+    }
+}
+
+function saveGoogleDriveFile(fileId, content) {
+    // Existing Google Drive save logic
+    // ...
 }
 
 function updateWordCount(content) {

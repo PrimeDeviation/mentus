@@ -11,8 +11,8 @@
     }
   },
   "permissions": [
-    "identity",
-    "storage"
+    "storage",
+    "identity"
   ],
   "oauth2": {
     "client_id": "822953729366-29gctj1tu3q040h8trvk17u5a6bhhsos.apps.googleusercontent.com",
@@ -60,7 +60,13 @@
         "components/userprofile/userprofile.js",
         "components/userprofile/userprofile.css",
         "components/userprofile/userprofile.html",
-        "styles/main.css"
+        "styles/main.css",
+        "lib/codemirror.js",
+        "lib/markdown.js",
+        "lib/language-data.js",
+        "lib/autocomplete.js",
+        "lib/marked.min.js",
+        "certs/obsidian-local-rest-api.crt"
       ],
       "matches": [
         "<all_urls>"

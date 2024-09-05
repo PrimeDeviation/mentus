@@ -1,6 +1,7 @@
 /* Settings styles */
 .settings-container {
-    background-color: #2F3136;
+    background-color: var(--bg-color);
+    color: var(--text-color);
     padding: 30px;
     border-radius: 8px;
     width: 100%;
@@ -56,9 +57,9 @@ input[type="password"]:focus {
 
 button {
     padding: 12px;
-    background-color: #7289da;
-    color: #fff;
-    border: none;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    border: 1px solid var(--border-color);
     border-radius: 4px;
     cursor: pointer;
     transition: background-color 0.3s;
@@ -67,7 +68,7 @@ button {
 }
 
 button:hover {
-    background-color: #5e77d4;
+    background-color: var(--border-color);
 }
 
 .input-with-button {

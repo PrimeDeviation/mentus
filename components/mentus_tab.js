@@ -1,7 +1,11 @@
 // Constants for settings and chat models
-const SETTINGS = [
+window.SETTINGS = [
   'openai-api-key',
-  'anthropic-api-key'
+  'anthropic-api-key',
+  'obsidian-api-key',
+  'obsidian-endpoint',
+  'obsidian-chat-path',
+  'save-to-obsidian'
 ];
 
 const CHAT_MODELS = {
@@ -26,36 +30,149 @@ let currentSession = {
 let profileDataReady = false;
 
 // Initialize the Mentus Tab
-function initializeMentusTab() {
+async function initializeMentusTab() {
   try {
     console.log('Initializing Mentus Tab');
     initializeTabButtons();
-    loadSessions(); // Load sessions from Google Drive
-    loadChatModels();
-    initializeChatListeners();
-    initializeSettingsListeners();
-    initializeDocumentsListeners();
-    initializeSessionListeners();
-    loadExistingSettings();
+    console.log('Tab buttons initialized');
+    initializeDraggableResizer();
+    initializeDarkModeToggle();
+    console.log('Dark mode toggle initialized');
 
-    // Create a new session if one doesn't exist
+    // Load settings first
+    if (window.settingsModule) {
+      console.log('Loading existing settings');
+      await window.settingsModule.loadExistingSettings();
+      console.log('Initializing settings listeners');
+      window.settingsModule.initializeSettingsListeners();
+    } else {
+      console.error('Settings module not found');
+    }
+
+    // Load chat models after settings are loaded
+    console.log('About to load chat models');
+    await loadChatModels();
+    console.log('Chat models loaded');
+
+    // Initialize Obsidian
+    console.log('Initializing Obsidian');
+    await initializeObsidian();
+    console.log('Obsidian initialized');
+
+    // Load sessions
+    console.log('Loading sessions');
+    const saveToObsidian = await window.settingsModule.getSetting('save-to-obsidian');
+    if (saveToObsidian) {
+      await loadObsidianSessions();
+    } else {
+      await loadSessions();
+    }
+    console.log('Sessions loaded');
+    updateSessionList();
+
+    initializeChatListeners();
+    console.log('Chat listeners initialized');
+    initializeDocumentsListeners();
+    console.log('Document listeners initialized');
+    initializeSessionListeners();
+    console.log('Session listeners initialized');
+
     if (!currentSession.id) {
+      console.log('Starting new session');
       startNewSession();
     }
 
-    console.log('About to show settings tab');
-    showTab('settings'); // Show settings tab by default
+    // Show the settings tab by default
+    showTab('settings');
+    console.log('Settings tab displayed');
+
     console.log('Mentus Tab initialization complete');
   } catch (error) {
     console.error('Error in initializeMentusTab:', error);
   }
 }
 
+function initializeDraggableResizer() {
+  console.log('Initializing draggable resizer');
+  const chatbar = document.getElementById('chatbar');
+  const resizeHandle = document.getElementById('resize-handle');
+  const content = document.getElementById('content');
+
+  if (!chatbar || !resizeHandle || !content) {
+      console.error('One or more elements for draggable resizer not found');
+      return;
+  }
+
+  let isResizing = false;
+
+  resizeHandle.addEventListener('mousedown', (e) => {
+      isResizing = true;
+      document.addEventListener('mousemove', handleMouseMove);
+      document.addEventListener('mouseup', stopResize);
+  });
+
+  function handleMouseMove(e) {
+      if (!isResizing) return;
+      const newWidth = e.clientX;
+      chatbar.style.width = `${newWidth}px`;
+      content.style.width = `calc(100% - ${newWidth}px)`;
+  }
+
+  function stopResize() {
+      isResizing = false;
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', stopResize);
+  }
+
+  console.log('Draggable resizer initialized');
+}
+
+async function initializeObsidian() {
+  console.log('Initializing Obsidian');
+  try {
+    const apiKey = await window.settingsModule.getSetting('obsidian-api-key');
+    const endpoint = await window.settingsModule.getSetting('obsidian-endpoint');
+
+    if (!apiKey || !endpoint) {
+      console.log('Obsidian API key or endpoint not set, skipping initialization');
+      return;
+    }
+
+    console.log('Obsidian settings loaded');
+    
+    // Optionally, you can check the connection to Obsidian here
+    const isConnected = await checkObsidianConnection(apiKey, endpoint);
+    if (isConnected) {
+      console.log('Successfully connected to Obsidian');
+    } else {
+      console.warn('Failed to connect to Obsidian');
+    }
+  } catch (error) {
+    console.error('Error initializing Obsidian:', error);
+  }
+}
+
+async function checkObsidianConnection(apiKey, endpoint) {
+  try {
+    const response = await fetch(endpoint, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json'
+      }
+    });
+    return response.ok;
+  } catch (error) {
+    console.error('Error checking Obsidian connection:', error);
+    return false;
+  }
+}
 // Initialize tab buttons
 function initializeTabButtons() {
-  document.querySelectorAll('.tab-button').forEach(button => {
-    button.addEventListener('click', (event) => {
-      const tabName = event.target.getAttribute('data-tab');
+  const tabButtons = document.querySelectorAll('.tab-button');
+  tabButtons.forEach(button => {
+    button.addEventListener('click', () => {
+      const tabName = button.getAttribute('data-tab');
       showTab(tabName);
     });
   });
@@ -65,35 +182,29 @@ function initializeTabButtons() {
 function showTab(tabName) {
   console.log(`Showing tab: ${tabName}`);
   
-  document.querySelectorAll('.tab-content').forEach(tab => {
-    tab.style.display = 'none';
-  });
-  
-  document.querySelectorAll('.tab-button').forEach(button => {
-    button.classList.remove('active');
-  });
-  
+  const tabContents = document.querySelectorAll('.tab-content');
+  const tabButtons = document.querySelectorAll('.tab-button');
+
+  tabContents.forEach(content => content.style.display = 'none');
+  tabButtons.forEach(button => button.classList.remove('active'));
+
   const activeTab = document.getElementById(tabName);
   const activeButton = document.querySelector(`.tab-button[data-tab="${tabName}"]`);
-  
+
   if (activeTab && activeButton) {
+    activeTab.style.width = '100%';
     activeTab.style.display = 'block';
     activeButton.classList.add('active');
     console.log(`Tab ${tabName} is now visible`);
 
+    // Additional logic for specific tabs
     if (tabName === 'docs') {
-      console.log('Initializing documents for docs tab');
       if (typeof window.showDocumentsTab === 'function') {
         window.showDocumentsTab();
-      } else {
-        console.error('showDocumentsTab function not found');
       }
     } else if (tabName === 'editor') {
-      console.log('Initializing editor for editor tab');
       if (typeof window.editorModule !== 'undefined' && typeof window.editorModule.ensureEditorInitialized === 'function') {
         window.editorModule.ensureEditorInitialized();
-      } else {
-        console.error('Editor module not found');
       }
     }
   } else {
@@ -101,99 +212,48 @@ function showTab(tabName) {
   }
 }
 
-// Initialize settings listeners
-function initializeSettingsListeners() {
-  console.log('Initializing settings listeners');
-  SETTINGS.forEach(setting => {
-    const input = document.getElementById(setting);
-    if (input) {
-      input.addEventListener('input', function() {
-        updateApiKeyDisplay(setting, input.value);
-      });
-      input.addEventListener('keyup', debounce(function(event) {
-        if (event.key === 'Enter') {
-          saveSetting(setting, input.value);
-        }
-      }, 300));
-      input.addEventListener('blur', function() {
-        saveSetting(setting, input.value);
-      });
-    } else {
-      console.error(`Setting input not found: ${setting}`);
-    }
-  });
-}
-
-// Load existing settings
-async function loadExistingSettings() {
-  console.log('Loading existing settings');
-  const result = await chrome.storage.local.get(SETTINGS);
-  SETTINGS.forEach(setting => {
-    const input = document.getElementById(setting);
-    if (input) {
-      const value = result[setting] ? atob(result[setting]) : '';
-      input.value = value;
-      updateApiKeyDisplay(setting, value);
-    } else {
-      console.error(`Setting input not found: ${setting}`);
-    }
-  });
-}
-
-// Save a single setting
-async function saveSetting(setting, value) {
-  console.log(`Saving setting: ${setting}`);
-  const settingToSave = {};
-  settingToSave[setting] = value ? btoa(value) : '';
-
-  try {
-    await chrome.storage.local.set(settingToSave);
-    updateApiKeyDisplay(setting, value);
-    loadChatModels(); // Reload chat models after saving settings
-  } catch (error) {
-    console.error(`Error saving setting ${setting}:`, error);
-  }
-}
-
-// Update API key display
-function updateApiKeyDisplay(setting, value) {
-  const display = document.getElementById(`${setting}-display`);
-  if (display) {
-    if (value) {
-      const obfuscatedValue = value.substring(0, 4) + '*'.repeat(Math.max(0, value.length - 4));
-      display.textContent = obfuscatedValue;
-    } else {
-      display.textContent = 'No API key set';
-    }
-  } else {
-    console.warn(`Display element for ${setting} not found`);
-  }
-}
-
 // Load chat models
 async function loadChatModels() {
+  console.log('Entering loadChatModels function');
   try {
-    const result = await chrome.storage.local.get(['openai-api-key', 'anthropic-api-key']);
-    const openaiApiKey = result['openai-api-key'];
-    const anthropicApiKey = result['anthropic-api-key'];
+    console.log('Attempting to get OpenAI API key');
+    const openaiApiKey = await window.settingsModule.getSetting('openai-api-key');
+    console.log('OpenAI API Key retrieved:', openaiApiKey ? 'Yes (length: ' + openaiApiKey.length + ')' : 'No');
+    
+    console.log('Attempting to get Anthropic API key');
+    const anthropicApiKey = await window.settingsModule.getSetting('anthropic-api-key');
+    console.log('Anthropic API Key retrieved:', anthropicApiKey ? 'Yes (length: ' + anthropicApiKey.length + ')' : 'No');
+    
     const chatModelsDropdown = document.getElementById('chat-models');
 
+    if (!chatModelsDropdown) {
+      console.error('Chat models dropdown not found');
+      return;
+    }
+
+    console.log('Clearing chat models dropdown');
     chatModelsDropdown.innerHTML = '';
 
     if (openaiApiKey) {
+      console.log('Adding OpenAI models');
       addModelOptions(chatModelsDropdown, 'GPT Models', CHAT_MODELS.openai);
     }
 
     if (anthropicApiKey) {
+      console.log('Adding Anthropic models');
       addModelOptions(chatModelsDropdown, 'Anthropic Models', CHAT_MODELS.anthropic);
     }
 
     if (!openaiApiKey && !anthropicApiKey) {
+      console.log('No API keys found, adding no-key option');
       addNoApiKeyOption(chatModelsDropdown);
     }
+
+    console.log('Chat models loaded successfully');
   } catch (error) {
     console.error('Error loading chat models:', error);
   }
+  console.log('Exiting loadChatModels function');
 }
 
 // Add model options to dropdown
@@ -236,16 +296,115 @@ function initializeChatListeners() {
       sendButton.click();
     }
   });
+
+  chatInput.addEventListener('input', handleChatInput);
+}
+
+let mentionSuggestions = [];
+
+async function handleChatInput(e) {
+    const input = e.target;
+    const cursorPosition = input.selectionStart;
+    const textBeforeCursor = input.value.substring(0, cursorPosition);
+    const mentionMatch = textBeforeCursor.match(/@(\w*)$/);
+
+    if (mentionMatch) {
+        const mentionText = mentionMatch[1];
+        const suggestions = await fetchMentionSuggestions(mentionText);
+        displayMentionSuggestions(suggestions, input, cursorPosition);
+    } else {
+        hideMentionSuggestions();
+    }
+}
+
+async function fetchMentionSuggestions(query) {
+    const apiKey = await window.settingsModule.getSetting('obsidian-api-key');
+    const endpoint = await window.settingsModule.getSetting('obsidian-endpoint');
+
+    if (!apiKey || !endpoint) {
+        console.error('Obsidian API key or endpoint not set');
+        return [];
+    }
+
+    try {
+        const response = await fetch(`${endpoint}/vault/`, {
+            headers: {
+                'Authorization': `Bearer ${apiKey}`,
+                'Accept': 'application/json'
+            }
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        return data.files
+            .filter(file => file.toLowerCase().includes(query.toLowerCase()) && file.endsWith('.md'))
+            .map(file => ({
+                name: file.replace('.md', ''),
+                path: file
+            }));
+    } catch (error) {
+        console.error('Error fetching mention suggestions:', error);
+        return [];
+    }
+}
+
+function displayMentionSuggestions(suggestions, input, cursorPosition) {
+    const suggestionList = document.getElementById('mention-suggestions');
+    if (!suggestionList) {
+        const newSuggestionList = document.createElement('ul');
+        newSuggestionList.id = 'mention-suggestions';
+        newSuggestionList.style.position = 'absolute';
+        newSuggestionList.style.zIndex = '1000';
+        input.parentNode.appendChild(newSuggestionList);
+    }
+
+    const list = document.getElementById('mention-suggestions');
+    list.innerHTML = '';
+    mentionSuggestions = suggestions;
+
+    suggestions.forEach((suggestion, index) => {
+        const li = document.createElement('li');
+        li.textContent = suggestion.name;
+        li.addEventListener('click', () => selectMention(suggestion, input, cursorPosition));
+        list.appendChild(li);
+    });
+
+    positionSuggestionList(list, input);
+}
+
+function positionSuggestionList(list, input) {
+    const inputRect = input.getBoundingClientRect();
+    list.style.top = `${inputRect.bottom}px`;
+    list.style.left = `${inputRect.left}px`;
+    list.style.width = `${inputRect.width}px`;
+}
+
+function hideMentionSuggestions() {
+    const suggestionList = document.getElementById('mention-suggestions');
+    if (suggestionList) {
+        suggestionList.innerHTML = '';
+    }
+}
+
+function selectMention(suggestion, input, cursorPosition) {
+    const textBeforeMention = input.value.substring(0, cursorPosition).replace(/@\w*$/, '');
+    const textAfterMention = input.value.substring(cursorPosition);
+    input.value = `${textBeforeMention}@${suggestion.name} ${textAfterMention}`;
+    hideMentionSuggestions();
+    input.focus();
 }
 
 // Helper function to get API key
 async function getApiKey(key) {
-    return new Promise((resolve) => {
+    return new Promise((resolve, reject) => {
         chrome.storage.local.get([key], function(result) {
             console.log(`Retrieving ${key} from storage`);
             if (chrome.runtime.lastError) {
                 console.error('Error retrieving API key:', chrome.runtime.lastError);
-                resolve(null);
+                reject(chrome.runtime.lastError);
             } else {
                 const encodedKey = result[key];
                 console.log(`Encoded key found: ${encodedKey ? 'Yes' : 'No'}`);
@@ -253,10 +412,10 @@ async function getApiKey(key) {
                     try {
                         const decodedKey = atob(encodedKey);
                         console.log(`API key for ${key} retrieved and decoded successfully`);
-                        resolve(decodedKey);
+                        resolve(decodedKey); 
                     } catch (error) {
                         console.error('Error decoding API key:', error);
-                        resolve(null);
+                        reject(error);
                     }
                 } else {
                     console.warn(`No API key found for ${key}`);
@@ -269,45 +428,79 @@ async function getApiKey(key) {
 
 // Send a message to OpenAI
 async function sendMessageToOpenAI(model, apiKey, messages) {
-  const response = await fetch('https://api.openai.com/v1/chat/completions', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${apiKey}`
-    },
-    body: JSON.stringify({ model, messages })
-  });
+  try {
+    console.log('Sending message to OpenAI API');
+    console.log('Model:', model);
+    console.log('Messages:', messages);
 
-  if (!response.ok) {
-    const errorData = await response.json();
-    throw new Error(errorData.error.message);
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`
+      },
+      body: JSON.stringify({
+        model: model,
+        messages: messages
+      })
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error('OpenAI API Error:', errorData);
+      throw new Error(`OpenAI API Error: ${JSON.stringify(errorData)}`);
+    }
+
+    const data = await response.json();
+    console.log('OpenAI API Response:', data);
+    return data.choices[0].message.content;
+  } catch (error) {
+    console.error('Error in sendMessageToOpenAI:', error);
+    throw error;
   }
-
-  const data = await response.json();
-  console.log('OpenAI API Response:', data);
-  return data.choices[0].message.content;
 }
 
 // Send a message to Anthropic
 async function sendMessageToAnthropic(model, apiKey, messages) {
-  const response = await fetch('https://api.anthropic.com/v1/messages', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'x-api-key': apiKey,
-      'anthropic-version': '2023-06-01'
-    },
-    body: JSON.stringify({ model, messages, max_tokens: 4000 })
-  });
+  try {
+    console.log('Sending message to Anthropic API');
+    console.log('Model:', model);
+    console.log('Messages:', messages);
 
-  if (!response.ok) {
-    const errorData = await response.json();
-    throw new Error(`Anthropic API Error: ${JSON.stringify(errorData)}`);
+    let max_tokens;
+    if (model === 'claude-3-5-sonnet-20240620') {
+      max_tokens = 8192;
+    } else {
+      max_tokens = 4096; // For other Claude models
+    }
+
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01'
+      },
+      body: JSON.stringify({
+        model: model,
+        messages: messages.map(msg => ({ role: msg.role, content: msg.content })),
+        max_tokens: max_tokens
+      })
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error('Anthropic API Error:', errorData);
+      throw new Error(`Anthropic API Error: ${JSON.stringify(errorData)}`);
+    }
+
+    const data = await response.json();
+    console.log('Anthropic API Response:', data);
+    return data.content[0].text;
+  } catch (error) {
+    console.error('Error in sendMessageToAnthropic:', error);
+    throw error;
   }
-
-  const data = await response.json();
-  console.log('Anthropic API Response:', data);
-  return data.content[0].text;
 }
 
 // Display assistant reply
@@ -334,44 +527,66 @@ function initializeDocumentsListeners() {
 async function loadSessions() {
   console.log('Loading sessions');
   try {
-    const token = await new Promise((resolve, reject) => {
-      chrome.identity.getAuthToken({ interactive: true }, function(token) {
-        if (chrome.runtime.lastError) {
-          reject(chrome.runtime.lastError);
-        } else {
-          resolve(token);
-        }
-      });
-    });
-
-    const result = await new Promise((resolve) => {
-      chrome.storage.local.get(['mentusFolderId'], resolve);
-    });
-
-    if (!result.mentusFolderId) {
-      console.error('Mentus folder not initialized');
-      return;
-    }
-
-    const response = await fetch(`https://www.googleapis.com/drive/v3/files?q='${result.mentusFolderId}' in parents and mimeType='text/markdown'&fields=files(id,name,modifiedTime)`, {
-      headers: { Authorization: `Bearer ${token}` }
-    });
-    const data = await response.json();
-
-    sessions = {};
-    data.files.forEach(file => {
-      // Use the file ID as the key to prevent duplicates
-      sessions[file.id] = { 
-        id: file.id, 
-        name: file.name.replace('.md', ''), 
-        modifiedTime: file.modifiedTime,
-        messages: [] // We'll load messages when the session is selected
-      };
-    });
-
+    const result = await chrome.storage.local.get('sessions');
+    sessions = result.sessions || {};
+    console.log('Loaded sessions:', sessions);
     updateSessionList();
   } catch (error) {
     console.error('Error loading sessions:', error);
+  }
+}
+
+async function loadObsidianSessions() {
+  console.log('Loading Obsidian sessions');
+  try {
+    const apiKey = await window.settingsModule.getSetting('obsidian-api-key');
+    const endpoint = await window.settingsModule.getSetting('obsidian-endpoint');
+    const chatPath = await window.settingsModule.getSetting('obsidian-chat-path');
+
+    console.log('Obsidian API Key:', apiKey ? 'Set' : 'Not set');
+    console.log('Obsidian Endpoint:', endpoint);
+    console.log('Obsidian Chat Path:', chatPath);
+
+    if (!apiKey || !endpoint || !chatPath) {
+      console.error('Obsidian settings are incomplete');
+      return;
+    }
+
+    // Ensure the chatPath ends with a forward slash
+    const formattedChatPath = chatPath.endsWith('/') ? chatPath : `${chatPath}/`;
+    const url = `${endpoint.replace(/\/$/, '')}/vault/${formattedChatPath.replace(/^\//, '')}`;
+    console.log('Fetching Obsidian sessions from:', url);
+
+    const response = await fetch(url, {
+      headers: { 
+        'Authorization': `Bearer ${apiKey}`,
+        'Accept': 'application/json'
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    console.log('Obsidian API response:', data);
+
+    if (!data.files || !Array.isArray(data.files)) {
+      console.error('Unexpected response format:', data);
+      throw new Error('Unexpected response format from Obsidian API');
+    }
+
+    sessions = {};
+    for (const file of data.files) {
+      if (file.endsWith('.md')) {
+        const sessionId = file.replace('.md', '');
+        sessions[sessionId] = { id: sessionId, name: file };
+      }
+    }
+    console.log('Loaded Obsidian sessions:', sessions);
+    updateSessionList();
+  } catch (error) {
+    console.error('Error loading Obsidian sessions:', error);
   }
 }
 
@@ -379,27 +594,16 @@ async function loadSessions() {
 function updateSessionList() {
   console.log('Updating session list');
   const sessionDropdown = document.getElementById('saved-sessions');
+  sessionDropdown.innerHTML = '<option value="">Select a session</option>';
   
-  if (sessionDropdown) {
-    sessionDropdown.innerHTML = '<option value="">Select a session</option>';
-
-    // Sort sessions by modified time, most recent first
-    const sortedSessions = Object.values(sessions).sort((a, b) => 
-      new Date(b.modifiedTime) - new Date(a.modifiedTime)
-    );
-
-    sortedSessions.forEach(session => {
-      const option = document.createElement('option');
-      option.value = session.id;
-      option.textContent = session.name;
-      sessionDropdown.appendChild(option);
-    });
-
-    // Set the current session in the dropdown
-    if (currentSession.id) {
-      sessionDropdown.value = currentSession.id;
-    }
-  }
+  Object.values(sessions).forEach(session => {
+    const option = document.createElement('option');
+    option.value = session.id;
+    option.textContent = session.name || `Session ${session.id}`;
+    sessionDropdown.appendChild(option);
+  });
+  
+  console.log('Session list updated');
 }
 
 // Load a specific session
@@ -408,36 +612,20 @@ async function loadSession(sessionId) {
   const session = sessions[sessionId];
   if (session) {
     try {
-      const token = await new Promise((resolve, reject) => {
-        chrome.identity.getAuthToken({ interactive: true }, function(token) {
-          if (chrome.runtime.lastError) {
-            reject(chrome.runtime.lastError);
-          } else {
-            resolve(token);
-          }
-        });
-      });
-
-      const response = await fetch(`https://www.googleapis.com/drive/v3/files/${sessionId}?alt=media`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+      const saveToObsidian = await window.settingsModule.getSetting('save-to-obsidian');
+      
+      if (saveToObsidian) {
+        await loadObsidianSessionContent(session);
+      } else {
+        await loadGoogleDriveSessionContent(session);
       }
 
-      const content = await response.text();
-      session.messages = parseMarkdownToMessages(content);
-      session.model = extractModelFromMarkdown(content);
-
       currentSession = session;
-      currentSession.fileId = sessionId; // Store the file ID
-      updateChatSession();
       
       // Update the chat model dropdown
       const chatModelsDropdown = document.getElementById('chat-models');
       if (chatModelsDropdown) {
-        chatModelsDropdown.value = session.model;
+        chatModelsDropdown.value = session.model || '';
       }
       
       // Update the session dropdown to reflect the loaded session
@@ -451,10 +639,81 @@ async function loadSession(sessionId) {
       if (sessionNameInput) {
         sessionNameInput.value = session.name;
       }
+
+      // Explicitly update the chat session UI
+      updateChatSession();
+
     } catch (error) {
       console.error('Error loading session content:', error);
+      alert(`Failed to load session: ${error.message}`);
+      // Reset the session dropdown
+      const sessionDropdown = document.getElementById('saved-sessions');
+      if (sessionDropdown) {
+        sessionDropdown.value = '';
+      }
     }
+  } else {
+    console.error('Session not found:', sessionId);
   }
+}
+
+async function loadObsidianSessionContent(session) {
+  const apiKey = await window.settingsModule.getSetting('obsidian-api-key');
+  const endpoint = await window.settingsModule.getSetting('obsidian-endpoint');
+  const chatPath = await window.settingsModule.getSetting('obsidian-chat-path');
+
+  const url = `${endpoint.replace(/\/$/, '')}/vault/${chatPath.replace(/^\//, '')}/${session.name}`;
+  console.log('Loading Obsidian session from:', url);
+
+  try {
+    const response = await fetch(url, {
+      headers: {
+        'Authorization': `Bearer ${apiKey}`
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const content = await response.text();
+    session.messages = parseMarkdownToMessages(content);
+    session.model = extractModelFromMarkdown(content);
+
+    // Update the UI
+    updateChatSession();
+    
+    console.log('Session loaded:', session);
+    return content;
+  } catch (error) {
+    console.error('Error loading Obsidian session content:', error);
+    alert(`Failed to load session content: ${error.message}`);
+    throw error;
+  }
+}
+
+async function loadGoogleDriveSessionContent(session) {
+  const token = await new Promise((resolve, reject) => {
+    chrome.identity.getAuthToken({ interactive: true }, function(token) {
+      if (chrome.runtime.lastError) {
+        reject(chrome.runtime.lastError);
+      } else {
+        resolve(token);
+      }
+    });
+  });
+
+  const response = await fetch(`https://www.googleapis.com/drive/v3/files/${session.id}?alt=media`, {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+
+  if (!response.ok) {
+    throw new Error(`HTTP error! status: ${response.status}`);
+  }
+
+  const content = await response.text();
+  session.messages = parseMarkdownToMessages(content);
+  session.model = extractModelFromMarkdown(content);
 }
 
 function parseMarkdownToMessages(markdown) {
@@ -463,12 +722,13 @@ function parseMarkdownToMessages(markdown) {
   let currentMessage = null;
 
   for (const line of lines) {
-    if (line.startsWith('## User') || line.startsWith('## Assistant')) {
+    if (line.startsWith('## User') || line.startsWith('## USER') || 
+        line.startsWith('## Assistant') || line.startsWith('## ASSISTANT')) {
       if (currentMessage) {
         messages.push(currentMessage);
       }
       currentMessage = {
-        role: line.startsWith('## User') ? 'user' : 'assistant',
+        role: line.toUpperCase().includes('USER') ? 'user' : 'assistant',
         content: ''
       };
     } else if (currentMessage) {
@@ -480,7 +740,10 @@ function parseMarkdownToMessages(markdown) {
     messages.push(currentMessage);
   }
 
-  return messages;
+  return messages.map(msg => ({
+    ...msg,
+    content: msg.content.trim()
+  }));
 }
 
 function extractModelFromMarkdown(markdown) {
@@ -495,9 +758,13 @@ function updateChatSession() {
   if (!chatMessages) return;
   
   chatMessages.innerHTML = '';
-  currentSession.messages.forEach(msg => {
-    addMessageToChat(msg.role === 'user' ? 'user-message' : 'assistant-message', msg.content);
-  });
+  if (currentSession && currentSession.messages) {
+    currentSession.messages.forEach(msg => {
+      addMessageToChat(msg.role === 'user' ? 'user-message' : 'assistant-message', msg.content);
+    });
+  } else {
+    console.warn('No messages in current session');
+  }
 }
 
 // Add a message to the chat UI
@@ -551,15 +818,69 @@ function initializeSessionListeners() {
   }
 }
 
+// Add this function to handle dark mode toggle
+function initializeDarkModeToggle() {
+    console.log('Initializing dark mode toggle');
+    const toggleButton = document.getElementById('toggle-dark-mode');
+    if (!toggleButton) {
+        console.error('Dark mode toggle button not found');
+        return;
+    }
+
+    toggleButton.addEventListener('click', () => {
+        console.log('Dark mode toggle clicked');
+        chrome.storage.local.get(['darkMode'], function(result) {
+            const newDarkMode = !result.darkMode;
+            chrome.storage.local.set({ 'darkMode': newDarkMode }, () => {
+                if (chrome.runtime.lastError) {
+                    console.error('Error saving dark mode preference:', chrome.runtime.lastError);
+                } else {
+                    console.log('Dark mode preference saved:', newDarkMode);
+                    applyDarkMode(newDarkMode);
+                }
+            });
+        });
+    });
+
+    // Apply initial dark mode state
+    chrome.storage.local.get(['darkMode'], function(result) {
+        console.log('Retrieved dark mode preference:', result.darkMode);
+        applyDarkMode(result.darkMode);
+    });
+}
+
+// Add this new function to apply dark mode
+function applyDarkMode(isDarkMode) {
+    if (isDarkMode) {
+        document.body.classList.add('dark-mode');
+    } else {
+        document.body.classList.remove('dark-mode');
+    }
+    updateDarkModeButtonText(isDarkMode);
+}
+
+// Modify the updateDarkModeButtonText function
+function updateDarkModeButtonText(isDarkMode) {
+    const toggleButton = document.getElementById('toggle-dark-mode');
+    if (toggleButton) {
+        toggleButton.textContent = isDarkMode ? 'Light Mode' : 'Dark Mode';
+        toggleButton.title = isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode';
+        console.log('Updated dark mode button text:', toggleButton.textContent);
+    } else {
+        console.error('Dark mode toggle button not found in updateDarkModeButtonText');
+    }
+}
+
 // Start a new session
 function startNewSession() {
   console.log('Starting new session');
-  const timestamp = new Date().toISOString().slice(0, 19).replace('T', ' '); // Format: YYYY-MM-DD HH:mm:ss
+  const timestamp = new Date().toISOString().slice(0, 19).replace(/[T:]/g, '_');
+  const sessionName = `New_Chat_${timestamp}`;
   currentSession = {
     id: Date.now().toString(),
     messages: [],
     model: null,
-    name: `New Chat- ${timestamp}`
+    name: sessionName
   };
   sessions[currentSession.id] = currentSession;
   updateSessionList();
@@ -568,7 +889,7 @@ function startNewSession() {
   // Update the session name input
   const sessionNameInput = document.getElementById('session-name-input');
   if (sessionNameInput) {
-    sessionNameInput.value = currentSession.name;
+    sessionNameInput.value = sessionName;
   }
 }
 
@@ -583,84 +904,31 @@ async function saveCurrentSession() {
 
   const sessionNameInput = document.getElementById('session-name-input');
   if (sessionNameInput) {
-    const newSessionName = sessionNameInput.value.trim();
-    
-    // Check for existing session with the same name, excluding the current session
-    const existingSession = Object.values(sessions).find(session => session.name === newSessionName && session.id !== currentSession.id);
-    if (existingSession) {
-      alert('A session with this name already exists. Please choose a different name.');
-      return;
-    }
-
-    currentSession.name = newSessionName;
+    // Sanitize the session name by replacing spaces with underscores
+    currentSession.name = sessionNameInput.value.trim().replace(/\s+/g, '_');
+    sessionNameInput.value = currentSession.name; // Update the input to reflect the sanitized name
   }
 
   // Create markdown content
   const markdownContent = createMarkdownFromSession(currentSession);
 
-  // Save to Google Drive
-  try {
-    const token = await new Promise((resolve, reject) => {
-      chrome.identity.getAuthToken({ interactive: true }, function(token) {
-        if (chrome.runtime.lastError) {
-          reject(chrome.runtime.lastError);
-        } else {
-          resolve(token);
-        }
-      });
-    });
-
-    // Ensure the fileName always has the .md extension
-    const fileName = `${currentSession.name || 'Untitled Session'}${currentSession.name.endsWith('.md') ? '' : '.md'}`;
-    let file;
-    if (currentSession.fileId) {
-      // Update existing file
-      file = await updateMarkdownFile(token, currentSession.fileId, fileName, markdownContent);
-    } else {
-      // Create new file
-      file = await window.createMarkdownFile(token, fileName, markdownContent);
-      currentSession.fileId = file.id;
-    }
-    console.log('Session saved as markdown in Google Drive');
-
-    // Update local storage
-    sessions[currentSession.id] = currentSession;
-    await saveSessions();
-    updateSessionList();
-
-    // Refresh the documents list
-    if (typeof window.initializeDocuments === 'function') {
-      window.initializeDocuments();
-    }
-  } catch (error) {
-    console.error('Error saving session to Google Drive:', error);
-    alert('Failed to save the session. Please try again.');
+  // Check if we should save to Obsidian
+  const saveToObsidian = await window.settingsModule.getSetting('save-to-obsidian');
+  if (saveToObsidian) {
+    await saveToObsidianVault(markdownContent);
+  } else {
+    await saveToGoogleDrive(markdownContent);
   }
-}
 
-// Add this new function to update existing files
-async function updateMarkdownFile(token, fileId, fileName, content) {
-  const metadata = {
-    name: fileName,
-    mimeType: 'text/markdown'
-  };
-
-  const form = new FormData();
-  form.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }));
-  form.append('file', new Blob([content], { type: 'text/markdown' }));
-
-  const response = await fetch(`https://www.googleapis.com/upload/drive/v3/files/${fileId}?uploadType=multipart`, {
-    method: 'PATCH',
-    headers: { Authorization: `Bearer ${token}` },
-    body: form
-  });
-
-  return response.json();
+  // Update local storage
+  sessions[currentSession.id] = currentSession;
+  await saveSessions();
+  updateSessionList();
 }
 
 // Helper function to create markdown content from a session
 function createMarkdownFromSession(session) {
-  let markdown = `# ${session.name || 'Untitled Session'}\n\n`;
+  let markdown = `# Chat Session: ${session.name || 'Untitled Session'}\n\n`;
   markdown += `Model: ${session.model}\n\n`;
   session.messages.forEach(msg => {
     markdown += `## ${msg.role === 'user' ? 'User' : 'Assistant'}\n\n${msg.content}\n\n`;
@@ -721,15 +989,21 @@ async function sendMessage() {
     try {
         let apiKey;
         if (model.includes('gpt')) {
-            apiKey = await getApiKey('openai-api-key');
+            apiKey = await window.settingsModule.getSetting('openai-api-key');
         } else if (model.startsWith('claude')) {
-            apiKey = await getApiKey('anthropic-api-key');
+            apiKey = await window.settingsModule.getSetting('anthropic-api-key');
         }
 
         if (!apiKey) {
-            alert('API key not found. Please check your settings.');
-            return;
+            throw new Error('API key not found. Please check your settings.');
         }
+
+        // Add a small delay
+        await new Promise(resolve => setTimeout(resolve, 500));
+
+        console.log('Sending message to model:', model);
+        console.log('API Key (first 4 characters):', apiKey.substring(0, 4));
+        console.log('Messages:', currentSession.messages);
 
         let response;
         if (model.includes('gpt')) {
@@ -743,55 +1017,77 @@ async function sendMessage() {
         saveCurrentSession();
     } catch (error) {
         console.error('Error sending message:', error);
-        alert('Error sending message. Please try again.');
+        alert(`Error sending message: ${error.message}`);
     }
 }
 
-async function sendMessage() {
-    const input = document.getElementById('chat-input');
-    const message = input.value.trim();
-    if (message === '') return;
+async function saveToObsidianVault(content) {
+    const apiKey = await window.settingsModule.getSetting('obsidian-api-key');
+    const endpoint = await window.settingsModule.getSetting('obsidian-endpoint');
+    const chatPath = await window.settingsModule.getSetting('obsidian-chat-path');
 
-    input.value = '';
-    addMessageToChat('user-message', message);
-
-    const model = document.getElementById('chat-models').value;
-    if (!model) {
-        alert('Please select a model');
+    if (!apiKey || !endpoint || !chatPath) {
+        console.error('Obsidian settings are not complete');
+        console.log('API Key:', apiKey ? 'Set' : 'Not set');
+        console.log('Endpoint:', endpoint);
+        console.log('Chat Path:', chatPath);
+        alert('Obsidian settings are not complete. Please check your settings.');
         return;
     }
 
-    currentSession.messages.push({ role: 'user', content: message });
-    currentSession.model = model;
+    const sanitizedSessionName = `chat_session_${(currentSession.name || 'Untitled_Session').replace(/\s+/g, '_')}`;
+    const fileName = `${sanitizedSessionName}.md`;
+    const filePath = `${chatPath.replace(/\/$/, '')}/${fileName}`;
+
+    console.log('Saving to Obsidian:', filePath);
+    console.log('Content length:', content.length);
 
     try {
-        let apiKey;
-        if (model.includes('gpt')) {
-            apiKey = await getApiKey('openai-api-key');
-        } else if (model.startsWith('claude')) {
-            apiKey = await getApiKey('anthropic-api-key');
+        const url = `${endpoint.replace(/\/$/, '')}/vault/${filePath.replace(/^\//, '')}`;
+        console.log('Request URL:', url);
+
+        const response = await fetch(url, {
+            method: 'PUT',
+            headers: {
+                'Authorization': `Bearer ${apiKey}`,
+                'Content-Type': 'text/markdown'
+            },
+            body: content
+        });
+
+        console.log('Response status:', response.status);
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error('Error response from Obsidian API:', response.status, errorText);
+            throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
         }
 
-        if (!apiKey) {
-            alert('API key not found. Please check your settings.');
-            return;
-        }
-
-        let response;
-        if (model.includes('gpt')) {
-            response = await sendMessageToOpenAI(model, apiKey, currentSession.messages);
-        } else if (model.startsWith('claude')) {
-            response = await sendMessageToAnthropic(model, apiKey, currentSession.messages);
-        }
-
-        addMessageToChat('assistant-message', response);
-        currentSession.messages.push({ role: 'assistant', content: response });
-        saveCurrentSession();
+        console.log('Session saved to Obsidian file');
     } catch (error) {
-        console.error('Error sending message:', error);
-        alert('Error sending message. Please try again.');
+        console.error('Error saving session to Obsidian:', error);
+        alert(`Failed to save the session to Obsidian. Error: ${error.message}\nPlease check your settings and try again.`);
     }
 }
 
-// ... (rest of the code remains unchanged)
+function initializeChatListeners() {
+    const chatInput = document.getElementById('chat-input');
+    const sendButton = document.getElementById('send-button');
 
+    sendButton.addEventListener('click', function() {
+        const message = chatInput.value.trim();
+        if (message) {
+            sendMessage(message);
+            chatInput.value = '';
+        }
+    });
+
+    chatInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            sendButton.click();
+        }
+    });
+
+    chatInput.addEventListener('input', handleChatInput);
+}

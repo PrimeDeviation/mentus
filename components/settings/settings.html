@@ -13,24 +13,49 @@
             <div class="form-group">
                 <label for="openai-api-key">OpenAI API Key:</label>
                 <input type="password" id="openai-api-key" placeholder="Enter OpenAI API Key">
+                <div id="openai-api-key-display" class="api-key-display"></div>
             </div>
             <div class="form-group">
                 <label for="anthropic-api-key">Anthropic API Key:</label>
                 <input type="password" id="anthropic-api-key" placeholder="Enter Anthropic API Key">
+                <div id="anthropic-api-key-display" class="api-key-display"></div>
             </div>
             <div class="form-group">
-                <label for="graphdb-endpoint">GraphDB Endpoint:</label>
-                <input type="text" id="graphdb-endpoint" placeholder="Enter GraphDB Endpoint">
+                <label for="obsidian-api-key">Obsidian Local REST API Key:</label>
+                <input type="password" id="obsidian-api-key" placeholder="Enter Obsidian API Key">
+                <div id="obsidian-api-key-display" class="api-key-display"></div>
             </div>
             <div class="form-group">
-                <label for="graphdb-creds">GraphDB Credentials:</label>
-                <input type="text" id="graphdb-creds" placeholder="Enter GraphDB Credentials">
+                <label for="obsidian-endpoint">Obsidian Local REST API Endpoint:</label>
+                <input type="text" id="obsidian-endpoint" placeholder="e.g., http://localhost:27123">
+                <div id="obsidian-endpoint-display" class="api-key-display"></div>
             </div>
             <div class="form-group">
-                <label for="local-storage-location">Local Storage Location:</label>
-                <input type="text" id="local-storage-location" placeholder="Enter Local Storage Location">
+                <label for="obsidian-chat-path">Obsidian Chat Sessions Path:</label>
+                <input type="text" id="obsidian-chat-path" placeholder="Enter Obsidian path for chat sessions">
             </div>
-            <button type="button" id="save-settings">Save Settings</button>
+            <div class="form-group">
+                <label for="save-to-obsidian">
+                    <input type="checkbox" id="save-to-obsidian">
+                    Save chat sessions to Obsidian
+                </label>
+            </div>
+            <div class="form-group">
+                <h3>Obsidian Local REST API Setup</h3>
+                <ol>
+                    <li>Install the "Local REST API" plugin in Obsidian.</li>
+                    <li>Enable the plugin and configure it with an API key.</li>
+                    <li>Copy the API key and endpoint URL to the fields above.</li>
+                    <li>In Obsidian, go to the Local REST API plugin settings and find the "HTTPS Certificate" section.</li>
+                    <li>Click on "Open Certificate" to view the certificate file.</li>
+                    <li>Install this certificate in your browser or operating system's trust store.</li>
+                    <li>Restart your browser after installing the certificate.</li>
+                </ol>
+                <p>For detailed instructions on installing the certificate, please refer to your browser or operating system's documentation.</p>
+            </div>
+            <div class="form-group">
+                <p class="note">Note: The Obsidian Local REST API certificate is included in this extension. No manual certificate installation is required.</p>
+            </div>
         </form>
     </div>
     <script src="settings.js"></script>

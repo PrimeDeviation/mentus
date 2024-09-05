@@ -11,6 +11,9 @@
   <div class="container">
     <div id="chatbar" class="chatbar">
       <div id="chatbar-content">
+        <!-- Update the dark mode toggle button here -->
+        <button id="toggle-dark-mode" title="Toggle Dark Mode">Dark Mode</button>
+        
         <div class="session-container">
           <input type="text" id="session-name-input" placeholder="Session Name">
         </div>
@@ -39,12 +42,13 @@
         </div>
       </div>
     </div>
-    <div id="main-content" class="main-content">
+    <div id="resize-handle"></div>
+    <div id="content" class="main-content">
       <div class="tabs">
         <button class="tab-button" data-tab="graph">Graph</button>
         <button class="tab-button" data-tab="docs">Docs</button>
         <button class="tab-button" data-tab="editor">Editor</button>
-        <button class="tab-button active" data-tab="settings">Settings</button>
+        <button class="tab-button" data-tab="settings">Settings</button>
         <button class="tab-button" data-tab="userprofile">User Profile</button>
       </div>
       <div id="tab-content">
@@ -107,6 +111,27 @@
                 <input type="password" id="anthropic-api-key" placeholder="Enter Anthropic API Key">
                 <div id="anthropic-api-key-display" class="api-key-display"></div>
               </div>
+              <div class="form-group">
+                <label for="obsidian-api-key">Obsidian Local REST API Key:</label>
+                <input type="password" id="obsidian-api-key" placeholder="Enter Obsidian API Key">
+                <div id="obsidian-api-key-display" class="api-key-display"></div>
+              </div>
+              <div class="form-group">
+                <label for="obsidian-endpoint">Obsidian Local REST API Endpoint:</label>
+                <input type="text" id="obsidian-endpoint" placeholder="Enter Obsidian API Endpoint">
+                <div id="obsidian-endpoint-display" class="api-key-display"></div>
+              </div>
+              <div class="form-group">
+                <label for="obsidian-chat-path">Obsidian Chat Sessions Path:</label>
+                <input type="text" id="obsidian-chat-path" placeholder="Enter Obsidian path for chat sessions">
+              </div>
+              <div class="form-group">
+                <label for="save-to-obsidian">
+                    <input type="checkbox" id="save-to-obsidian">
+                    Save chat sessions to Obsidian
+                </label>
+              </div>
+              <button type="button" id="save-settings">Save Settings</button>
             </form>
           </div>
         </div>
@@ -126,29 +151,18 @@
                 <button type="button" id="google-auth-button">Connect Google Account</button>
                 <button type="button" id="google-disconnect-button">Disconnect Google Account</button>
               </div>
-              <div id="google-drive-status"></div>
             </div>
           </div>
         </div>
       </div>
     </div>
-    <div id="documents-container"></div>
   </div>
   <script src="../lib/codemirror.js"></script>
-  <script src="../lib/mode/markdown/markdown.js"></script>
-  <script src="../lib/addon/edit/continuelist.js"></script>
-  <script src="../lib/addon/fold/foldcode.js"></script>
-  <script src="../lib/addon/fold/foldgutter.js"></script>
-  <script src="../lib/addon/fold/markdown-fold.js"></script>
-  <script src="../lib/addon/mode/overlay.js"></script>
-  <script src="../lib/addon/mode/simple.js"></script>
-  <script src="../lib/addon/hint/show-hint.js"></script>
-  <script src="../lib/marked.min.js"></script>  <!-- Updated to use local file -->
-  <script src="./editor/editor.js"></script>
+  <script src="./settings/settings.js"></script>
   <script src="mentus_tab.js"></script>
+  <script src="./editor/editor.js"></script>
   <script src="./documents/documents.js"></script>
   <script src="./userprofile/userprofile.js"></script>
   <script src="../utils/auth.js"></script>
 </body>
-
 </html>

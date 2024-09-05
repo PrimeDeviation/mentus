@@ -3,6 +3,8 @@
     flex-direction: column;
     height: 100%;
     width: 100%;
+    background-color: var(--bg-color);
+    color: var(--text-color);
 }
 
 .editor-header {
@@ -10,8 +12,8 @@
     justify-content: space-between;
     align-items: center;
     padding: 10px;
-    background-color: #f0f0f0;
-    border-bottom: 1px solid #ccc;
+    background-color: var(--bg-color);
+    border-bottom: 1px solid var(--border-color);
 }
 
 .editor-body {
@@ -27,8 +29,8 @@
 
 .editor-footer {
     padding: 10px;
-    background-color: #f0f0f0;
-    border-top: 1px solid #ccc;
+    background-color: var(--bg-color);
+    border-top: 1px solid var(--border-color);
 }
 
 .toolbar {
@@ -39,9 +41,9 @@
 
 .toolbar button {
     padding: 5px 10px;
-    background-color: #ffffff;
-    color: #000000;
-    border: 1px solid #000000;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    border: 1px solid var(--border-color);
     cursor: pointer;
 }
 
@@ -56,6 +58,8 @@
     font-family: 'Roboto Mono', monospace;
     font-size: 14px;
     line-height: 1.5;
+    background-color: var(--bg-color);
+    color: var(--text-color);
 }
 
 .CodeMirror-scroll {
