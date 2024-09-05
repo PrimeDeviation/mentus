@@ -625,7 +625,12 @@ async function loadSession(sessionId) {
       // Update the chat model dropdown
       const chatModelsDropdown = document.getElementById('chat-models');
       if (chatModelsDropdown) {
-        chatModelsDropdown.value = session.model || '';
+        if (session.model) {
+          chatModelsDropdown.value = session.model;
+        } else {
+          // If no model is set for the session, keep the current selection
+          session.model = chatModelsDropdown.value;
+        }
       }
       
       // Update the session dropdown to reflect the loaded session
@@ -678,10 +683,24 @@ async function loadObsidianSessionContent(session) {
 
     const content = await response.text();
     session.messages = parseMarkdownToMessages(content);
-    session.model = extractModelFromMarkdown(content);
+    
+    // Extract model from markdown
+    const extractedModel = extractModelFromMarkdown(content);
+    
+    // Prioritize the model in this order: 
+    // 1. Model extracted from the session content
+    // 2. Model already stored in the session object
+    // 3. Currently selected model in the dropdown
+    const chatModelsDropdown = document.getElementById('chat-models');
+    session.model = extractedModel || session.model || (chatModelsDropdown ? chatModelsDropdown.value : null);
 
     // Update the UI
     updateChatSession();
+    
+    // Set the model in the dropdown
+    if (chatModelsDropdown && session.model) {
+      chatModelsDropdown.value = session.model;
+    }
     
     console.log('Session loaded:', session);
     return content;
@@ -924,6 +943,12 @@ async function saveCurrentSession() {
   sessions[currentSession.id] = currentSession;
   await saveSessions();
   updateSessionList();
+
+  // Ensure the current session remains selected in the dropdown
+  const sessionDropdown = document.getElementById('saved-sessions');
+  if (sessionDropdown && currentSession.id) {
+    sessionDropdown.value = currentSession.id;
+  }
 }
 
 // Helper function to create markdown content from a session
@@ -983,6 +1008,11 @@ async function sendMessage() {
         return;
     }
 
+    if (!currentSession.id) {
+        console.warn('No current session, creating a new one');
+        startNewSession();
+    }
+
     currentSession.messages.push({ role: 'user', content: message });
     currentSession.model = model;
 
@@ -1014,7 +1044,13 @@ async function sendMessage() {
 
         addMessageToChat('assistant-message', response);
         currentSession.messages.push({ role: 'assistant', content: response });
-        saveCurrentSession();
+        await saveCurrentSession();
+
+        // Update the session dropdown to maintain the current selection
+        const sessionDropdown = document.getElementById('saved-sessions');
+        if (sessionDropdown && currentSession.id) {
+            sessionDropdown.value = currentSession.id;
+        }
     } catch (error) {
         console.error('Error sending message:', error);
         alert(`Error sending message: ${error.message}`);
@@ -1037,13 +1073,13 @@ async function saveToObsidianVault(content) {
 
     const sanitizedSessionName = `chat_session_${(currentSession.name || 'Untitled_Session').replace(/\s+/g, '_')}`;
     const fileName = `${sanitizedSessionName}.md`;
-    const filePath = `${chatPath.replace(/\/$/, '')}/${fileName}`;
+    const filePath = `${chatPath.replace(/^\//, '').replace(/\/$/, '')}/${fileName}`;
 
     console.log('Saving to Obsidian:', filePath);
     console.log('Content length:', content.length);
 
     try {
-        const url = `${endpoint.replace(/\/$/, '')}/vault/${filePath.replace(/^\//, '')}`;
+        const url = `${endpoint.replace(/\/$/, '')}/vault/${filePath}`;
         console.log('Request URL:', url);
 
         const response = await fetch(url, {

@@ -619,29 +619,18 @@ body {
   color: var(--bg-color);
 }
 
-#toggle-dark-mode .sun-icon,
-#toggle-dark-mode .moon-icon {
-  width: 24px;
-  height: 24px;
-}
-
-#toggle-dark-mode .sun-icon {
-  display: none;
-}
-
-body.dark-mode #toggle-dark-mode .sun-icon {
-  display: block;
-}
-
-body.dark-mode #toggle-dark-mode .moon-icon {
-  display: none;
-}
-
 /* Dark mode styles */
 body.dark-mode {
   --bg-color: #1e1e1e;
   --text-color: #ffffff;
   --border-color: #444444;
+  --label-color: #ffffff; /* New variable for label color */
+}
+
+/* Dark mode styles for labels */
+body.dark-mode label,
+body.dark-mode .form-group label {
+    color: var(--label-color);
 }
 
 /* Ensure all elements use the CSS variables */
@@ -649,4 +638,61 @@ body.dark-mode {
   background-color: var(--bg-color);
   color: var(--text-color);
   border-color: var(--border-color);
+}
+
+/* Dark mode styles for dropdowns, buttons, and tabs */
+body.dark-mode .form-group select,
+body.dark-mode .btn,
+body.dark-mode button,
+body.dark-mode .tab-button {
+    background-color: #333;
+    color: #fff;
+    border-color: #555;
+}
+
+body.dark-mode .form-group select:hover,
+body.dark-mode .btn:hover,
+body.dark-mode button:hover,
+body.dark-mode .tab-button:hover {
+    background-color: #444;
+}
+
+body.dark-mode .tab-button.active {
+    background-color: #555;
+    color: #fff;
+}
+
+body.dark-mode #chat-input,
+body.dark-mode #session-name-input {
+    background-color: #333;
+    color: #fff;
+    border-color: #555;
+}
+
+body.dark-mode .chat-message {
+    background-color: #444;
+    color: #fff;
+}
+
+body.dark-mode .user-message {
+    background-color: #2a2a2a;
+}
+
+body.dark-mode .assistant-message {
+    background-color: #3a3a3a;
+}
+
+body.dark-mode .tabs {
+    background-color: #222;
+    border-color: #555;
+}
+
+body.dark-mode #toggle-dark-mode {
+    background-color: #333;
+    color: #fff;
+    border-color: #555;
+}
+
+body.dark-mode #toggle-dark-mode:hover {
+    background-color: #444;
 }
