@@ -122,3 +122,23 @@ async function configureGitHubIntegration(repoUrl, branch, token) {
         throw error;
     }
 }
+
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+    if (request.contentScriptQuery == "fetchObsidianFile") {
+        fetch(request.url, {
+            headers: {
+                'Authorization': `Bearer ${request.apiKey}`,
+                'Accept': 'application/json'
+            }
+        })
+        .then(response => response.text())
+        .then(text => {
+            sendResponse({success: true, data: text});
+        })
+        .catch(error => {
+            console.error('Error fetching from Obsidian API:', error);
+            sendResponse({success: false, error: error.toString()});
+        });
+        return true;  // Will respond asynchronously
+    }
+});

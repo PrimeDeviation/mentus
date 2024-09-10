@@ -35,6 +35,15 @@ function initializeSettingsListeners() {
             console.warn(`Setting input not found: ${setting}`);
         }
     });
+
+    // Add listeners for the new graph database fields
+    document.getElementById('graphdb-endpoint').addEventListener('input', function() {
+        updateApiKeyDisplay('graphdb-endpoint');
+    });
+
+    document.getElementById('graphdb-api-key').addEventListener('input', function() {
+        updateApiKeyDisplay('graphdb-api-key');
+    });
 }
 
 async function loadExistingSettings() {
@@ -56,6 +65,18 @@ async function loadExistingSettings() {
             }
         } else {
             console.warn(`Setting input not found: ${setting}`);
+        }
+    });
+
+    // Load graph database settings
+    chrome.storage.sync.get(['graphdb-endpoint', 'graphdb-api-key'], function(result) {
+        if (result['graphdb-endpoint']) {
+            document.getElementById('graphdb-endpoint').value = result['graphdb-endpoint'];
+            updateApiKeyDisplay('graphdb-endpoint');
+        }
+        if (result['graphdb-api-key']) {
+            document.getElementById('graphdb-api-key').value = result['graphdb-api-key'];
+            updateApiKeyDisplay('graphdb-api-key');
         }
     });
 }

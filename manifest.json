@@ -66,7 +66,8 @@
         "lib/language-data.js",
         "lib/autocomplete.js",
         "lib/marked.min.js",
-        "certs/obsidian-local-rest-api.crt"
+        "certs/obsidian-local-rest-api.crt",
+        "lib/d3/dist/d3.min.js"
       ],
       "matches": [
         "<all_urls>"

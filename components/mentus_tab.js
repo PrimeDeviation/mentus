@@ -206,6 +206,20 @@ function showTab(tabName) {
       if (typeof window.editorModule !== 'undefined' && typeof window.editorModule.ensureEditorInitialized === 'function') {
         window.editorModule.ensureEditorInitialized();
       }
+    } else if (tabName === 'graph') {
+      console.log("Graph tab selected");
+      let graphContainer = document.getElementById('graph-container');
+      if (!graphContainer) {
+        graphContainer = document.createElement('div');
+        graphContainer.id = 'graph-container';
+        document.getElementById('graph').appendChild(graphContainer);
+      }
+      if (typeof window.checkGraphStatus === 'function') {
+        console.log("Calling checkGraphStatus");
+        window.checkGraphStatus();
+      } else {
+        console.error('checkGraphStatus function not found');
+      }
     }
   } else {
     console.error(`Tab content or button not found for: ${tabName}`);
@@ -937,6 +951,18 @@ async function saveCurrentSession() {
     await saveToObsidianVault(markdownContent);
   } else {
     await saveToGoogleDrive(markdownContent);
+  }
+
+  // Write to Mentus graph
+  const mentusApiKey = await window.settingsModule.getSetting('graphdb-api-key');
+  const mentusEndpoint = await window.settingsModule.getSetting('graphdb-endpoint');
+  if (mentusApiKey && mentusEndpoint) {
+    const graphData = {
+      type: 'ChatSession',
+      id: currentSession.id,
+      label: currentSession.name
+    };
+    await window.graphviewModule.writeToMentusGraph(graphData, mentusApiKey, mentusEndpoint);
   }
 
   // Update local storage

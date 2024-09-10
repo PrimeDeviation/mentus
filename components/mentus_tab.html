@@ -5,6 +5,8 @@
   <title>Mentus Tab</title>
   <link rel="stylesheet" type="text/css" href="../styles/main.css">
   <link rel="stylesheet" type="text/css" href="../lib/codemirror.css">
+  <!-- Remove the CDN link for D3 -->
+  <!-- <script src="https://d3js.org/d3.v7.min.js"></script> -->
 </head>
 
 <body>
@@ -53,10 +55,7 @@
       </div>
       <div id="tab-content">
         <div id="graph" class="tab-content">
-          <div class="centered-content">
-            <h2>Graph Content</h2>
-            <!-- Add graph content here -->
-          </div>
+          <div id="graph-container" style="width: 100%; height: 100%;"></div>
         </div>
         <div id="docs" class="tab-content">
           <div class="centered-content">
@@ -131,6 +130,16 @@
                     Save chat sessions to Obsidian
                 </label>
               </div>
+              <div class="form-group">
+                <label for="graphdb-endpoint">Graph Database Endpoint:</label>
+                <input type="text" id="graphdb-endpoint" placeholder="Enter Graph DB Endpoint">
+                <div id="graphdb-endpoint-display" class="api-key-display"></div>
+              </div>
+              <div class="form-group">
+                <label for="graphdb-api-key">Graph Database API Key:</label>
+                <input type="password" id="graphdb-api-key" placeholder="Enter Graph DB API Key">
+                <div id="graphdb-api-key-display" class="api-key-display"></div>
+              </div>
               <button type="button" id="save-settings">Save Settings</button>
             </form>
           </div>
@@ -158,11 +167,14 @@
     </div>
   </div>
   <script src="../lib/codemirror.js"></script>
+  <!-- Replace the existing D3 script tag with this one -->
+  <script src="../lib/d3/dist/d3.min.js"></script>
   <script src="./settings/settings.js"></script>
   <script src="mentus_tab.js"></script>
   <script src="./editor/editor.js"></script>
   <script src="./documents/documents.js"></script>
   <script src="./userprofile/userprofile.js"></script>
   <script src="../utils/auth.js"></script>
+  <script src="./graphview/graphview.js"></script>
 </body>
 </html>

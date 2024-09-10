@@ -154,11 +154,23 @@ function createNewFile() {
     }
 }
 
-function saveFile(fileId, content) {
+async function saveFile(fileId, content) {
     if (isObsidianMode) {
         saveObsidianFile(fileId, content);
     } else {
         saveGoogleDriveFile(fileId, content);
+    }
+
+    // Write to Mentus graph
+    const mentusApiKey = await window.settingsModule.getSetting('graphdb-api-key');
+    const mentusEndpoint = await window.settingsModule.getSetting('graphdb-endpoint');
+    if (mentusApiKey && mentusEndpoint) {
+        const graphData = {
+            type: 'ZettelkastenNote',
+            id: fileId,
+            label: currentFileName
+        };
+        await window.graphviewModule.writeToMentusGraph(graphData, mentusApiKey, mentusEndpoint);
     }
 }
 
