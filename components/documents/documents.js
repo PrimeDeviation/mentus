@@ -328,6 +328,12 @@ async function loadObsidianDirectory(path) {
             }
         });
 
+        if (response.status === 404) {
+            console.warn(`Directory not found: ${path}`);
+            displayObsidianFiles([], path); // Display empty directory
+            return;
+        }
+
         if (!response.ok) {
             const errorText = await response.text();
             console.error('Error response from Obsidian API:', response.status, errorText);
@@ -451,6 +457,12 @@ async function openObsidianFile(path) {
                 'Authorization': `Bearer ${apiKey}`
             }
         });
+
+        if (response.status === 404) {
+            console.warn(`File not found: ${path}`);
+            alert(`The file "${path}" was not found in your Obsidian vault.`);
+            return;
+        }
 
         if (!response.ok) {
             const errorText = await response.text();

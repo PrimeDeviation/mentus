@@ -70,6 +70,11 @@ async function getObsidianLinks(filePath, apiKey, baseUrl) {
             }
         });
         
+        if (response.status === 404) {
+            console.warn(`File not found: ${normalizedPath}`);
+            return []; // Return an empty array for non-existent files
+        }
+
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
@@ -88,7 +93,7 @@ async function getObsidianLinks(filePath, apiKey, baseUrl) {
         return links;
     } catch (error) {
         console.error(`Error fetching links for ${normalizedPath}:`, error);
-        return [];
+        return []; // Return an empty array in case of any error
     }
 }
 
@@ -181,6 +186,7 @@ async function populateGraphData() {
 }
 
 async function buildGraphData() {
+    showLoadingMessage();
     await populateGraphData();
 }
 
@@ -303,7 +309,8 @@ async function createGraphData() {
     }
 }
 
-let simulation; // Declare simulation as a global variable
+// Declare simulation as a global variable (only once)
+let simulation;
 
 function initializeGraph() {
     console.log("Initializing graph");
@@ -340,9 +347,9 @@ function initializeGraph() {
         .force("center", d3.forceCenter(width / 2, height / 2).strength(0.1)) // Attractive force
         .force("collision", d3.forceCollide().radius(d => d.size || 5));
 
-    const linkOpacity = 1; // Increased default opacity
+    const linkOpacity = 0.6; // Increased default opacity
     const linkWidth = 2; // Increased default width
-    const nodeSize = 5; // Default node size
+    const nodeSize = 6; // Default node size
 
     console.log('Graph data links:', graphData.links);
     debugger; // This will pause execution in dev tools
@@ -379,7 +386,7 @@ function initializeGraph() {
         .text(d => d.label)
         .attr('x', d => (d.size || nodeSize) + 3)
         .attr('y', 3)
-        .style("font-size", d => `${(d.size || nodeSize) * 0.8}px`)
+        .style("font-size", d => `${(d.size || nodeSize) * 3.2}px`) // Doubled again from 1.6 to 3.2
         .style("fill", "var(--text-color)");
 
     node.append("title")
@@ -398,27 +405,32 @@ function initializeGraph() {
     simulation.force("link")
         .links(graphData.links);
 
+    // Add these variables at the top of your file, outside any function
+    let lastLogTime = 0;
+    let tickCounter = 0;
+
     function ticked() {
         link
-            .attr("x1", d => {
-                console.log('Link source x:', d.source.x);
-                return d.source.x;
-            })
-            .attr("y1", d => {
-                console.log('Link source y:', d.source.y);
-                return d.source.y;
-            })
-            .attr("x2", d => {
-                console.log('Link target x:', d.target.x);
-                return d.target.x;
-            })
-            .attr("y2", d => {
-                console.log('Link target y:', d.target.y);
-                return d.target.y;
-            });
+            .attr("x1", d => d.source.x)
+            .attr("y1", d => d.source.y)
+            .attr("x2", d => d.target.x)
+            .attr("y2", d => d.target.y);
 
         node
             .attr("transform", d => `translate(${d.x},${d.y})`);
+
+        // Throttled logging with additional counter
+        tickCounter++;
+        if (Date.now() - lastLogTime > 5000 && tickCounter % 100 === 0) {
+            console.log('Graph ticked (100th tick within 5-second interval)');
+            if (link.data()[0]) {
+                console.log('Sample link coordinates:', {
+                    source: { x: link.data()[0].source.x, y: link.data()[0].source.y },
+                    target: { x: link.data()[0].target.x, y: link.data()[0].target.y }
+                });
+            }
+            lastLogTime = Date.now();
+        }
     }
 
     function dragstarted(event, d) {
@@ -470,8 +482,8 @@ function initializeGraph() {
             <label for="link-force">Link Force: <span id="link-force-value">0.1</span></label>
             <input type="range" id="link-force" min="0" max="1" step="0.01" value="0.1">
             <br>
-            <label for="link-distance">Link Distance: <span id="link-distance-value">100</span></label>
-            <input type="range" id="link-distance" min="10" max="300" step="10" value="100">
+            <label for="link-distance">Link Distance: <span id="link-distance-value">250</span></label>
+            <input type="range" id="link-distance" min="10" max="300" step="10" value="250">
             <br>
             <label for="link-opacity">Link Opacity: <span id="link-opacity-value">${linkOpacity}</span></label>
             <input type="range" id="link-opacity" min="0" max="1" step="0.1" value="${linkOpacity}">
@@ -530,7 +542,7 @@ function initializeGraph() {
         node.selectAll("circle").attr("r", value);
         node.selectAll("text")
             .attr('x', value + 3)
-            .style("font-size", `${value * 0.8}px`);
+            .style("font-size", `${value * 3.2}px`); // Doubled again from 1.6 to 3.2
         simulation.force("collision").radius(value);
         simulation.alpha(1).restart();
     });
@@ -689,10 +701,17 @@ function clearLinkCache() {
     console.log('Link cache cleared');
 }
 
-window.loadGraphView = buildGraphData;
+function showLoadingMessage() {
+    const graphContainer = document.getElementById('graph-container');
+    if (graphContainer) {
+        graphContainer.innerHTML = '<div class="loading-message">Loading graph view... Please wait.</div>';
+    }
+}
 
+// Update the checkGraphStatus function
 window.checkGraphStatus = function() {
     const currentTime = Date.now();
+    showLoadingMessage(); // Always show loading message when checking status
     if (isDataFetched && lastCacheUpdate && (currentTime - lastCacheUpdate < CACHE_EXPIRY_TIME)) {
         initializeGraph();
     } else if (!isFetching) {
@@ -702,3 +721,11 @@ window.checkGraphStatus = function() {
         updateLoadingMessage();
     }
 };
+
+// Update the buildGraphData function to show loading message
+async function buildGraphData() {
+    showLoadingMessage();
+    await populateGraphData();
+}
+
+window.loadGraphView = buildGraphData;

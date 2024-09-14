@@ -89,6 +89,29 @@ body, html {
   border-bottom: 1px solid var(--border-color);
 }
 
+.image-attach-button {
+  background: none;
+  border: 1px solid var(--border-color);
+  border-radius: 5px;
+  font-size: 14px;
+  font-weight: bold;
+  cursor: pointer;
+  padding: 5px 8px;
+  margin-right: 5px;
+  color: var(--text-color);
+  transition: background-color 0.3s, color 0.3s;
+  font-family: 'Virgil', sans-serif;
+}
+
+.image-attach-button:hover {
+  background-color: var(--hover-bg-color);
+}
+
+.image-attach-button.image-attached {
+  background-color: #4CAF50;
+  color: white;
+}
+
 #chat-input {
   flex-grow: 1;
   margin-right: 10px;
@@ -244,10 +267,22 @@ object {
   padding: 10px;
   margin-bottom: 10px;
   border-radius: 8px;
-  max-width: 80%;
+  max-width: 100%;
   word-wrap: break-word;
   background-color: var(--message-bg-color);
   color: var(--text-color);
+}
+
+.image-container {
+  margin-bottom: 10px;
+  max-width: 100%;
+}
+
+.message-image {
+  max-width: 100%;
+  height: auto;
+  border-radius: 5px;
+  object-fit: contain;
 }
 
 .user-message {
@@ -967,7 +1002,7 @@ body {
 }
 
 #chatbar {
-  width: 30%;
+  width: 20%;
   min-width: 200px;
   max-width: 80%;
   overflow-y: auto;
@@ -1040,4 +1075,12 @@ input[type="range"]::-moz-range-thumb {
   border-radius: 50%;
   background: var(--slider-thumb-color);
   cursor: pointer;
+}
+
+.image-indicator {
+  font-size: 12px;
+  color: var(--text-color);
+  opacity: 0.7;
+  margin-bottom: 5px;
+  font-style: italic;
 }

@@ -37,13 +37,24 @@ function initializeSettingsListeners() {
     });
 
     // Add listeners for the new graph database fields
-    document.getElementById('graphdb-endpoint').addEventListener('input', function() {
-        updateApiKeyDisplay('graphdb-endpoint');
-    });
+    const graphdbEndpoint = document.getElementById('graphdb-endpoint');
+    const graphdbApiKey = document.getElementById('graphdb-api-key');
 
-    document.getElementById('graphdb-api-key').addEventListener('input', function() {
-        updateApiKeyDisplay('graphdb-api-key');
-    });
+    if (graphdbEndpoint) {
+        graphdbEndpoint.addEventListener('input', function() {
+            updateApiKeyDisplay('graphdb-endpoint');
+        });
+    } else {
+        console.warn('Graph DB endpoint input not found');
+    }
+
+    if (graphdbApiKey) {
+        graphdbApiKey.addEventListener('input', function() {
+            updateApiKeyDisplay('graphdb-api-key');
+        });
+    } else {
+        console.warn('Graph DB API key input not found');
+    }
 }
 
 async function loadExistingSettings() {

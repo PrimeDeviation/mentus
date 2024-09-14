@@ -226,6 +226,9 @@ function showTab(tabName) {
   }
 }
 
+// Add this constant to identify visual models
+const VISUAL_MODELS = ['claude-3-5-sonnet-20240620', 'claude-3-opus-20240229', 'gpt-4o', 'gpt-4o-2024-05-13', 'gpt-4o-mini', 'chatgpt-4o-latest', 'gpt-4o-2024-08-06'];
+
 // Load chat models
 async function loadChatModels() {
   console.log('Entering loadChatModels function');
@@ -264,6 +267,12 @@ async function loadChatModels() {
     }
 
     console.log('Chat models loaded successfully');
+
+    // Add event listener for model change
+    chatModelsDropdown.addEventListener('change', handleModelChange);
+    
+    // Call handleModelChange initially to set the correct state
+    handleModelChange();
   } catch (error) {
     console.error('Error loading chat models:', error);
   }
@@ -291,10 +300,61 @@ function addNoApiKeyOption(dropdown) {
   dropdown.appendChild(option);
 }
 
+// Add this function to handle model change
+function handleModelChange() {
+  const selectedModel = document.getElementById('chat-models').value;
+  const imageAttachButton = document.getElementById('image-attach-button');
+  
+  if (imageAttachButton) {
+    if (VISUAL_MODELS.includes(selectedModel)) {
+      imageAttachButton.style.display = 'inline-block';
+    } else {
+      imageAttachButton.style.display = 'none';
+    }
+  } else {
+    console.error('Image attach button not found');
+  }
+}
+
+// Add this function to handle image attachment
+function handleImageAttachment() {
+  const fileInput = document.createElement('input');
+  fileInput.type = 'file';
+  fileInput.accept = 'image/*';
+  fileInput.style.display = 'none';
+  document.body.appendChild(fileInput);
+  
+  fileInput.addEventListener('change', (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const imageData = e.target.result;
+        // Store the image data to be sent with the next message
+        currentSession.pendingImage = {
+          data: imageData.split(',')[1], // Remove the data URL prefix
+          mimeType: file.type
+        };
+        // Update UI to show that an image is attached
+        const imageAttachButton = document.getElementById('image-attach-button');
+        if (imageAttachButton) {
+          imageAttachButton.classList.add('image-attached');
+          imageAttachButton.textContent = 'IMG ✓';
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+    document.body.removeChild(fileInput);
+  });
+
+  fileInput.click();
+}
+
 // Initialize chat listeners
 function initializeChatListeners() {
   const chatInput = document.getElementById('chat-input');
   const sendButton = document.getElementById('send-button');
+  const imageAttachButton = document.getElementById('image-attach-button');
 
   sendButton.addEventListener('click', function() {
     const message = chatInput.value.trim();
@@ -312,6 +372,12 @@ function initializeChatListeners() {
   });
 
   chatInput.addEventListener('input', handleChatInput);
+  
+  if (imageAttachButton) {
+    imageAttachButton.addEventListener('click', handleImageAttachment);
+  } else {
+    console.error('Image attach button not found');
+  }
 }
 
 let mentionSuggestions = [];
@@ -426,7 +492,7 @@ async function getApiKey(key) {
                     try {
                         const decodedKey = atob(encodedKey);
                         console.log(`API key for ${key} retrieved and decoded successfully`);
-                        resolve(decodedKey); 
+                        resolve(decodedKey);
                     } catch (error) {
                         console.error('Error decoding API key:', error);
                         reject(error);
@@ -455,7 +521,15 @@ async function sendMessageToOpenAI(model, apiKey, messages) {
       },
       body: JSON.stringify({
         model: model,
-        messages: messages
+        messages: messages.map(msg => {
+          if (Array.isArray(msg.content)) {
+            return {
+              role: msg.role,
+              content: msg.content
+            };
+          }
+          return msg;
+        })
       })
     });
 
@@ -481,13 +555,6 @@ async function sendMessageToAnthropic(model, apiKey, messages) {
     console.log('Model:', model);
     console.log('Messages:', messages);
 
-    let max_tokens;
-    if (model === 'claude-3-5-sonnet-20240620') {
-      max_tokens = 8192;
-    } else {
-      max_tokens = 4096; // For other Claude models
-    }
-
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {
@@ -497,8 +564,16 @@ async function sendMessageToAnthropic(model, apiKey, messages) {
       },
       body: JSON.stringify({
         model: model,
-        messages: messages.map(msg => ({ role: msg.role, content: msg.content })),
-        max_tokens: max_tokens
+        messages: messages.map(msg => {
+          if (Array.isArray(msg.content)) {
+            return {
+              role: msg.role,
+              content: msg.content
+            };
+          }
+          return msg;
+        }),
+        max_tokens: model === 'claude-3-5-sonnet-20240620' ? 8192 : 4096
       })
     });
 
@@ -801,12 +876,29 @@ function updateChatSession() {
 }
 
 // Add a message to the chat UI
-function addMessageToChat(className, message) {
+function addMessageToChat(className, message, imageData = null) {
   const chatMessages = document.getElementById('chat-messages');
   if (chatMessages) {
     const messageElement = document.createElement('div');
     messageElement.className = `chat-message ${className}`;
-    messageElement.textContent = message;
+    
+    if (imageData) {
+      const imageContainer = document.createElement('div');
+      imageContainer.className = 'image-container';
+      
+      const img = document.createElement('img');
+      img.src = `data:${imageData.mimeType};base64,${imageData.data}`;
+      img.className = 'message-image';
+      img.alt = 'Attached image';
+      
+      imageContainer.appendChild(img);
+      messageElement.appendChild(imageContainer);
+    }
+    
+    const messageContent = document.createElement('div');
+    messageContent.textContent = message;
+    messageElement.appendChild(messageContent);
+    
     chatMessages.appendChild(messageElement);
     chatMessages.scrollTop = chatMessages.scrollHeight;
     return messageElement;
@@ -1004,14 +1096,19 @@ async function saveSessions() {
 }
 
 // Handle model change
-function handleModelChange(event) {
-  console.log('Model changed:', event.target.value);
-  if (!currentSession.id) {
-    console.warn('No current session, creating a new one');
-    startNewSession();
+function handleModelChange() {
+  const selectedModel = document.getElementById('chat-models').value;
+  const imageAttachButton = document.getElementById('image-attach-button');
+  
+  if (imageAttachButton) {
+    if (VISUAL_MODELS.includes(selectedModel)) {
+      imageAttachButton.style.display = 'inline-block';
+    } else {
+      imageAttachButton.style.display = 'none';
+    }
+  } else {
+    console.error('Image attach button not found');
   }
-  currentSession.model = event.target.value;
-  saveCurrentSession();
 }
 
 // Handle session change
@@ -1020,67 +1117,104 @@ function handleSessionChange(event) {
   loadSession(event.target.value);
 }
 
-async function sendMessage() {
-    const input = document.getElementById('chat-input');
-    const message = input.value.trim();
-    if (message === '') return;
+async function sendMessage(message) {
+  const model = document.getElementById('chat-models').value;
+  if (!model) {
+    alert('Please select a model');
+    return;
+  }
 
-    input.value = '';
-    addMessageToChat('user-message', message);
+  if (!currentSession.id) {
+    console.warn('No current session, creating a new one');
+    startNewSession();
+  }
 
-    const model = document.getElementById('chat-models').value;
-    if (!model) {
-        alert('Please select a model');
-        return;
+  try {
+    let apiKey;
+    if (model.includes('gpt')) {
+      apiKey = await window.settingsModule.getSetting('openai-api-key');
+    } else if (model.startsWith('claude')) {
+      apiKey = await window.settingsModule.getSetting('anthropic-api-key');
     }
 
-    if (!currentSession.id) {
-        console.warn('No current session, creating a new one');
-        startNewSession();
+    if (!apiKey) {
+      throw new Error('API key not found. Please check your settings.');
     }
 
-    currentSession.messages.push({ role: 'user', content: message });
-    currentSession.model = model;
+    // Add a small delay
+    await new Promise(resolve => setTimeout(resolve, 500));
 
-    try {
-        let apiKey;
-        if (model.includes('gpt')) {
-            apiKey = await window.settingsModule.getSetting('openai-api-key');
-        } else if (model.startsWith('claude')) {
-            apiKey = await window.settingsModule.getSetting('anthropic-api-key');
-        }
+    console.log('Sending message to model:', model);
+    console.log('API Key (first 4 characters):', apiKey.substring(0, 4));
 
-        if (!apiKey) {
-            throw new Error('API key not found. Please check your settings.');
-        }
-
-        // Add a small delay
-        await new Promise(resolve => setTimeout(resolve, 500));
-
-        console.log('Sending message to model:', model);
-        console.log('API Key (first 4 characters):', apiKey.substring(0, 4));
-        console.log('Messages:', currentSession.messages);
-
-        let response;
-        if (model.includes('gpt')) {
-            response = await sendMessageToOpenAI(model, apiKey, currentSession.messages);
-        } else if (model.startsWith('claude')) {
-            response = await sendMessageToAnthropic(model, apiKey, currentSession.messages);
-        }
-
-        addMessageToChat('assistant-message', response);
-        currentSession.messages.push({ role: 'assistant', content: response });
-        await saveCurrentSession();
-
-        // Update the session dropdown to maintain the current selection
-        const sessionDropdown = document.getElementById('saved-sessions');
-        if (sessionDropdown && currentSession.id) {
-            sessionDropdown.value = currentSession.id;
-        }
-    } catch (error) {
-        console.error('Error sending message:', error);
-        alert(`Error sending message: ${error.message}`);
+    let messageContent;
+    const hasImage = !!currentSession.pendingImage;
+    if (hasImage) {
+      if (model.startsWith('claude')) {
+        messageContent = [
+          {
+            type: "image",
+            source: {
+              type: "base64",
+              media_type: currentSession.pendingImage.mimeType,
+              data: currentSession.pendingImage.data
+            }
+          },
+          {
+            type: "text",
+            text: message
+          }
+        ];
+      } else if (model.includes('gpt')) {
+        messageContent = [
+          {
+            type: "text",
+            text: message
+          },
+          {
+            type: "image_url",
+            image_url: {
+              url: `data:${currentSession.pendingImage.mimeType};base64,${currentSession.pendingImage.data}`
+            }
+          }
+        ];
+      }
+      addMessageToChat('user-message', message, currentSession.pendingImage);
+    } else {
+      messageContent = [{ type: "text", text: message }];
+      addMessageToChat('user-message', message);
     }
+
+    currentSession.messages.push({ role: 'user', content: messageContent });
+
+    let response;
+    if (model.includes('gpt')) {
+      response = await sendMessageToOpenAI(model, apiKey, currentSession.messages);
+    } else if (model.startsWith('claude')) {
+      response = await sendMessageToAnthropic(model, apiKey, currentSession.messages);
+    }
+
+    addMessageToChat('assistant-message', response);
+    currentSession.messages.push({ role: 'assistant', content: response });
+    await saveCurrentSession();
+
+    // Reset the image attachment UI
+    const imageAttachButton = document.getElementById('image-attach-button');
+    if (imageAttachButton) {
+      imageAttachButton.classList.remove('image-attached');
+      imageAttachButton.textContent = 'IMG';
+    }
+    currentSession.pendingImage = null;
+
+    // Update the session dropdown to maintain the current selection
+    const sessionDropdown = document.getElementById('saved-sessions');
+    if (sessionDropdown && currentSession.id) {
+      sessionDropdown.value = currentSession.id;
+    }
+  } catch (error) {
+    console.error('Error sending message:', error);
+    alert(`Error sending message: ${error.message}`);
+  }
 }
 
 async function saveToObsidianVault(content) {
@@ -1135,6 +1269,7 @@ async function saveToObsidianVault(content) {
 function initializeChatListeners() {
     const chatInput = document.getElementById('chat-input');
     const sendButton = document.getElementById('send-button');
+    const imageAttachButton = document.getElementById('image-attach-button');
 
     sendButton.addEventListener('click', function() {
         const message = chatInput.value.trim();
@@ -1152,4 +1287,10 @@ function initializeChatListeners() {
     });
 
     chatInput.addEventListener('input', handleChatInput);
+    
+    if (imageAttachButton) {
+        imageAttachButton.addEventListener('click', handleImageAttachment);
+    } else {
+        console.error('Image attach button not found');
+    }
 }

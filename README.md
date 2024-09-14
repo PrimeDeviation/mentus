@@ -75,6 +75,23 @@ Mentus is a Chrome extension designed to curate learning content, validate user 
 #### Settings
 - Allows users to configure the extension settings.
 
+#### Diagrams Feature
+
+The Diagram Tab allows users to create, edit, and save diagrams using Excalidraw. Users can also export diagrams in various formats and add them to chat sessions.
+
+### Features
+
+1. **Excalidraw Integration**: Provides a full-featured diagramming experience.
+2. **Diagram Management**: Create, save, load, and export diagrams.
+3. **Integration with Chat**: Add diagrams to chat sessions.
+4. **Theme Support**: Adapts to the extension's light/dark mode settings.
+
+### Usage
+
+1. Navigate to the Diagram Tab.
+2. Use the controls to create, save, load, or export diagrams.
+3. Add diagrams to chat sessions using the "Add to Chat" button.
+
 ### Data Flow and Integration
 - Chat sessions are saved as markdown files.
 - These markdown files are the basis for both the file system in the Documents tab and the graph in the Graph View tab.
