@@ -1,0 +1,78 @@
+{
+  "manifest_version": 3,
+  "name": "Mentus Knowledge Instructor",
+  "description": "The Mentus Knowledge Instructor is a Chrome extension designed to tutor students by interfacing with a multimodal agent (e.g., GPT-4, Claude 3 Opus). It maintains a graphical knowledge ontology with a node-based representation of the learner's journey within the knowledge graph.",
+  "version": "1.2",
+  "action": {
+    "default_icon": {
+      "16": "images/icon_16.png",
+      "48": "images/icon_48.png",
+      "128": "images/icon_128.png"
+    }
+  },
+  "permissions": [
+    "storage",
+    "identity"
+  ],
+  "oauth2": {
+    "client_id": "822953729366-c8c0huboujjdrrf230e84nnafoi9u3kc.apps.googleusercontent.com",
+    "scopes": [
+      "https://www.googleapis.com/auth/userinfo.email",
+      "https://www.googleapis.com/auth/userinfo.profile",
+      "https://www.googleapis.com/auth/drive.file"
+    ]
+  },
+  "host_permissions": [
+    "https://www.googleapis.com/*",
+    "http://*/*",
+    "https://*/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "<all_urls>"
+      ],
+      "js": [
+        "content-scripts/content-script.js"
+      ],
+      "css": [
+        "content-scripts/content-style.css"
+      ]
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "components/chatbar/chatbar.js",
+        "components/chatbar/chatbar.css",
+        "components/documents/documents.js",
+        "components/documents/documents.css",
+        "components/editor/editor.js",
+        "components/editor/editor.css",
+        "components/graphview/graphview.js",
+        "components/graphview/graphview.css",
+        "components/settings/settings.js",
+        "components/settings/settings.css",
+        "components/settings/settings.html",
+        "components/userprofile/userprofile.js",
+        "components/userprofile/userprofile.css",
+        "components/userprofile/userprofile.html",
+        "styles/main.css",
+        "lib/codemirror.js",
+        "lib/markdown.js",
+        "lib/language-data.js",
+        "lib/autocomplete.js",
+        "lib/marked.min.js",
+        "certs/obsidian-local-rest-api.crt",
+        "lib/d3/dist/d3.min.js",
+        "utils/auth.js"
+      ],
+      "matches": [
+        "<all_urls>"
+      ]
+    }
+  ]
+}

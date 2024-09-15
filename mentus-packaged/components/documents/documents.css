@@ -1,0 +1,90 @@
+#documents-container {
+    padding: 20px;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+}
+
+#upload-section {
+    margin-bottom: 20px;
+}
+
+#file-upload, #upload-button {
+    margin-right: 10px;
+}
+
+.document-item {
+    padding: 10px;
+    margin-bottom: 5px;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    border: 1px solid var(--border-color);
+    cursor: pointer;
+}
+
+.document-item:hover {
+    background-color: var(--border-color);
+}
+
+.chat-content {
+    margin-top: 20px;
+}
+
+.user-message, .assistant-message {
+    padding: 10px;
+    margin-bottom: 5px;
+    border-radius: 5px;
+}
+
+.user-message {
+    background-color: #4CAF50;
+}
+
+.assistant-message {
+    background-color: #3498DB;
+}
+
+button {
+    padding: 10px;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    border: 1px solid var(--border-color);
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: var(--border-color);
+}
+
+#workspace-dropdown {
+    margin-bottom: 20px;
+    padding: 5px;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    border: 1px solid var(--border-color);
+    border-radius: 5px;
+}
+
+.file-tree {
+    list-style-type: none;
+    padding-left: 20px;
+}
+
+.file-tree li {
+    margin: 5px 0;
+    cursor: pointer;
+}
+
+.folder-icon::before {
+    content: '📁';
+    margin-right: 5px;
+}
+
+.file-icon::before {
+    content: '📄';
+    margin-right: 5px;
+}
+
+.file-tree ul {
+    padding-left: 20px;
+}

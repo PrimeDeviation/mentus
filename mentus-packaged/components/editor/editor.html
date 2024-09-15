@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editor</title>
+    <link rel="stylesheet" href="../../styles/main.css">
+    <link rel="stylesheet" href="editor.css">
+    <link rel="stylesheet" href="../../lib/codemirror.css">
+</head>
+<body>
+    <div class="editor-container">
+        <div class="editor-header">
+            <span id="file-name"></span>
+            <button id="create-new-file" class="btn">New File</button>
+            <button id="save-button" class="btn">Save</button>
+        </div>
+        <div id="editor"></div>
+        <div class="editor-footer">
+            <span id="word-count"></span>
+            <span id="last-saved"></span>
+        </div>
+    </div>
+    <script src="../../lib/codemirror.js"></script>
+    <script src="editor.js"></script>
+</body>
+</html>

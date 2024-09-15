@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Mentus Tab</title>
+  <link rel="stylesheet" type="text/css" href="../styles/main.css">
+  <link rel="stylesheet" type="text/css" href="../lib/codemirror.css">
+  <!-- Remove the CDN link for D3 -->
+  <!-- <script src="https://d3js.org/d3.v7.min.js"></script> -->
+</head>
+
+<body>
+  <div class="container">
+    <div id="chatbar" class="chatbar">
+      <div id="chatbar-content">
+        <!-- Update the dark mode toggle button here -->
+        <button id="toggle-dark-mode" title="Toggle Dark Mode">Dark Mode</button>
+        
+        <div class="session-container">
+          <input type="text" id="session-name-input" placeholder="Session Name">
+        </div>
+        <div id="chat-messages" class="chat-messages"></div>
+        <div class="dropdowns-container">
+          <div class="form-group">
+            <label for="chat-models">Model:</label>
+            <select id="chat-models">
+                <option value="">Select a model</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="saved-sessions">Session:</label>
+            <select id="saved-sessions">
+                <option value="">Select a session</option>
+            </select>
+          </div>
+        </div>
+        <div class="chat-input-container">
+          <button id="image-attach-button" class="image-attach-button">IMG</button>
+          <input type="text" id="chat-input" placeholder="Type a message...">
+          <button id="send-button">Send</button>
+        </div>
+        <div class="session-buttons">
+          <button id="save-session-button" class="session-btn">Save</button>
+          <button id="new-session-button" class="session-btn">New</button>
+        </div>
+      </div>
+    </div>
+    <div id="resize-handle"></div>
+    <div id="content" class="main-content">
+      <div class="tabs">
+        <button class="tab-button" data-tab="graph">Graph</button>
+        <button class="tab-button" data-tab="docs">Docs</button>
+        <button class="tab-button" data-tab="editor">Editor</button>
+        <button class="tab-button" data-tab="settings">Settings</button>
+        <button class="tab-button" data-tab="userprofile">User Profile</button>
+      </div>
+      <div id="tab-content">
+        <div id="graph" class="tab-content">
+          <div id="graph-container" style="width: 100%; height: 100%;"></div>
+        </div>
+        <div id="docs" class="tab-content">
+          <div class="centered-content">
+            <h2>Documents</h2>
+            <div id="document-list"></div>
+          </div>
+        </div>
+        <div id="editor" class="tab-content">
+          <div class="editor-container">
+            <div class="editor-header">
+              <h2>Editor</h2>
+              <span id="file-name"></span>
+              <button id="create-new-file" class="btn">New File</button>
+            </div>
+            <div class="editor-body">
+              <div id="editor-container"></div>
+              <div id="preview-container" style="display: none;"></div>
+            </div>
+            <div class="editor-footer">
+              <div class="toolbar">
+                <button id="bold" title="Bold (Ctrl+B)">B</button>
+                <button id="italic" title="Italic (Ctrl+I)">I</button>
+                <button id="header" title="Header">H</button>
+                <button id="link" title="Insert Link">Link</button>
+                <button id="image" title="Insert Image">Image</button>
+                <button id="list" title="Unordered List">• List</button>
+                <button id="numbered-list" title="Ordered List">1. List</button>
+                <button id="wiki-link" title="Insert Wiki Link (Ctrl+[)">[[]]</button>
+                <button id="toggle-preview" title="Toggle Preview">Preview</button>
+                <button id="save-button" title="Save (Ctrl+S)">Save</button>
+              </div>
+              <div class="editor-info">
+                <span id="word-count"></span>
+                <span id="last-saved"></span>
+                <span id="syntax-hint"></span>
+                <span id="cursor-position"></span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div id="settings" class="tab-content">
+          <div class="centered-content">
+            <h2>Settings</h2>
+            <form id="settings-form">
+              <div class="form-group">
+                <label for="openai-api-key">OpenAI API Key:</label>
+                <input type="password" id="openai-api-key" placeholder="Enter OpenAI API Key">
+                <div id="openai-api-key-display" class="api-key-display"></div>
+              </div>
+              <div class="form-group">
+                <label for="anthropic-api-key">Anthropic API Key:</label>
+                <input type="password" id="anthropic-api-key" placeholder="Enter Anthropic API Key">
+                <div id="anthropic-api-key-display" class="api-key-display"></div>
+              </div>
+              <div class="form-group">
+                <label for="obsidian-api-key">Obsidian Local REST API Key:</label>
+                <input type="password" id="obsidian-api-key" placeholder="Enter Obsidian API Key">
+                <div id="obsidian-api-key-display" class="api-key-display"></div>
+              </div>
+              <div class="form-group">
+                <label for="obsidian-endpoint">Obsidian Local REST API Endpoint:</label>
+                <input type="text" id="obsidian-endpoint" placeholder="Enter Obsidian API Endpoint">
+                <div id="obsidian-endpoint-display" class="api-key-display"></div>
+              </div>
+              <div class="form-group">
+                <label for="obsidian-chat-path">Obsidian Chat Sessions Path:</label>
+                <input type="text" id="obsidian-chat-path" placeholder="Enter Obsidian path for chat sessions">
+              </div>
+              <div class="form-group">
+                <label for="save-to-obsidian">
+                    <input type="checkbox" id="save-to-obsidian">
+                    Save chat sessions to Obsidian
+                </label>
+              </div>
+              <div class="form-group">
+                <label for="graphdb-endpoint">Graph Database Endpoint:</label>
+                <input type="text" id="graphdb-endpoint" placeholder="Enter Graph DB Endpoint">
+                <div id="graphdb-endpoint-display" class="api-key-display"></div>
+              </div>
+              <div class="form-group">
+                <label for="graphdb-api-key">Graph Database API Key:</label>
+                <input type="password" id="graphdb-api-key" placeholder="Enter Graph DB API Key">
+                <div id="graphdb-api-key-display" class="api-key-display"></div>
+              </div>
+              <button type="button" id="save-settings">Save Settings</button>
+            </form>
+          </div>
+        </div>
+        <div id="userprofile" class="tab-content">
+          <div class="centered-content">
+            <h2>User Profile</h2>
+            <div id="user-profile-form">
+              <div class="form-group">
+                <label>Google Account Status:</label>
+                <div id="google-account" class="current-value"></div>
+              </div>
+              <div class="form-group">
+                <label>Email:</label>
+                <div id="google-email" class="current-value"></div>
+              </div>
+              <div class="form-group">
+                <button type="button" id="google-auth-button">Connect Google Account</button>
+                <button type="button" id="google-disconnect-button">Disconnect Google Account</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script src="../lib/codemirror.js"></script>
+  <!-- Replace the existing D3 script tag with this one -->
+  <script src="../lib/d3/dist/d3.min.js"></script>
+  <script src="./settings/settings.js"></script>
+  <script src="mentus_tab.js"></script>
+  <script src="./editor/editor.js"></script>
+  <script src="./documents/documents.js"></script>
+  <script src="./userprofile/userprofile.js"></script>
+  <script src="../utils/auth.js"></script>
+  <script src="./graphview/graphview.js"></script>
+</body>
+</html>

@@ -107,22 +107,6 @@ function handleDisconnect(sendResponse) {
     });
 }
 
-async function configureGitHubIntegration(repoUrl, branch, token) {
-    try {
-        const { Octokit } = await import('https://cdn.skypack.dev/@octokit/rest');
-        const octokit = new Octokit({ auth: token });
-
-        const [owner, repo] = repoUrl.split('/').slice(-2);
-        const response = await octokit.repos.get({ owner, repo });
-
-        console.log('Repository connection successful:', response.data);
-        return response.data;
-    } catch (error) {
-        console.error('Error connecting to repository:', error);
-        throw error;
-    }
-}
-
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     if (request.contentScriptQuery == "fetchObsidianFile") {
         fetch(request.url, {

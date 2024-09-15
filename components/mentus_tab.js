@@ -79,7 +79,7 @@ async function initializeMentusTab() {
 
     if (!currentSession.id) {
       console.log('Starting new session');
-      startNewSession();
+      await startNewSession();
     }
 
     // Show the settings tab by default
@@ -266,20 +266,20 @@ async function loadChatModels() {
       addNoApiKeyOption(chatModelsDropdown);
     }
 
-    console.log('Chat models loaded successfully');
+    // Set default model to gpt-4o
+    chatModelsDropdown.value = 'gpt-4o';
 
-    // Add event listener for model change
     chatModelsDropdown.addEventListener('change', handleModelChange);
-    
-    // Call handleModelChange initially to set the correct state
     handleModelChange();
+
+    console.log('Chat models loaded successfully');
   } catch (error) {
     console.error('Error loading chat models:', error);
   }
   console.log('Exiting loadChatModels function');
 }
 
-// Add model options to dropdown
+// Modify the addModelOptions function to return the optgroup
 function addModelOptions(dropdown, label, models) {
   const group = document.createElement('optgroup');
   group.label = label;
@@ -300,7 +300,7 @@ function addNoApiKeyOption(dropdown) {
   dropdown.appendChild(option);
 }
 
-// Add this function to handle model change
+// Handle model change
 function handleModelChange() {
   const selectedModel = document.getElementById('chat-models').value;
   const imageAttachButton = document.getElementById('image-attach-button');
@@ -316,7 +316,7 @@ function handleModelChange() {
   }
 }
 
-// Add this function to handle image attachment
+// Handle image attachment
 function handleImageAttachment() {
   const fileInput = document.createElement('input');
   fileInput.type = 'file';
@@ -350,34 +350,33 @@ function handleImageAttachment() {
   fileInput.click();
 }
 
-// Initialize chat listeners
 function initializeChatListeners() {
-  const chatInput = document.getElementById('chat-input');
-  const sendButton = document.getElementById('send-button');
-  const imageAttachButton = document.getElementById('image-attach-button');
+    const chatInput = document.getElementById('chat-input');
+    const sendButton = document.getElementById('send-button');
+    const imageAttachButton = document.getElementById('image-attach-button');
 
-  sendButton.addEventListener('click', function() {
-    const message = chatInput.value.trim();
-    if (message) {
-      sendMessage(message);
-      chatInput.value = '';
+    sendButton.addEventListener('click', function() {
+        const message = chatInput.value.trim();
+        if (message) {
+            sendMessage(message);
+            chatInput.value = '';
+        }
+    });
+
+    chatInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            sendButton.click();
+        }
+    });
+
+    chatInput.addEventListener('input', handleChatInput);
+    
+    if (imageAttachButton) {
+        imageAttachButton.addEventListener('click', handleImageAttachment);
+    } else {
+        console.error('Image attach button not found');
     }
-  });
-
-  chatInput.addEventListener('keypress', function(e) {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      sendButton.click();
-    }
-  });
-
-  chatInput.addEventListener('input', handleChatInput);
-  
-  if (imageAttachButton) {
-    imageAttachButton.addEventListener('click', handleImageAttachment);
-  } else {
-    console.error('Image attach button not found');
-  }
 }
 
 let mentionSuggestions = [];
@@ -555,25 +554,42 @@ async function sendMessageToAnthropic(model, apiKey, messages) {
     console.log('Model:', model);
     console.log('Messages:', messages);
 
+    const anthropicMessages = messages.map(msg => {
+      if (Array.isArray(msg.content)) {
+        return {
+          role: msg.role,
+          content: msg.content.map(content => {
+            if (content.type === 'image_url') {
+              return {
+                type: 'image',
+                source: {
+                  type: 'base64',
+                  media_type: content.image_url.url.split(';')[0].split(':')[1],
+                  data: content.image_url.url.split(',')[1]
+                }
+              };
+            } else {
+              return content;
+            }
+          })
+        };
+      } else {
+        return msg;
+      }
+    });
+
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'x-api-key': apiKey,
-        'anthropic-version': '2023-06-01'
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true' // Add this header for Chrome extensions
       },
       body: JSON.stringify({
         model: model,
-        messages: messages.map(msg => {
-          if (Array.isArray(msg.content)) {
-            return {
-              role: msg.role,
-              content: msg.content
-            };
-          }
-          return msg;
-        }),
-        max_tokens: model === 'claude-3-5-sonnet-20240620' ? 8192 : 4096
+        messages: anthropicMessages,
+        max_tokens: 4096
       })
     });
 
@@ -997,7 +1013,7 @@ function updateDarkModeButtonText(isDarkMode) {
 }
 
 // Start a new session
-function startNewSession() {
+async function startNewSession() {
   console.log('Starting new session');
   const timestamp = new Date().toISOString().slice(0, 19).replace(/[T:]/g, '_');
   const sessionName = `New_Chat_${timestamp}`;
@@ -1016,6 +1032,9 @@ function startNewSession() {
   if (sessionNameInput) {
     sessionNameInput.value = sessionName;
   }
+
+  // Save the new session immediately
+  await saveCurrentSession();
 }
 
 // Save the current session
@@ -1023,23 +1042,23 @@ async function saveCurrentSession() {
   console.log('Saving current session');
   if (!currentSession.id) {
     console.warn('No current session to save, creating a new one');
-    startNewSession();
+    await startNewSession();
     return;
   }
 
   const sessionNameInput = document.getElementById('session-name-input');
   if (sessionNameInput) {
-    // Sanitize the session name by replacing spaces with underscores
     currentSession.name = sessionNameInput.value.trim().replace(/\s+/g, '_');
-    sessionNameInput.value = currentSession.name; // Update the input to reflect the sanitized name
+    sessionNameInput.value = currentSession.name;
   }
 
   // Create markdown content
-  const markdownContent = createMarkdownFromSession(currentSession);
+  let markdownContent = createMarkdownFromSession(currentSession);
 
   // Check if we should save to Obsidian
   const saveToObsidian = await window.settingsModule.getSetting('save-to-obsidian');
   if (saveToObsidian) {
+    markdownContent = await saveImagesToObsidian(markdownContent);
     await saveToObsidianVault(markdownContent);
   } else {
     await saveToGoogleDrive(markdownContent);
@@ -1069,12 +1088,95 @@ async function saveCurrentSession() {
   }
 }
 
-// Helper function to create markdown content from a session
+async function saveImagesToObsidian(markdownContent) {
+  const obsidianApiKey = await window.settingsModule.getSetting('obsidian-api-key');
+  const obsidianEndpoint = await window.settingsModule.getSetting('obsidian-endpoint');
+  const obsidianChatPath = await window.settingsModule.getSetting('obsidian-chat-path');
+
+  if (!obsidianApiKey || !obsidianEndpoint || !obsidianChatPath) {
+    console.error('Obsidian settings are not complete');
+    return markdownContent;
+  }
+
+  const imageRegex = /!\[.*?\]\(data:image\/([^;]+);base64,([^)]+)\)/g;
+  let match;
+  let imageIndex = 1;
+
+  while ((match = imageRegex.exec(markdownContent)) !== null) {
+    const imageType = match[1];
+    const base64Data = match[2];
+    const binaryData = atob(base64Data);
+    const byteArray = new Uint8Array(binaryData.length);
+    for (let i = 0; i < binaryData.length; i++) {
+      byteArray[i] = binaryData.charCodeAt(i);
+    }
+    const imageName = `image_${currentSession.id}_${imageIndex}.${imageType}`;
+    const imagePath = `${obsidianChatPath}/images/${imageName}`;
+
+    try {
+      await saveFileToObsidian(obsidianApiKey, obsidianEndpoint, imagePath, byteArray);
+      const imageMarkdown = `![](images/${imageName})`;
+      markdownContent = markdownContent.replace(match[0], imageMarkdown);
+      imageIndex++;
+    } catch (error) {
+      console.error('Error saving image to Obsidian:', error);
+    }
+  }
+
+  return markdownContent;
+}
+
+async function saveFileToObsidian(apiKey, endpoint, filePath, content) {
+  const url = `${endpoint.replace(/\/$/, '')}/vault/${encodeURIComponent(filePath)}`;
+  
+  try {
+    const response = await fetch(url, {
+      method: 'PUT',
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/octet-stream'
+      },
+      body: content
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    console.log(`File saved to Obsidian: ${filePath}`);
+  } catch (error) {
+    console.error('Error saving file to Obsidian:', error);
+    throw error;
+  }
+}
+
+// Update the createMarkdownFromSession function
 function createMarkdownFromSession(session) {
   let markdown = `# Chat Session: ${session.name || 'Untitled Session'}\n\n`;
   markdown += `Model: ${session.model}\n\n`;
   session.messages.forEach(msg => {
-    markdown += `## ${msg.role === 'user' ? 'User' : 'Assistant'}\n\n${msg.content}\n\n`;
+    markdown += `## ${msg.role === 'user' ? 'User' : 'Assistant'}\n\n`;
+    if (Array.isArray(msg.content)) {
+      msg.content.forEach(content => {
+        if (content.type === 'text') {
+          markdown += `${content.text}\n\n`;
+        } else if (content.type === 'image_url' || content.type === 'image') {
+          let imageData, mediaType;
+          if (content.type === 'image_url') {
+            // OpenAI format
+            [mediaType, imageData] = content.image_url.url.split(',');
+            mediaType = mediaType.split(':')[1];
+          } else {
+            // Anthropic format
+            imageData = content.source.data;
+            mediaType = content.source.media_type;
+          }
+          markdown += `![](data:${mediaType};base64,${imageData})\n\n`;
+        }
+      });
+    } else {
+      markdown += `${msg.content}\n\n`;
+    }
   });
   return markdown;
 }
@@ -1092,22 +1194,6 @@ async function saveSessions() {
     console.log('Sessions saved successfully');
   } catch (error) {
     console.error('Error saving sessions:', error);
-  }
-}
-
-// Handle model change
-function handleModelChange() {
-  const selectedModel = document.getElementById('chat-models').value;
-  const imageAttachButton = document.getElementById('image-attach-button');
-  
-  if (imageAttachButton) {
-    if (VISUAL_MODELS.includes(selectedModel)) {
-      imageAttachButton.style.display = 'inline-block';
-    } else {
-      imageAttachButton.style.display = 'none';
-    }
-  } else {
-    console.error('Image attach button not found');
   }
 }
 
@@ -1165,17 +1251,17 @@ async function sendMessage(message) {
             text: message
           }
         ];
-      } else if (model.includes('gpt')) {
+      } else {
         messageContent = [
-          {
-            type: "text",
-            text: message
-          },
           {
             type: "image_url",
             image_url: {
               url: `data:${currentSession.pendingImage.mimeType};base64,${currentSession.pendingImage.data}`
             }
+          },
+          {
+            type: "text",
+            text: message
           }
         ];
       }
@@ -1266,31 +1352,3 @@ async function saveToObsidianVault(content) {
     }
 }
 
-function initializeChatListeners() {
-    const chatInput = document.getElementById('chat-input');
-    const sendButton = document.getElementById('send-button');
-    const imageAttachButton = document.getElementById('image-attach-button');
-
-    sendButton.addEventListener('click', function() {
-        const message = chatInput.value.trim();
-        if (message) {
-            sendMessage(message);
-            chatInput.value = '';
-        }
-    });
-
-    chatInput.addEventListener('keypress', function(e) {
-        if (e.key === 'Enter' && !e.shiftKey) {
-            e.preventDefault();
-            sendButton.click();
-        }
-    });
-
-    chatInput.addEventListener('input', handleChatInput);
-    
-    if (imageAttachButton) {
-        imageAttachButton.addEventListener('click', handleImageAttachment);
-    } else {
-        console.error('Image attach button not found');
-    }
-}

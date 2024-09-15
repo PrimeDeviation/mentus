@@ -48,11 +48,13 @@ async function initializeDocuments() {
 
         // Create source buttons
         if (driveConfigured) {
+            console.log('Creating Google Drive button');
             const driveButton = createSourceButton('Google Drive', loadGoogleDriveDocuments);
             documentsList.appendChild(driveButton);
         }
 
         if (obsidianConfigured) {
+            console.log('Creating Obsidian button');
             const obsidianStatus = await getObsidianStatus();
             console.log('Obsidian status:', obsidianStatus);
             if (obsidianStatus) {
@@ -130,8 +132,18 @@ function createSourceButton(text, onClick) {
 }
 
 async function checkGoogleDriveConfiguration() {
-    const result = await chrome.storage.local.get(['mentusFolderId']);
-    return !!result.mentusFolderId;
+    console.log('Checking Google Drive configuration');
+    return new Promise((resolve) => {
+        chrome.identity.getAuthToken({ interactive: false }, function(token) {
+            if (chrome.runtime.lastError) {
+                console.error('Error checking Google Drive configuration:', chrome.runtime.lastError);
+                resolve(false);
+            } else {
+                console.log('Google Drive is configured (user is authenticated)');
+                resolve(true);
+            }
+        });
+    });
 }
 
 async function checkObsidianConfiguration() {
@@ -143,25 +155,67 @@ async function checkObsidianConfiguration() {
     return !!(apiKey && endpoint);
 }
 
+async function ensureMentusWorkspaceFolder(token) {
+    console.log('Ensuring Mentus Workspace folder exists');
+    try {
+        // Search for an existing "Mentus Workspace" folder
+        const searchResponse = await fetch(
+            'https://www.googleapis.com/drive/v3/files?q=name%3D%27Mentus%20Workspace%27%20and%20mimeType%3D%27application/vnd.google-apps.folder%27%20and%20trashed%3Dfalse',
+            { headers: { Authorization: `Bearer ${token}` } }
+        );
+        const searchData = await searchResponse.json();
+
+        if (searchData.files && searchData.files.length > 0) {
+            const folderId = searchData.files[0].id;
+            console.log('Existing Mentus Workspace folder found:', folderId);
+            await chrome.storage.local.set({ mentusFolderId: folderId });
+            return folderId;
+        }
+
+        // If the folder doesn't exist, create it
+        console.log('Mentus Workspace folder not found, creating a new one');
+        const createResponse = await fetch('https://www.googleapis.com/drive/v3/files', {
+            method: 'POST',
+            headers: {
+                Authorization: `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                name: 'Mentus Workspace',
+                mimeType: 'application/vnd.google-apps.folder'
+            })
+        });
+        const folder = await createResponse.json();
+        console.log('New Mentus Workspace folder created:', folder.id);
+        await chrome.storage.local.set({ mentusFolderId: folder.id });
+        return folder.id;
+    } catch (error) {
+        console.error('Error ensuring Mentus Workspace folder:', error);
+        throw error;
+    }
+}
+
 function loadGoogleDriveDocuments() {
     console.log('Loading Google Drive documents');
     isObsidianMode = false;
-    chrome.identity.getAuthToken({ interactive: true }, function(token) {
+    chrome.identity.getAuthToken({ interactive: true }, async function(token) {
         if (chrome.runtime.lastError) {
             console.error('Error getting auth token:', chrome.runtime.lastError);
             alert('Failed to authenticate with Google. Please check your Google account connection in the User Profile tab.');
             return;
         }
         
-        chrome.storage.local.get(['mentusFolderId'], function(result) {
-            if (result.mentusFolderId) {
-                mentusFolderId = result.mentusFolderId;
-                currentFolderId = mentusFolderId;
-                loadFolderContents(mentusFolderId, token);
-            } else {
-                createMentusFolder(token);
-            }
-        });
+        console.log('Google Auth token received');
+        try {
+            const folderId = await ensureMentusWorkspaceFolder(token);
+            console.log('Mentus Workspace folder ID:', folderId);
+            mentusFolderId = folderId;
+            currentFolderId = folderId;
+            loadFolderContents(folderId, token);
+        } catch (error) {
+            console.error('Error setting up Mentus Workspace:', error);
+            alert('Failed to set up Mentus Workspace. Please try again.');
+        }
     });
 }
 
