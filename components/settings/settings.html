@@ -26,8 +26,11 @@
                 <div id="obsidian-api-key-display" class="api-key-display"></div>
             </div>
             <div class="form-group">
-                <label for="obsidian-endpoint">Obsidian Local REST API Endpoint:</label>
-                <input type="text" id="obsidian-endpoint" placeholder="e.g., http://localhost:27123">
+                <label for="obsidian-endpoint">
+                    Obsidian Local REST API Endpoint:
+                    <a href="#" id="obsidian-info-link" class="info-link">Setup Instructions</a>
+                </label>
+                <input type="text" id="obsidian-endpoint" placeholder="Enter Obsidian API Endpoint">
                 <div id="obsidian-endpoint-display" class="api-key-display"></div>
             </div>
             <div class="form-group">
@@ -40,7 +43,7 @@
                     Save chat sessions to Obsidian
                 </label>
             </div>
-            <div class="form-group">
+            <div class="form-group obsidian-instructions">
                 <h3>Obsidian Local REST API Setup</h3>
                 <ol>
                     <li>Install the "Local REST API" plugin in Obsidian.</li>
@@ -56,6 +59,15 @@
             <div class="form-group">
                 <p class="note">Note: The Obsidian Local REST API certificate is included in this extension. No manual certificate installation is required.</p>
             </div>
+            <div class="form-group">
+                <h3>Obsidian Local REST API Resources</h3>
+                <ul>
+                    <li><a href="https://github.com/coddingtonbear/obsidian-local-rest-api" target="_blank">Local REST API GitHub Repository</a></li>
+                    <li><a href="https://github.com/coddingtonbear/obsidian-web/wiki/How-do-I-get-my-browser-trust-my-Obsidian-Local-REST-API-certificate%3F" target="_blank">Certificate Installation Instructions</a></li>
+                    <li><a href="https://coddingtonbear.github.io/obsidian-local-rest-api/" target="_blank">API Documentation</a></li>
+                </ul>
+            </div>
+            <button type="button" id="save-settings">Save Settings</button>
         </form>
     </div>
     <script src="settings.js"></script>

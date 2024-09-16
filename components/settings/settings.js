@@ -168,22 +168,11 @@ document.addEventListener('DOMContentLoaded', function () {
     if (Array.isArray(window.SETTINGS)) {
         initializeSettingsListeners();
         loadExistingSettings();
+        initializeObsidianInfoTooltip(); // Ensure this line is present
     } else {
         console.error('SETTINGS not defined or not an array. Make sure mentus_tab.js is loaded before settings.js');
     }
 });
-
-// At the end of the file
-window.settingsModule = {
-    getSetting,
-    loadExistingSettings,
-    initializeSettingsListeners,
-    updateApiKeyDisplay,
-    saveSetting,
-    saveAllSettings
-};
-
-console.log('Settings module initialized and attached to window object');
 
 // Add this function to check if the module is accessible
 window.checkSettingsModule = function() {
@@ -192,3 +181,154 @@ window.checkSettingsModule = function() {
         console.log('Settings module methods:', Object.keys(window.settingsModule));
     }
 };
+
+// Update the initializeObsidianInfoTooltip function
+function initializeObsidianInfoTooltip() {
+    console.log('Setting up Obsidian info tooltip observer');
+    
+    const observer = new MutationObserver((mutations, obs) => {
+        const settingsContainer = document.querySelector('.settings-container');
+        if (settingsContainer && settingsContainer.offsetParent !== null) {
+            const infoLink = document.getElementById('obsidian-info-link');
+            if (infoLink) {
+                console.log('Obsidian info link found and visible, setting up tooltip');
+                obs.disconnect();
+                setupTooltip(infoLink);
+            }
+        }
+    });
+
+    observer.observe(document.body, {
+        childList: true,
+        subtree: true,
+        attributes: true,
+        attributeFilter: ['style', 'class']
+    });
+
+    // Set up an event listener for tab changes
+    document.addEventListener('tabChanged', function(e) {
+        if (e.detail.tabName === 'settings') {
+            const infoLink = document.getElementById('obsidian-info-link');
+            if (infoLink) {
+                console.log('Settings tab active, setting up tooltip');
+                setupTooltip(infoLink);
+            }
+        }
+    });
+}
+
+function setupTooltip(infoLink) {
+    let tooltip = null;
+
+    infoLink.addEventListener('click', (event) => {
+        event.preventDefault();
+        if (tooltip) {
+            document.body.removeChild(tooltip);
+            tooltip = null;
+        } else {
+            tooltip = createTooltip(infoLink);
+        }
+    });
+
+    // Close tooltip when clicking outside
+    document.addEventListener('click', (event) => {
+        if (tooltip && !tooltip.contains(event.target) && event.target !== infoLink) {
+            document.body.removeChild(tooltip);
+            tooltip = null;
+        }
+    });
+}
+
+function createTooltip(infoLink) {
+    const tooltip = document.createElement('div');
+    tooltip.className = 'tooltip';
+    const instructionsContent = document.querySelector('.obsidian-instructions');
+    tooltip.innerHTML = instructionsContent ? instructionsContent.innerHTML : 'Instructions not available';
+    document.body.appendChild(tooltip);
+
+    const rect = infoLink.getBoundingClientRect();
+    tooltip.style.left = `${rect.right + 10}px`;
+    tooltip.style.top = `${rect.top}px`;
+
+    const closeButton = document.createElement('button');
+    closeButton.textContent = 'Close';
+    closeButton.addEventListener('click', () => {
+        document.body.removeChild(tooltip);
+    });
+    tooltip.appendChild(closeButton);
+
+    return tooltip;
+}
+
+// The rest of your existing code...
+
+document.addEventListener('DOMContentLoaded', function () {
+    console.log('Settings script loaded');
+    if (Array.isArray(window.SETTINGS)) {
+        initializeSettingsListeners();
+        loadExistingSettings();
+        initializeObsidianInfoTooltip();
+    } else {
+        console.error('SETTINGS not defined or not an array. Make sure mentus_tab.js is loaded before settings.js');
+    }
+});
+
+// Add this function to check if the module is accessible
+window.checkSettingsModule = function() {
+    console.log('Checking settings module:', window.settingsModule);
+    if (window.settingsModule) {
+        console.log('Settings module methods:', Object.keys(window.settingsModule));
+    }
+};
+
+window.setupObsidianInfoTooltip = function() {
+    console.log('Setting up Obsidian info tooltip');
+    const infoLink = document.getElementById('obsidian-info-link');
+    if (!infoLink) {
+        console.warn('Obsidian info link not found in the DOM');
+        return;
+    }
+
+    let tooltip = null;
+
+    infoLink.addEventListener('click', (event) => {
+        event.preventDefault();
+        if (tooltip) {
+            document.body.removeChild(tooltip);
+            tooltip = null;
+        } else {
+            tooltip = createTooltip(infoLink);
+        }
+    });
+
+    // Close tooltip when clicking outside
+    document.addEventListener('click', (event) => {
+        if (tooltip && !tooltip.contains(event.target) && event.target !== infoLink) {
+            document.body.removeChild(tooltip);
+            tooltip = null;
+        }
+    });
+}
+
+function createTooltip(infoLink) {
+    const tooltip = document.createElement('div');
+    tooltip.className = 'tooltip';
+    const instructionsContent = document.querySelector('.obsidian-instructions');
+    tooltip.innerHTML = instructionsContent ? instructionsContent.innerHTML : 'Instructions not available';
+    document.body.appendChild(tooltip);
+
+    const rect = infoLink.getBoundingClientRect();
+    tooltip.style.left = `${rect.right + 10}px`;
+    tooltip.style.top = `${rect.top}px`;
+
+    const closeButton = document.createElement('button');
+    closeButton.textContent = 'Close';
+    closeButton.addEventListener('click', () => {
+        document.body.removeChild(tooltip);
+    });
+    tooltip.appendChild(closeButton);
+
+    return tooltip;
+}
+
+// The rest of your existing code...

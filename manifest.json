@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
-  "name": "Mentus Knowledge Instructor",
-  "description": "The Mentus Knowledge Instructor is a Chrome extension designed to tutor students by interfacing with a multimodal agent (e.g., GPT-4, Claude 3 Opus). It maintains a graphical knowledge ontology with a node-based representation of the learner's journey within the knowledge graph.",
+  "name": "Mentus - Chat with Obsidian Notes and Google Docs",
+  "description": "AI-powered chat for your Obsidian vault and Google Docs.",
   "version": "1.2",
   "action": {
     "default_icon": {

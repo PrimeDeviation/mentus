@@ -220,6 +220,13 @@ function showTab(tabName) {
       } else {
         console.error('checkGraphStatus function not found');
       }
+    } else if (tabName === 'settings') {
+      console.log('Settings tab selected, setting up tooltip');
+      if (typeof window.settingsModule !== 'undefined' && typeof window.settingsModule.setupObsidianInfoTooltip === 'function') {
+        window.settingsModule.setupObsidianInfoTooltip();
+      } else {
+        console.error('setupObsidianInfoTooltip function not found in settingsModule');
+      }
     }
   } else {
     console.error(`Tab content or button not found for: ${tabName}`);
@@ -751,7 +758,7 @@ async function loadSession(sessionId) {
       }
 
       // Explicitly update the chat session UI
-      updateChatSession();
+      await updateChatSession();
 
     } catch (error) {
       console.error('Error loading session content:', error);
@@ -883,9 +890,19 @@ function updateChatSession() {
   
   chatMessages.innerHTML = '';
   if (currentSession && currentSession.messages) {
-    currentSession.messages.forEach(msg => {
-      addMessageToChat(msg.role === 'user' ? 'user-message' : 'assistant-message', msg.content);
-    });
+    for (const msg of currentSession.messages) {
+      if (Array.isArray(msg.content)) {
+        for (const content of msg.content) {
+          if (content.type === 'text') {
+            addMessageToChat(msg.role === 'user' ? 'user-message' : 'assistant-message', content.text);
+          } else if (content.type === 'image_url') {
+            addMessageToChat(msg.role === 'user' ? 'user-message' : 'assistant-message', '', { url: content.image_url.url });
+          }
+        }
+      } else {
+        addMessageToChat(msg.role === 'user' ? 'user-message' : 'assistant-message', msg.content);
+      }
+    }
   } else {
     console.warn('No messages in current session');
   }
@@ -902,18 +919,33 @@ function addMessageToChat(className, message, imageData = null) {
       const imageContainer = document.createElement('div');
       imageContainer.className = 'image-container';
       
-      const img = document.createElement('img');
-      img.src = `data:${imageData.mimeType};base64,${imageData.data}`;
-      img.className = 'message-image';
-      img.alt = 'Attached image';
+      if (imageData.url.startsWith('data:')) {
+        const img = document.createElement('img');
+        img.src = imageData.url;
+        img.className = 'message-image';
+        img.alt = 'Attached image';
+        imageContainer.appendChild(img);
+      } else {
+        const imageName = imageData.url.split('/').pop();
+        const truncatedName = imageName.length > 20 ? imageName.substring(0, 17) + '...' : imageName;
+        const imageLink = document.createElement('a');
+        imageLink.href = '#';
+        imageLink.textContent = `📎 ${truncatedName}`;
+        imageLink.onclick = (e) => {
+          e.preventDefault();
+          // Optionally, add logic to display the image when clicked
+        };
+        imageContainer.appendChild(imageLink);
+      }
       
-      imageContainer.appendChild(img);
       messageElement.appendChild(imageContainer);
     }
     
-    const messageContent = document.createElement('div');
-    messageContent.textContent = message;
-    messageElement.appendChild(messageContent);
+    if (message) {
+      const messageContent = document.createElement('div');
+      messageContent.textContent = message;
+      messageElement.appendChild(messageContent);
+    }
     
     chatMessages.appendChild(messageElement);
     chatMessages.scrollTop = chatMessages.scrollHeight;
@@ -955,7 +987,8 @@ function initializeSessionListeners() {
 
   const sessionNameInput = document.getElementById('session-name-input');
   if (sessionNameInput) {
-    sessionNameInput.addEventListener('change', saveCurrentSession);
+    sessionNameInput.addEventListener('change', handleSessionNameChange);
+    sessionNameInput.addEventListener('blur', handleSessionNameChange);
   }
 }
 
@@ -1016,22 +1049,23 @@ function updateDarkModeButtonText(isDarkMode) {
 async function startNewSession() {
   console.log('Starting new session');
   const timestamp = new Date().toISOString().slice(0, 19).replace(/[T:]/g, '_');
-  const sessionName = `New_Chat_${timestamp}`;
+  const sessionName = `Chat_${timestamp}`;
   currentSession = {
     id: Date.now().toString(),
     messages: [],
-    model: null,
+    model: document.getElementById('chat-models').value,
     name: sessionName
   };
   sessions[currentSession.id] = currentSession;
-  updateSessionList();
-  updateChatSession();
 
   // Update the session name input
   const sessionNameInput = document.getElementById('session-name-input');
   if (sessionNameInput) {
     sessionNameInput.value = sessionName;
   }
+
+  updateSessionList();
+  updateChatSession();
 
   // Save the new session immediately
   await saveCurrentSession();
@@ -1053,12 +1087,11 @@ async function saveCurrentSession() {
   }
 
   // Create markdown content
-  let markdownContent = createMarkdownFromSession(currentSession);
+  let markdownContent = await createMarkdownFromSession(currentSession);
 
   // Check if we should save to Obsidian
   const saveToObsidian = await window.settingsModule.getSetting('save-to-obsidian');
   if (saveToObsidian) {
-    markdownContent = await saveImagesToObsidian(markdownContent);
     await saveToObsidianVault(markdownContent);
   } else {
     await saveToGoogleDrive(markdownContent);
@@ -1086,44 +1119,55 @@ async function saveCurrentSession() {
   if (sessionDropdown && currentSession.id) {
     sessionDropdown.value = currentSession.id;
   }
+
+  console.log('Session saved successfully');
 }
 
-async function saveImagesToObsidian(markdownContent) {
+// Modify the saveImageToObsidian function
+async function saveImageToObsidian(imageData, mimeType) {
   const obsidianApiKey = await window.settingsModule.getSetting('obsidian-api-key');
   const obsidianEndpoint = await window.settingsModule.getSetting('obsidian-endpoint');
   const obsidianChatPath = await window.settingsModule.getSetting('obsidian-chat-path');
 
   if (!obsidianApiKey || !obsidianEndpoint || !obsidianChatPath) {
     console.error('Obsidian settings are not complete');
-    return markdownContent;
+    return null;
   }
 
-  const imageRegex = /!\[.*?\]\(data:image\/([^;]+);base64,([^)]+)\)/g;
-  let match;
-  let imageIndex = 1;
+  const timestamp = Date.now();
+  const imageExtension = mimeType.split('/')[1];
+  const imageName = `image_${timestamp}.${imageExtension}`;
+  const imagePath = `${obsidianChatPath}/images/${imageName}`;
 
-  while ((match = imageRegex.exec(markdownContent)) !== null) {
-    const imageType = match[1];
-    const base64Data = match[2];
-    const binaryData = atob(base64Data);
-    const byteArray = new Uint8Array(binaryData.length);
-    for (let i = 0; i < binaryData.length; i++) {
-      byteArray[i] = binaryData.charCodeAt(i);
-    }
-    const imageName = `image_${currentSession.id}_${imageIndex}.${imageType}`;
-    const imagePath = `${obsidianChatPath}/images/${imageName}`;
+  try {
+    await saveFileToObsidian(obsidianApiKey, obsidianEndpoint, imagePath, imageData);
+    return `images/${imageName}`;
+  } catch (error) {
+    console.error('Error saving image to Obsidian:', error);
+    return null;
+  }
+}
 
-    try {
-      await saveFileToObsidian(obsidianApiKey, obsidianEndpoint, imagePath, byteArray);
-      const imageMarkdown = `![](images/${imageName})`;
-      markdownContent = markdownContent.replace(match[0], imageMarkdown);
-      imageIndex++;
-    } catch (error) {
-      console.error('Error saving image to Obsidian:', error);
+// Update the createMarkdownFromSession function
+async function createMarkdownFromSession(session) {
+  let markdown = `# ${session.name || 'Untitled Session'}\n\n`;
+  markdown += `Model: ${session.model}\n\n`;
+  
+  for (const msg of session.messages) {
+    markdown += `## ${msg.role === 'user' ? 'User' : 'Assistant'}\n\n`;
+    if (Array.isArray(msg.content)) {
+      for (const content of msg.content) {
+        if (content.type === 'text') {
+          markdown += `${content.text}\n\n`;
+        } else if (content.type === 'image_url') {
+          markdown += `![](${content.image_url.url})\n\n`;
+        }
+      }
+    } else {
+      markdown += `${msg.content}\n\n`;
     }
   }
-
-  return markdownContent;
+  return markdown;
 }
 
 async function saveFileToObsidian(apiKey, endpoint, filePath, content) {
@@ -1150,37 +1194,6 @@ async function saveFileToObsidian(apiKey, endpoint, filePath, content) {
   }
 }
 
-// Update the createMarkdownFromSession function
-function createMarkdownFromSession(session) {
-  let markdown = `# Chat Session: ${session.name || 'Untitled Session'}\n\n`;
-  markdown += `Model: ${session.model}\n\n`;
-  session.messages.forEach(msg => {
-    markdown += `## ${msg.role === 'user' ? 'User' : 'Assistant'}\n\n`;
-    if (Array.isArray(msg.content)) {
-      msg.content.forEach(content => {
-        if (content.type === 'text') {
-          markdown += `${content.text}\n\n`;
-        } else if (content.type === 'image_url' || content.type === 'image') {
-          let imageData, mediaType;
-          if (content.type === 'image_url') {
-            // OpenAI format
-            [mediaType, imageData] = content.image_url.url.split(',');
-            mediaType = mediaType.split(':')[1];
-          } else {
-            // Anthropic format
-            imageData = content.source.data;
-            mediaType = content.source.media_type;
-          }
-          markdown += `![](data:${mediaType};base64,${imageData})\n\n`;
-        }
-      });
-    } else {
-      markdown += `${msg.content}\n\n`;
-    }
-  });
-  return markdown;
-}
-
 // Save all sessions to storage
 async function saveSessions() {
   console.log('Saving all sessions');
@@ -1203,6 +1216,19 @@ function handleSessionChange(event) {
   loadSession(event.target.value);
 }
 
+// Add this new function to handle session name changes
+function handleSessionNameChange() {
+  const sessionNameInput = document.getElementById('session-name-input');
+  if (sessionNameInput && currentSession) {
+    const newName = sessionNameInput.value.trim().replace(/\s+/g, '_');
+    if (newName !== currentSession.name) {
+      currentSession.name = newName;
+      updateSessionList();
+      saveCurrentSession();
+    }
+  }
+}
+
 async function sendMessage(message) {
   const model = document.getElementById('chat-models').value;
   if (!model) {
@@ -1212,7 +1238,7 @@ async function sendMessage(message) {
 
   if (!currentSession.id) {
     console.warn('No current session, creating a new one');
-    startNewSession();
+    await startNewSession();
   }
 
   try {
@@ -1227,45 +1253,34 @@ async function sendMessage(message) {
       throw new Error('API key not found. Please check your settings.');
     }
 
-    // Add a small delay
-    await new Promise(resolve => setTimeout(resolve, 500));
-
     console.log('Sending message to model:', model);
     console.log('API Key (first 4 characters):', apiKey.substring(0, 4));
 
     let messageContent;
     const hasImage = !!currentSession.pendingImage;
     if (hasImage) {
-      if (model.startsWith('claude')) {
-        messageContent = [
-          {
-            type: "image",
-            source: {
-              type: "base64",
-              media_type: currentSession.pendingImage.mimeType,
-              data: currentSession.pendingImage.data
-            }
-          },
-          {
-            type: "text",
-            text: message
+      const imageDataUrl = `data:${currentSession.pendingImage.mimeType};base64,${currentSession.pendingImage.data}`;
+      messageContent = [
+        {
+          type: "image_url",
+          image_url: {
+            url: imageDataUrl
           }
-        ];
+        },
+        {
+          type: "text",
+          text: message
+        }
+      ];
+      addMessageToChat('user-message', message, { url: imageDataUrl });
+      
+      // Save image to Obsidian for future reference
+      const imagePath = await saveImageToObsidian(currentSession.pendingImage.data, currentSession.pendingImage.mimeType);
+      if (imagePath) {
+        console.log('Image saved to Obsidian:', imagePath);
       } else {
-        messageContent = [
-          {
-            type: "image_url",
-            image_url: {
-              url: `data:${currentSession.pendingImage.mimeType};base64,${currentSession.pendingImage.data}`
-            }
-          },
-          {
-            type: "text",
-            text: message
-          }
-        ];
+        console.error('Failed to save image to Obsidian');
       }
-      addMessageToChat('user-message', message, currentSession.pendingImage);
     } else {
       messageContent = [{ type: "text", text: message }];
       addMessageToChat('user-message', message);
@@ -1317,8 +1332,7 @@ async function saveToObsidianVault(content) {
         return;
     }
 
-    const sanitizedSessionName = `chat_session_${(currentSession.name || 'Untitled_Session').replace(/\s+/g, '_')}`;
-    const fileName = `${sanitizedSessionName}.md`;
+    const fileName = `${currentSession.name}.md`;
     const filePath = `${chatPath.replace(/^\//, '').replace(/\/$/, '')}/${fileName}`;
 
     console.log('Saving to Obsidian:', filePath);

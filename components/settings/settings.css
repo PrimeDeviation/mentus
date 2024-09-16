@@ -105,3 +105,55 @@ button:hover {
         max-width: 100%;
     }
 }
+
+/* Add this to the existing CSS file */
+
+.info-icon {
+    cursor: help;
+    margin-left: 5px;
+    font-size: 14px;
+}
+
+.tooltip {
+    position: absolute;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    border: 1px solid var(--border-color);
+    padding: 15px;
+    border-radius: 5px;
+    font-size: 14px;
+    max-width: 400px;
+    z-index: 1000;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    overflow-y: auto;
+    max-height: 80vh;
+}
+
+.tooltip ol, .tooltip ul {
+    margin: 10px 0;
+    padding-left: 20px;
+}
+
+.tooltip li {
+    margin-bottom: 8px;
+}
+
+.tooltip a {
+    color: var(--link-color, #7289da);
+    text-decoration: none;
+}
+
+.tooltip a:hover {
+    text-decoration: underline;
+}
+
+.info-link {
+    margin-left: 10px;
+    font-size: 0.9em;
+    color: var(--link-color, #7289da);
+    text-decoration: none;
+}
+
+.info-link:hover {
+    text-decoration: underline;
+}
