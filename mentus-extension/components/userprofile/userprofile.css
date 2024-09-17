@@ -1,0 +1,124 @@
+/* User Profile styles */
+.user-profile-container {
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    padding: 30px;
+    border-radius: 8px;
+    width: 100%;
+    height: 100%;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    overflow-y: auto;
+    box-sizing: border-box;
+    border: 2px solid #333;
+}
+
+.user-profile-container h1 {
+    color: #333;
+    margin-bottom: 30px;
+    text-align: center;
+    font-family: 'Virgil', sans-serif;
+    font-size: 28px;
+}
+
+#user-profile-form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.form-group {
+    margin-bottom: 20px;
+    width: 100%;
+    max-width: 400px;
+}
+
+label {
+    display: block;
+    margin-bottom: 8px;
+    color: #333;
+    font-weight: bold;
+    font-family: 'Virgil', sans-serif;
+    font-size: 18px;
+}
+
+input[type="text"],
+input[type="email"],
+textarea {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #333;
+    background-color: #fff;
+    color: #333;
+    border-radius: 5px;
+    font-size: 16px;
+    transition: border-color 0.3s, box-shadow 0.3s;
+    font-family: 'Virgil', sans-serif;
+}
+
+textarea {
+    resize: vertical;
+    min-height: 100px;
+}
+
+input[type="text"]:focus,
+input[type="email"]:focus,
+textarea:focus {
+    border-color: #5e77d4;
+    box-shadow: 0 0 0 2px rgba(94, 119, 212, 0.3);
+    outline: none;
+}
+
+button {
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    border: 1px solid var(--border-color);
+    padding: 12px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    font-size: 16px;
+    font-weight: bold;
+    font-family: 'Virgil', sans-serif;
+}
+
+button:hover {
+    background-color: var(--border-color);
+}
+
+.current-value {
+    display: block;
+    margin-top: 5px;
+    color: #666;
+    font-size: 16px;
+    font-style: italic;
+    word-break: break-all;
+    font-family: 'Virgil', sans-serif;
+}
+
+.current-value:empty {
+    display: none;
+}
+
+/* Responsive styles */
+@media (max-width: 600px) {
+    .form-group,
+    button {
+        max-width: 100%;
+    }
+}
+
+.form-group input[type="text"],
+.form-group input[type="email"] {
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    border: 1px solid var(--border-color);
+}
+
+button {
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    border: 1px solid var(--border-color);
+}
+
+button:hover {
+    background-color: var(--border-color);
+}

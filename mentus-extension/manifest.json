@@ -1,0 +1,66 @@
+{
+  "manifest_version": 3,
+  "name": "Mentus - Chat with Obsidian Notes and Google Docs",
+  "description": "AI-powered chat for your Obsidian vault and Google Docs.",
+  "version": "1.3",
+  "action": {
+    "default_icon": {
+      "16": "images/icon_16.png",
+      "48": "images/icon_48.png",
+      "128": "images/icon_128.png"
+    }
+  },
+  "permissions": [
+    "storage",
+    "identity"
+  ],
+  "oauth2": {
+    "client_id": "822953729366-c8c0huboujjdrrf230e84nnafoi9u3kc.apps.googleusercontent.com",
+    "scopes": [
+      "https://www.googleapis.com/auth/userinfo.email",
+      "https://www.googleapis.com/auth/userinfo.profile",
+      "https://www.googleapis.com/auth/drive.file"
+    ]
+  },
+  "host_permissions": [
+    "https://www.googleapis.com/*",
+    "http://*/*",
+    "https://*/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [],
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "components/chatbar/chatbar.js",
+        "components/chatbar/chatbar.css",
+        "components/documents/documents.js",
+        "components/documents/documents.css",
+        "components/editor/editor.js",
+        "components/editor/editor.css",
+        "components/graphview/graphview.js",
+        "components/graphview/graphview.css",
+        "components/settings/settings.js",
+        "components/settings/settings.css",
+        "components/settings/settings.html",
+        "components/userprofile/userprofile.js",
+        "components/userprofile/userprofile.css",
+        "components/userprofile/userprofile.html",
+        "styles/main.css",
+        "lib/codemirror.js",
+        "lib/markdown.js",
+        "lib/language-data.js",
+        "lib/autocomplete.js",
+        "lib/marked.min.js",
+        "certs/obsidian-local-rest-api.crt",
+        "lib/d3/dist/d3.min.js",
+        "utils/auth.js"
+      ],
+      "matches": [
+        "<all_urls>"
+      ]
+    }
+  ]
+}
