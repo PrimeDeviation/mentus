@@ -29,6 +29,9 @@ let currentSession = {
 
 let profileDataReady = false;
 
+// 1. Add variables to store mention suggestions
+let mentionSuggestions = [];
+
 // Initialize the Mentus Tab
 async function initializeMentusTab() {
   try {
@@ -350,6 +353,7 @@ function handleImageAttachment() {
   fileInput.click();
 }
 
+// 2. Update the initializeChatListeners function to add event listeners for mentions
 function initializeChatListeners() {
     const chatInput = document.getElementById('chat-input');
     const sendButton = document.getElementById('send-button');
@@ -370,8 +374,17 @@ function initializeChatListeners() {
         }
     });
 
+    // Add event listener for input changes to handle @mentions
     chatInput.addEventListener('input', handleChatInput);
     
+    // Hide suggestions when clicking outside the chat input
+    document.addEventListener('click', (e) => {
+        const suggestionList = document.getElementById('mention-suggestions');
+        if (suggestionList && !suggestionList.contains(e.target) && e.target !== chatInput) {
+            hideMentionSuggestions();
+        }
+    });
+
     if (imageAttachButton) {
         imageAttachButton.addEventListener('click', handleImageAttachment);
     } else {
@@ -379,23 +392,23 @@ function initializeChatListeners() {
     }
 }
 
-let mentionSuggestions = [];
-
+// 3. Add the handleChatInput function
 async function handleChatInput(e) {
     const input = e.target;
     const cursorPosition = input.selectionStart;
     const textBeforeCursor = input.value.substring(0, cursorPosition);
-    const mentionMatch = textBeforeCursor.match(/@(\w*)$/);
+    const mentionMatch = textBeforeCursor.match(/@([\w\s]*)$/);
 
     if (mentionMatch) {
         const mentionText = mentionMatch[1];
         const suggestions = await fetchMentionSuggestions(mentionText);
-        displayMentionSuggestions(suggestions, input, cursorPosition);
+        displayMentionSuggestions(suggestions, input);
     } else {
         hideMentionSuggestions();
     }
 }
 
+// 4. Add the fetchMentionSuggestions function
 async function fetchMentionSuggestions(query) {
     const apiKey = await window.settingsModule.getSetting('obsidian-api-key');
     const endpoint = await window.settingsModule.getSetting('obsidian-endpoint');
@@ -430,50 +443,234 @@ async function fetchMentionSuggestions(query) {
     }
 }
 
-function displayMentionSuggestions(suggestions, input, cursorPosition) {
-    const suggestionList = document.getElementById('mention-suggestions');
+// 5. Add the displayMentionSuggestions function
+function displayMentionSuggestions(suggestions, input) {
+    let suggestionList = document.getElementById('mention-suggestions');
     if (!suggestionList) {
-        const newSuggestionList = document.createElement('ul');
-        newSuggestionList.id = 'mention-suggestions';
-        newSuggestionList.style.position = 'absolute';
-        newSuggestionList.style.zIndex = '1000';
-        input.parentNode.appendChild(newSuggestionList);
+        suggestionList = document.createElement('ul');
+        suggestionList.id = 'mention-suggestions';
+        suggestionList.className = 'mention-suggestions';
+        input.parentNode.appendChild(suggestionList);
     }
 
-    const list = document.getElementById('mention-suggestions');
-    list.innerHTML = '';
-    mentionSuggestions = suggestions;
+    suggestionList.innerHTML = '';
 
-    suggestions.forEach((suggestion, index) => {
+    suggestions.forEach(suggestion => {
         const li = document.createElement('li');
         li.textContent = suggestion.name;
-        li.addEventListener('click', () => selectMention(suggestion, input, cursorPosition));
-        list.appendChild(li);
+        li.className = 'suggestion-item';
+        li.addEventListener('click', () => selectMention(suggestion, input));
+        suggestionList.appendChild(li);
     });
 
-    positionSuggestionList(list, input);
+    positionSuggestionList(suggestionList, input);
+    suggestionList.style.display = 'block';
 }
 
+// 6. Add the positionSuggestionList function
 function positionSuggestionList(list, input) {
-    const inputRect = input.getBoundingClientRect();
-    list.style.top = `${inputRect.bottom}px`;
-    list.style.left = `${inputRect.left}px`;
-    list.style.width = `${inputRect.width}px`;
+    const rect = input.getBoundingClientRect();
+    list.style.position = 'absolute';
+    list.style.left = `${rect.left}px`;
+    list.style.top = `${rect.bottom}px`;
+    list.style.width = `${rect.width}px`;
+
+    // Adjust the z-index if needed
+    list.style.zIndex = '1000';
 }
 
+// 7. Add the hideMentionSuggestions function
 function hideMentionSuggestions() {
     const suggestionList = document.getElementById('mention-suggestions');
     if (suggestionList) {
-        suggestionList.innerHTML = '';
+        suggestionList.style.display = 'none';
     }
 }
 
-function selectMention(suggestion, input, cursorPosition) {
-    const textBeforeMention = input.value.substring(0, cursorPosition).replace(/@\w*$/, '');
-    const textAfterMention = input.value.substring(cursorPosition);
-    input.value = `${textBeforeMention}@${suggestion.name} ${textAfterMention}`;
+// 8. Add the selectMention function
+function selectMention(suggestion, input) {
+    const cursorPosition = input.selectionStart;
+    const textBeforeCursor = input.value.substring(0, cursorPosition);
+    const textAfterCursor = input.value.substring(cursorPosition);
+    const updatedTextBeforeCursor = textBeforeCursor.replace(/@[\w\s]*$/, `@${suggestion.name} `);
+    input.value = `${updatedTextBeforeCursor}${textAfterCursor}`;
     hideMentionSuggestions();
     input.focus();
+
+    // Set cursor position after the inserted mention
+    const newCursorPosition = updatedTextBeforeCursor.length;
+    input.setSelectionRange(newCursorPosition, newCursorPosition);
+}
+
+// 9. Modify the sendMessage function to process @mentions
+async function sendMessage(message) {
+    const model = document.getElementById('chat-models').value;
+    if (!model) {
+        alert('Please select a model');
+        return;
+    }
+
+    if (!currentSession.id) {
+        console.warn('No current session, creating a new one');
+        await startNewSession();
+    }
+
+    try {
+        let apiKey;
+        if (model.includes('gpt')) {
+            apiKey = await window.settingsModule.getSetting('openai-api-key');
+        } else if (model.startsWith('claude')) {
+            apiKey = await window.settingsModule.getSetting('anthropic-api-key');
+        }
+
+        if (!apiKey) {
+            throw new Error('API key not found. Please check your settings.');
+        }
+
+        console.log('Sending message to model:', model);
+        console.log('API Key (first 4 characters):', apiKey.substring(0, 4));
+
+        // New code to handle @mentions
+        const processedMessage = await replaceMentionsWithFileContent(message);
+        const finalMessage = processedMessage !== null ? processedMessage : message;
+
+        let messageContent;
+        const hasImage = !!currentSession.pendingImage;
+
+        if (hasImage) {
+            const imageDataUrl = `data:${currentSession.pendingImage.mimeType};base64,${currentSession.pendingImage.data}`;
+            messageContent = [
+                {
+                    type: "image_url",
+                    image_url: {
+                        url: imageDataUrl
+                    }
+                },
+                {
+                    type: "text",
+                    text: finalMessage
+                }
+            ];
+            addMessageToChat('user-message', message, { url: imageDataUrl });
+
+            // Save image to Obsidian for future reference
+            const imagePath = await saveImageToObsidian(currentSession.pendingImage.data, currentSession.pendingImage.mimeType);
+            if (imagePath) {
+                console.log('Image saved to Obsidian:', imagePath);
+            } else {
+                console.error('Failed to save image to Obsidian');
+            }
+        } else {
+            messageContent = [{ type: "text", text: finalMessage }];
+            addMessageToChat('user-message', message);
+        }
+
+        currentSession.messages.push({ role: 'user', content: messageContent });
+
+        let response;
+        if (model.includes('gpt')) {
+            response = await sendMessageToOpenAI(model, apiKey, currentSession.messages);
+        } else if (model.startsWith('claude')) {
+            response = await sendMessageToAnthropic(model, apiKey, currentSession.messages);
+        }
+
+        addMessageToChat('assistant-message', response);
+        currentSession.messages.push({ role: 'assistant', content: response });
+        await saveCurrentSession();
+
+        // Reset the image attachment UI
+        const imageAttachButton = document.getElementById('image-attach-button');
+        if (imageAttachButton) {
+            imageAttachButton.classList.remove('image-attached');
+            imageAttachButton.textContent = 'IMG';
+        }
+        currentSession.pendingImage = null;
+
+        // Ensure the current session remains selected in the dropdown
+        const sessionDropdown = document.getElementById('saved-sessions');
+        if (sessionDropdown && currentSession.id) {
+            sessionDropdown.value = currentSession.id;
+        }
+    } catch (error) {
+        console.error('Error sending message:', error);
+        alert(`Error sending message: ${error.message}`);
+    }
+}
+
+// 10. Add the replaceMentionsWithFileContent function
+async function replaceMentionsWithFileContent(messageText) {
+    const mentionPattern = /@([\w\s]+)/g;
+    let match;
+    const processedFiles = new Set();
+    let hasMentions = false;
+
+    while ((match = mentionPattern.exec(messageText)) !== null) {
+        hasMentions = true;
+        const fileName = match[1].trim();
+        if (!processedFiles.has(fileName)) {
+            try {
+                let fileContent = await fetchObsidianFileContent(fileName);
+
+                fileContent = handleTokenLimits(fileContent);
+
+                // Replace the mention with the file content
+                const mentionPlaceholder = `@${fileName}`;
+                const filePlaceholder = `\n[Start of ${fileName}]\n${fileContent}\n[End of ${fileName}]\n`;
+                messageText = messageText.replace(new RegExp(mentionPlaceholder, 'g'), filePlaceholder);
+
+                processedFiles.add(fileName);
+            } catch (error) {
+                console.error(`Error fetching content for ${fileName}:`, error);
+            }
+        }
+    }
+
+    return hasMentions ? messageText : null;
+}
+
+// 11. Add the fetchObsidianFileContent function
+async function fetchObsidianFileContent(fileName) {
+    try {
+        const apiKey = await window.settingsModule.getSetting('obsidian-api-key');
+        const endpoint = await window.settingsModule.getSetting('obsidian-endpoint');
+        const url = `${endpoint.replace(/\/$/, '')}/vault/${encodeURIComponent(fileName)}.md`;
+
+        const response = await fetch(url, {
+            headers: {
+                'Authorization': `Bearer ${apiKey}`,
+                'Accept': 'text/plain'
+            }
+        });
+
+        if (response.ok) {
+            const content = await response.text();
+            return content;
+        } else {
+            throw new Error(`Failed to fetch file: ${fileName}`);
+        }
+    } catch (error) {
+        console.error('Error fetching Obsidian file content:', error);
+        throw error;
+    }
+}
+
+// 12. Add the handleTokenLimits and tokenize functions
+function handleTokenLimits(content) {
+    const maxTokens = 2000; // Adjust based on your model's token limit
+    const tokens = tokenize(content);
+
+    if (tokens.length > maxTokens) {
+        // Truncate the content
+        const truncatedTokens = tokens.slice(0, maxTokens);
+        return truncatedTokens.join(' ') + '...';
+    }
+
+    return content;
+}
+
+function tokenize(text) {
+    // Simple tokenization by splitting on whitespace
+    return text.split(/\s+/);
 }
 
 // Helper function to get API key
@@ -1016,7 +1213,6 @@ function initializeDarkModeToggle() {
         applyDarkMode(result.darkMode);
     });
 }
-
 // Add this new function to apply dark mode
 function applyDarkMode(isDarkMode) {
     if (isDarkMode) {
@@ -1211,95 +1407,6 @@ function handleSessionNameChange() {
   }
 }
 
-async function sendMessage(message) {
-  const model = document.getElementById('chat-models').value;
-  if (!model) {
-    alert('Please select a model');
-    return;
-  }
-
-  if (!currentSession.id) {
-    console.warn('No current session, creating a new one');
-    await startNewSession();
-  }
-
-  try {
-    let apiKey;
-    if (model.includes('gpt')) {
-      apiKey = await window.settingsModule.getSetting('openai-api-key');
-    } else if (model.startsWith('claude')) {
-      apiKey = await window.settingsModule.getSetting('anthropic-api-key');
-    }
-
-    if (!apiKey) {
-      throw new Error('API key not found. Please check your settings.');
-    }
-
-    console.log('Sending message to model:', model);
-    console.log('API Key (first 4 characters):', apiKey.substring(0, 4));
-
-    let messageContent;
-    const hasImage = !!currentSession.pendingImage;
-    if (hasImage) {
-      const imageDataUrl = `data:${currentSession.pendingImage.mimeType};base64,${currentSession.pendingImage.data}`;
-      messageContent = [
-        {
-          type: "image_url",
-          image_url: {
-            url: imageDataUrl
-          }
-        },
-        {
-          type: "text",
-          text: message
-        }
-      ];
-      addMessageToChat('user-message', message, { url: imageDataUrl });
-      
-      // Save image to Obsidian for future reference
-      const imagePath = await saveImageToObsidian(currentSession.pendingImage.data, currentSession.pendingImage.mimeType);
-      if (imagePath) {
-        console.log('Image saved to Obsidian:', imagePath);
-      } else {
-        console.error('Failed to save image to Obsidian');
-      }
-    } else {
-      messageContent = [{ type: "text", text: message }];
-      addMessageToChat('user-message', message);
-    }
-
-    currentSession.messages.push({ role: 'user', content: messageContent });
-
-    let response;
-    if (model.includes('gpt')) {
-      response = await sendMessageToOpenAI(model, apiKey, currentSession.messages);
-    } else if (model.startsWith('claude')) {
-      response = await sendMessageToAnthropic(model, apiKey, currentSession.messages);
-    }
-
-    addMessageToChat('assistant-message', response);
-    currentSession.messages.push({ role: 'assistant', content: response });
-    await saveCurrentSession();
-
-    // Reset the image attachment UI
-    const imageAttachButton = document.getElementById('image-attach-button');
-    if (imageAttachButton) {
-      imageAttachButton.classList.remove('image-attached');
-      imageAttachButton.textContent = 'IMG';
-    }
-    currentSession.pendingImage = null;
-
-    // Update the session dropdown to maintain the current selection
-    const sessionDropdown = document.getElementById('saved-sessions');
-    if (sessionDropdown && currentSession.id) {
-      sessionDropdown.value = currentSession.id;
-    }
-  } catch (error) {
-    console.error('Error sending message:', error);
-    alert(`Error sending message: ${error.message}`);
-  }
-}
-
 async function saveToObsidianVault(content) {
     const apiKey = await window.settingsModule.getSetting('obsidian-api-key');
     const endpoint = await window.settingsModule.getSetting('obsidian-endpoint');
@@ -1347,4 +1454,5 @@ async function saveToObsidianVault(content) {
         alert(`Failed to save the session to Obsidian. Error: ${error.message}\nPlease check your settings and try again.`);
     }
 }
+
 

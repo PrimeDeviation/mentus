@@ -1,0 +1,21 @@
+.mention-suggestions {
+    position: absolute;
+    background-color: var(--background-color, #fff);
+    border: 1px solid var(--border-color, #ccc);
+    max-height: 150px;
+    overflow-y: auto;
+    z-index: 1000;
+    margin-top: 5px;
+    list-style-type: none;
+    padding: 0;
+    display: none; /* Hidden by default */
+}
+
+.mention-suggestions .suggestion-item {
+    padding: 5px 10px;
+    cursor: pointer;
+}
+
+.mention-suggestions .suggestion-item:hover {
+    background-color: var(--hover-background-color, #f0f0f0);
+}
