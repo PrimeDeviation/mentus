@@ -1,0 +1,46 @@
+name: Build Chrome Extension
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Check out the repository
+      uses: actions/checkout@v2
+
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.x'
+
+    - name: Install Python dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install csscompressor jsmin
+
+    - name: Package the Chrome extension
+      run: python mentus_pack.py
+
+    - name: Upload packaged extension as artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: mentus-extension
+        path: mentus-extension.zip
+        retention-days: 14
+
+    - name: Commit and push if changed
+      run: |
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        git add mentus-extension.zip
+        git commit -m "Update packaged extension" || exit 0
+        git push

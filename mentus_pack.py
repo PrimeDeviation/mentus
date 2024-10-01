@@ -8,7 +8,7 @@ from jsmin import jsmin
 # Define source and destination directories
 source_dir = '.'  # Current directory
 dest_dir = './mentus-packaged'
-zip_name = 'mentus-extension.zip'
+zip_name = os.path.join(source_dir, 'mentus-extension.zip')
 
 # Define files and directories to include
 files_to_include = [
