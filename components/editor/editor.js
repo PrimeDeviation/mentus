@@ -3,6 +3,8 @@ let currentFileName = null;
 let editor = null;
 let editorInitialized = false;
 
+console.log('Editor module loading');
+
 document.addEventListener('DOMContentLoaded', function() {
     initializeEditor();
 });
@@ -62,73 +64,40 @@ function ensureEditorInitialized() {
     }
 }
 
-function openFileInEditor(fileId, fileName, content = null) {
-    currentFileId = fileId;
-    currentFileName = fileName;
-    const fileNameDisplay = document.getElementById("file-name");
-    const createNewFileButton = document.getElementById("create-new-file");
-
-    ensureEditorInitialized();
-
-    if (content !== null) {
-        // This is an Obsidian file
-        if (editor) {
-            editor.setValue(content.trim());
-            editor.refresh();
-            editor.focus();
-            editor.setCursor(0, 0);
-            
-            // Force a redraw after a short delay
-            setTimeout(() => {
-                editor.refresh();
-            }, 100);
+function openFileInEditor(fileId, fileName, content, mimeType) {
+    console.log('openFileInEditor called with:', { fileId, fileName, content: content.substring(0, 100) + '...', mimeType });
+    try {
+        // Set the file name in the editor
+        const fileNameElement = document.getElementById('file-name');
+        if (fileNameElement) {
+            fileNameElement.textContent = fileName;
         } else {
-            console.error('Failed to initialize editor');
+            console.warn('file-name element not found');
         }
-        if (fileNameDisplay) fileNameDisplay.textContent = fileName;
-        updateWordCount(content);
-        updateLastSaved();
-        if (createNewFileButton) createNewFileButton.style.display = 'none';
-        
-        // Set a flag to indicate we're in Obsidian mode
-        isObsidianMode = true;
-    } else {
-        // This is a Google Drive file
-        chrome.identity.getAuthToken({ interactive: true }, function(token) {
-            if (chrome.runtime.lastError) {
-                console.error('Error getting auth token:', chrome.runtime.lastError);
-                return;
-            }
-            
-            fetch(`https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`, {
-                headers: { Authorization: `Bearer ${token}` }
-            })
-            .then(response => response.text())
-            .then(fileContent => {
-                if (editor) {
-                    editor.setValue(fileContent.trim());
-                    editor.refresh();
-                    editor.focus();
-                    editor.setCursor(0, 0);
-                    
-                    // Force a redraw after a short delay
-                    setTimeout(() => {
-                        editor.refresh();
-                    }, 100);
-                } else {
-                    console.error('Failed to initialize editor');
-                }
-                if (fileNameDisplay) fileNameDisplay.textContent = fileName;
-                updateWordCount(fileContent);
-                updateLastSaved();
-                if (createNewFileButton) createNewFileButton.style.display = 'none';
-            })
-            .catch(error => {
-                console.error('Error fetching file content:', error);
-                alert('Failed to load file content. Please try again.');
-            });
-        });
-        isObsidianMode = false;
+
+        // Get the editor instance (assuming you're using CodeMirror)
+        if (!editor) {
+            console.error('CodeMirror editor instance not found');
+            return;
+        }
+
+        // Set the content in the editor
+        editor.setValue(content);
+
+        // Set the appropriate mode based on the MIME type
+        let mode = 'text';
+        if (mimeType === 'text/csv') {
+            mode = 'csv';
+        } else if (fileName.endsWith('.md')) {
+            mode = 'markdown';
+        }
+        // Add more conditions for other file types as needed
+
+        editor.setOption('mode', mode);
+
+        console.log('File opened successfully in editor');
+    } catch (error) {
+        console.error('Error in openFileInEditor:', error);
     }
 }
 
@@ -372,7 +341,6 @@ document.addEventListener("DOMContentLoaded", initializeEditor);
 console.log('Editor module loaded');
 
 window.editorModule = {
-    initializeEditor,
     openFileInEditor,
     createNewFile,
     saveFile,

@@ -223,7 +223,7 @@ function loadFolderContents(folderId, token) {
     if (isFolderLoading) return;
     isFolderLoading = true;
 
-    fetch(`https://www.googleapis.com/drive/v3/files?q='${folderId}' in parents&fields=files(id,name,mimeType,modifiedTime)`, {
+    fetch(`https://www.googleapis.com/drive/v3/files?q='${folderId}' in parents and (mimeType='application/vnd.google-apps.folder' or fileExtension='md')&fields=files(id,name,mimeType,modifiedTime)`, {
         headers: { Authorization: `Bearer ${token}` }
     })
     .then(response => {
@@ -263,6 +263,12 @@ function displayFolderContents(files, folderId, token) {
     });
     documentsList.appendChild(backButton);
 
+    // Add create folder button
+    const createFolderButton = document.createElement('button');
+    createFolderButton.textContent = 'Create Folder';
+    createFolderButton.addEventListener('click', () => createFolder(folderId, token));
+    documentsList.appendChild(createFolderButton);
+
     const table = document.createElement('table');
     table.className = 'file-browser';
     
@@ -284,7 +290,7 @@ function displayFolderContents(files, folderId, token) {
 
         const typeCell = row.insertCell();
         const isFolder = file.mimeType === 'application/vnd.google-apps.folder';
-        typeCell.textContent = isFolder ? 'Folder' : 'File';
+        typeCell.textContent = isFolder ? 'Folder' : 'Markdown';
 
         const modifiedCell = row.insertCell();
         modifiedCell.textContent = new Date(file.modifiedTime).toLocaleString();
@@ -337,10 +343,68 @@ function getParentFolder(folderId, token) {
 }
 
 function openGoogleDriveFile(file, token) {
-    // Implement file opening logic here
-    console.log('Opening file:', file.name);
-    // You may want to use the Google Drive API to get the file content
-    // and open it in your editor component
+    console.log('Attempting to open file:', file);
+
+    fetch(`https://www.googleapis.com/drive/v3/files/${file.id}?alt=media`, {
+        headers: { Authorization: `Bearer ${token}` }
+    })
+    .then(response => {
+        console.log('File fetch response:', response);
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.text();
+    })
+    .then(content => {
+        console.log('File content retrieved, length:', content.length);
+        if (typeof window.editorModule !== 'undefined' && typeof window.editorModule.openFileInEditor === 'function') {
+            console.log('Calling openFileInEditor function');
+            window.editorModule.openFileInEditor(file.id, file.name, content, 'text/markdown');
+            
+            // Switch to the Editor tab
+            const editorTab = document.querySelector('.tab-button[data-tab="editor"]');
+            if (editorTab) {
+                console.log('Switching to Editor tab');
+                editorTab.click();
+            } else {
+                console.warn('Editor tab button not found');
+            }
+        } else {
+            console.error('Editor module or openFileInEditor function not found');
+            alert('Unable to open the file in the editor. Please check the console for more details.');
+        }
+    })
+    .catch(error => {
+        console.error('Error opening file:', error);
+        alert(`Failed to open the file: ${error.message}. Please check the console for more details.`);
+    });
+}
+
+function createFolder(parentFolderId, token) {
+    const folderName = prompt('Enter folder name:');
+    if (!folderName) return;
+
+    fetch('https://www.googleapis.com/drive/v3/files', {
+        method: 'POST',
+        headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            name: folderName,
+            mimeType: 'application/vnd.google-apps.folder',
+            parents: [parentFolderId]
+        })
+    })
+    .then(response => response.json())
+    .then(folder => {
+        console.log('Folder created:', folder);
+        loadFolderContents(parentFolderId, token);
+    })
+    .catch(error => {
+        console.error('Error creating folder:', error);
+        alert('Failed to create folder. Please try again.');
+    });
 }
 
 async function loadObsidianDocuments() {

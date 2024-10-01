@@ -1,0 +1,2 @@
+csscompressor==0.9.5
+jsmin==3.0.1

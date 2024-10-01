@@ -952,6 +952,7 @@ function addMessageToChat(className, message, imageData = null) {
 // Initialize the Mentus Tab when the DOM is loaded
 document.addEventListener("DOMContentLoaded", function() {
   console.log("DOM fully loaded and parsed");
+  console.log("Editor module:", window.editorModule);
   initializeMentusTab();
 });
 
