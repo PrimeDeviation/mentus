@@ -154,13 +154,13 @@ async function saveObsidianFile(path, content) {
     try {
         // Encode each path segment separately
         const encodedPath = path.split('/').map(segment => encodeURIComponent(segment)).join('/');
-        const url = `${endpoint}/vault/${encodedPath}`;
+        const url = `${endpoint.replace(/\/$/, '')}/vault/${encodedPath}`;
         console.log('Request URL:', url);
 
         const response = await fetch(url, {
             method: 'PUT',
             headers: {
-                'Authorization': `Bearer ${apiKey}`,
+                'X-API-Auth-Token': apiKey, // Use the correct header
                 'Content-Type': 'text/markdown'
             },
             body: content

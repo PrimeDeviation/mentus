@@ -408,37 +408,54 @@ async function handleChatInput(e) {
     }
 }
 
-// 4. Add the fetchMentionSuggestions function
+// 4. Update the fetchMentionSuggestions function
 async function fetchMentionSuggestions(query) {
     const apiKey = await window.settingsModule.getSetting('obsidian-api-key');
     const endpoint = await window.settingsModule.getSetting('obsidian-endpoint');
 
     if (!apiKey || !endpoint) {
         console.error('Obsidian API key or endpoint not set');
+        alert('Obsidian API key or endpoint not set. Please check your settings.');
         return [];
     }
 
     try {
-        const response = await fetch(`${endpoint}/vault/`, {
+        // Adjust the URL to avoid double slashes
+        const url = `${endpoint.replace(/\/$/, '')}/vault/`;
+
+        console.log('Fetching mention suggestions from URL:', url);
+
+        const response = await fetch(url, {
             headers: {
-                'Authorization': `Bearer ${apiKey}`,
+                'X-API-Auth-Token': apiKey, // Use correct header name
                 'Accept': 'application/json'
             }
         });
 
         if (!response.ok) {
+            // Log the response status and text for debugging
+            const errorText = await response.text();
+            console.error(`HTTP error! status: ${response.status}, message: ${errorText}`);
             throw new Error(`HTTP error! status: ${response.status}`);
         }
 
         const data = await response.json();
-        return data.files
-            .filter(file => file.toLowerCase().includes(query.toLowerCase()) && file.endsWith('.md'))
+        console.log('Fetched data:', data);
+
+        // The API returns an object with a 'files' array
+        const files = data.files || [];
+
+        return files
+            .filter(file => 
+                file.toLowerCase().includes(query.toLowerCase()) && file.endsWith('.md')
+            )
             .map(file => ({
                 name: file.replace('.md', ''),
                 path: file
             }));
     } catch (error) {
         console.error('Error fetching mention suggestions:', error);
+        alert('Failed to load mention suggestions. Please check your Obsidian API settings and ensure that the Obsidian Local REST API plugin is running.');
         return [];
     }
 }
@@ -628,17 +645,24 @@ async function replaceMentionsWithFileContent(messageText) {
     return hasMentions ? messageText : null;
 }
 
-// 11. Add the fetchObsidianFileContent function
+// 11. Update the fetchObsidianFileContent function
 async function fetchObsidianFileContent(fileName) {
     try {
         const apiKey = await window.settingsModule.getSetting('obsidian-api-key');
         const endpoint = await window.settingsModule.getSetting('obsidian-endpoint');
-        const url = `${endpoint.replace(/\/$/, '')}/vault/${encodeURIComponent(fileName)}.md`;
+
+        // Encode the file path
+        const encodedFileName = encodeURIComponent(`${fileName}.md`);
+
+        // Adjust the URL
+        const url = `${endpoint.replace(/\/$/, '')}/vault/${encodedFileName}`;
+
+        console.log('Fetching file content from URL:', url);
 
         const response = await fetch(url, {
             headers: {
-                'Authorization': `Bearer ${apiKey}`,
-                'Accept': 'text/plain'
+                'X-API-Auth-Token': apiKey, // Use correct header
+                'Accept': 'text/markdown'
             }
         });
 
@@ -646,6 +670,8 @@ async function fetchObsidianFileContent(fileName) {
             const content = await response.text();
             return content;
         } else {
+            const errorText = await response.text();
+            console.error(`Failed to fetch file: ${fileName}, status: ${response.status}, message: ${errorText}`);
             throw new Error(`Failed to fetch file: ${fileName}`);
         }
     } catch (error) {
