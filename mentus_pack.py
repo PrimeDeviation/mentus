@@ -19,8 +19,7 @@ files_to_include = [
     'lib',
     'styles',
     'public',
-    'utils',
-    'content-scripts'
+    'utils'
 ]
 
 # Create destination directory
