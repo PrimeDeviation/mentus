@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "Mentus - Chat with Obsidian Notes and Google Docs",
   "description": "AI-powered chat for your Obsidian vault and Google Docs.",
-  "version": "1.4",
+  "version": "1.5",
   "action": {
     "default_icon": {
       "16": "images/icon_16.png",
