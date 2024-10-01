@@ -26,7 +26,7 @@ jobs:
       run: python mentus_pack.py
 
     - name: Upload packaged extension as artifact
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: mentus-extension
         path: mentus-extension.zip
