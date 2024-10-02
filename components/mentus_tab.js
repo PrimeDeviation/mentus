@@ -583,7 +583,7 @@ async function sendMessage(message) {
 
     try {
         let apiKey;
-        if (model.includes('gpt' || 'o1')) {
+        if (model.includes('gpt') || (model.includes('o1')))  {
             apiKey = await window.settingsModule.getSetting('openai-api-key');
         } else if (model.startsWith('claude')) {
             apiKey = await window.settingsModule.getSetting('anthropic-api-key');
@@ -634,7 +634,7 @@ async function sendMessage(message) {
         currentSession.messages.push({ role: 'user', content: messageContent });
 
         let response;
-        if (model.includes('gpt' || 'o1')) {
+        if (model.includes('gpt') || (model.includes('o1'))) {
             response = await sendMessageToOpenAI(model, apiKey, currentSession.messages);
         } else if (model.startsWith('claude')) {
             response = await sendMessageToAnthropic(model, apiKey, currentSession.messages);
