@@ -427,9 +427,9 @@ async function fetchMentionSuggestions(query) {
 
         const response = await fetch(url, {
             headers: {
-                'X-API-Auth-Token': apiKey, // Use correct header name
-                'Accept': 'application/json'
-            }
+              'Authorization': `Bearer ${apiKey}`, // Updated to match documents.js
+              'Accept': 'application/json'
+          }
         });
 
         if (!response.ok) {
@@ -661,9 +661,9 @@ async function fetchObsidianFileContent(fileName) {
 
         const response = await fetch(url, {
             headers: {
-                'X-API-Auth-Token': apiKey, // Use correct header
-                'Accept': 'text/markdown'
-            }
+              'Authorization': `Bearer ${apiKey}`, // Updated to match documents.js
+              'Accept': 'text/markdown'
+          }
         });
 
         if (response.ok) {
