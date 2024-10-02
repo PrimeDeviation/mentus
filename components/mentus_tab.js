@@ -403,10 +403,10 @@ async function handleChatInput(e) {
     const cursorPosition = input.selectionStart;
     const textBeforeCursor = input.value.substring(0, cursorPosition);
 
-    // Match the last word before the cursor that starts with @
-    const wordMatch = textBeforeCursor.match(/(\S+)$/);
-    if (wordMatch && wordMatch[1].startsWith('@')) {
-        const mentionText = wordMatch[1].substring(1); // Exclude the '@'
+    // Match the last word before the cursor that starts with @ and is followed by non-space characters
+    const wordMatch = textBeforeCursor.match(/@(\S*)$/);
+    if (wordMatch) {
+        const mentionText = wordMatch[1]; // Exclude the '@'
         const suggestions = await fetchMentionSuggestions(mentionText);
         displayMentionSuggestions(suggestions, input);
     } else {
@@ -617,7 +617,7 @@ async function sendMessage(message) {
                     text: finalMessage
                 }
             ];
-            addMessageToChat('user-message', message, { url: imageDataUrl });
+            addMessageToChat('user-message', finalMessage, { url: imageDataUrl });
 
             // Save image to Obsidian for future reference
             const imagePath = await saveImageToObsidian(currentSession.pendingImage.data, currentSession.pendingImage.mimeType);
@@ -628,7 +628,7 @@ async function sendMessage(message) {
             }
         } else {
             messageContent = [{ type: "text", text: finalMessage }];
-            addMessageToChat('user-message', message);
+            addMessageToChat('user-message', finalMessage);
         }
 
         currentSession.messages.push({ role: 'user', content: messageContent });
@@ -665,28 +665,33 @@ async function sendMessage(message) {
 
 // 10. Add the replaceMentionsWithFileContent function
 async function replaceMentionsWithFileContent(messageText) {
-    const mentionPattern = /@([\w\s]+)/g;
+    const mentionPattern = /@(\S+)/g;
     let match;
     const processedFiles = new Set();
     let hasMentions = false;
 
     while ((match = mentionPattern.exec(messageText)) !== null) {
         hasMentions = true;
-        const fileName = match[1].trim();
-        if (!processedFiles.has(fileName)) {
+        const mentionedName = match[1].trim();
+        if (!processedFiles.has(mentionedName)) {
             try {
-                let fileContent = await fetchObsidianFileContent(fileName);
+                // Find the full path of the mentioned file
+                const fullPath = allFilesCache.find(path => path.toLowerCase().includes(mentionedName.toLowerCase()));
+                if (fullPath) {
+                    let fileContent = await fetchObsidianFileContent(fullPath);
+                    fileContent = handleTokenLimits(fileContent);
 
-                fileContent = handleTokenLimits(fileContent);
+                    // Replace the mention with the file content
+                    const mentionPlaceholder = `@${mentionedName}`;
+                    const filePlaceholder = `\n[Start of ${mentionedName}]\n${fileContent}\n[End of ${mentionedName}]\n`;
+                    messageText = messageText.replace(new RegExp(mentionPlaceholder, 'g'), filePlaceholder);
 
-                // Replace the mention with the file content
-                const mentionPlaceholder = `@${fileName}`;
-                const filePlaceholder = `\n[Start of ${fileName}]\n${fileContent}\n[End of ${fileName}]\n`;
-                messageText = messageText.replace(new RegExp(mentionPlaceholder, 'g'), filePlaceholder);
-
-                processedFiles.add(fileName);
+                    processedFiles.add(mentionedName);
+                } else {
+                    console.warn(`File not found for mention: ${mentionedName}`);
+                }
             } catch (error) {
-                console.error(`Error fetching content for ${fileName}:`, error);
+                console.error(`Error fetching content for ${mentionedName}:`, error);
             }
         }
     }
@@ -792,15 +797,10 @@ async function sendMessageToOpenAI(model, apiKey, messages) {
       },
       body: JSON.stringify({
         model: model,
-        messages: messages.map(msg => {
-          if (Array.isArray(msg.content)) {
-            return {
-              role: msg.role,
-              content: msg.content
-            };
-          }
-          return msg;
-        })
+        messages: messages.map(msg => ({
+          role: msg.role,
+          content: Array.isArray(msg.content) ? msg.content[0].text : msg.content
+        }))
       })
     });
 
