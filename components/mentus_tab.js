@@ -32,6 +32,11 @@ let profileDataReady = false;
 // 1. Add variables to store mention suggestions
 let mentionSuggestions = [];
 
+// Add variables for caching
+let allFilesCache = [];
+let lastCacheTime = 0;
+const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+
 // Initialize the Mentus Tab
 async function initializeMentusTab() {
   try {
@@ -392,15 +397,16 @@ function initializeChatListeners() {
     }
 }
 
-// 3. Add the handleChatInput function
+// 3. Update the handleChatInput function
 async function handleChatInput(e) {
     const input = e.target;
     const cursorPosition = input.selectionStart;
     const textBeforeCursor = input.value.substring(0, cursorPosition);
-    const mentionMatch = textBeforeCursor.match(/@([\w\s]*)$/);
 
-    if (mentionMatch) {
-        const mentionText = mentionMatch[1];
+    // Match the last word before the cursor that starts with @
+    const wordMatch = textBeforeCursor.match(/(\S+)$/);
+    if (wordMatch && wordMatch[1].startsWith('@')) {
+        const mentionText = wordMatch[1].substring(1); // Exclude the '@'
         const suggestions = await fetchMentionSuggestions(mentionText);
         displayMentionSuggestions(suggestions, input);
     } else {
@@ -459,7 +465,7 @@ async function fetchAllFiles(vaultUrl, apiKey, path = '') {
     }
 }
 
-// Update the fetchMentionSuggestions function
+// 4. Update fetchMentionSuggestions function with caching
 async function fetchMentionSuggestions(query) {
     const apiKey = await window.settingsModule.getSetting('obsidian-api-key');
     const endpoint = await window.settingsModule.getSetting('obsidian-endpoint');
@@ -471,22 +477,27 @@ async function fetchMentionSuggestions(query) {
     }
 
     try {
-        const vaultUrl = `${endpoint.replace(/\/$/, '')}/vault/`;
-        console.log('Fetching all files for mention suggestions from URL:', vaultUrl);
+        const now = Date.now();
+        if (allFilesCache.length === 0 || (now - lastCacheTime) > CACHE_DURATION) {
+            const vaultUrl = `${endpoint.replace(/\/$/, '')}/vault/`;
+            console.log('Fetching all files for mention suggestions from URL:', vaultUrl);
 
-        // Fetch all files recursively
-        const allFiles = await fetchAllFiles(vaultUrl, apiKey);
-        console.log(`Total files fetched: ${allFiles.length}`);
+            allFilesCache = await fetchAllFiles(vaultUrl, apiKey);
+            lastCacheTime = now;
+            console.log(`Total files fetched: ${allFilesCache.length}`);
+        } else {
+            console.log('Using cached files for mention suggestions.');
+        }
 
-        // Filter files based on the query
-        const suggestions = allFiles
+        const suggestions = allFilesCache
             .filter(file => 
                 file.toLowerCase().includes(query.toLowerCase()) && file.endsWith('.md')
             )
             .map(file => ({
                 name: file.replace('.md', '').split('/').pop(),
                 path: file
-            }));
+            }))
+            .slice(0, 10); // Limit suggestions for performance
 
         console.log('Filtered suggestions:', suggestions);
 
