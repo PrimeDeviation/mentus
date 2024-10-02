@@ -408,7 +408,58 @@ async function handleChatInput(e) {
     }
 }
 
-// 4. Update the fetchMentionSuggestions function
+// Add the fetchAllFiles function from graphview.js
+async function fetchAllFiles(vaultUrl, apiKey, path = '') {
+    const encodedPath = path ? encodeURIComponent(path) : '';
+    const url = `${vaultUrl}${encodedPath}`;
+    console.log(`Fetching files from: ${url}`);
+    
+    try {
+        const response = await fetch(url, {
+            headers: {
+                'Authorization': `Bearer ${apiKey}`,
+                'Accept': 'application/json'
+            }
+        });
+        
+        if (!response.ok) {
+            if (response.status === 404) {
+                console.warn(`Path not found: ${url}. Skipping this folder.`);
+                return [];
+            }
+            const errorText = await response.text();
+            console.error(`HTTP error! status: ${response.status}, message: ${errorText}`);
+            throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
+        }
+        
+        const data = await response.json();
+        
+        if (!data.files || !Array.isArray(data.files)) {
+            console.warn('Unexpected data structure:', data);
+            return [];
+        }
+        
+        let files = data.files.filter(f => f.endsWith('.md'));
+        let subfolders = data.files.filter(f => f.endsWith('/'));
+        
+        console.log(`Found ${files.length} files and ${subfolders.length} subfolders in ${path || 'root'}`);
+        
+        let allFiles = files.map(file => path ? `${path}${file}` : file);
+        
+        for (let folder of subfolders) {
+            const folderPath = path ? `${path}${folder}` : folder;
+            const subfolderFiles = await fetchAllFiles(vaultUrl, apiKey, folderPath);
+            allFiles = allFiles.concat(subfolderFiles);
+        }
+        
+        return allFiles;
+    } catch (error) {
+        console.error(`Error fetching files from ${url}:`, error);
+        return [];
+    }
+}
+
+// Update the fetchMentionSuggestions function
 async function fetchMentionSuggestions(query) {
     const apiKey = await window.settingsModule.getSetting('obsidian-api-key');
     const endpoint = await window.settingsModule.getSetting('obsidian-endpoint');
@@ -420,39 +471,26 @@ async function fetchMentionSuggestions(query) {
     }
 
     try {
-        // Adjust the URL to avoid double slashes
-        const url = `${endpoint.replace(/\/$/, '')}/vault/`;
+        const vaultUrl = `${endpoint.replace(/\/$/, '')}/vault/`;
+        console.log('Fetching all files for mention suggestions from URL:', vaultUrl);
 
-        console.log('Fetching mention suggestions from URL:', url);
+        // Fetch all files recursively
+        const allFiles = await fetchAllFiles(vaultUrl, apiKey);
+        console.log(`Total files fetched: ${allFiles.length}`);
 
-        const response = await fetch(url, {
-            headers: {
-              'Authorization': `Bearer ${apiKey}`, // Updated to match documents.js
-              'Accept': 'application/json'
-          }
-        });
-
-        if (!response.ok) {
-            // Log the response status and text for debugging
-            const errorText = await response.text();
-            console.error(`HTTP error! status: ${response.status}, message: ${errorText}`);
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
-        const data = await response.json();
-        console.log('Fetched data:', data);
-
-        // The API returns an object with a 'files' array
-        const files = data.files || [];
-
-        return files
+        // Filter files based on the query
+        const suggestions = allFiles
             .filter(file => 
                 file.toLowerCase().includes(query.toLowerCase()) && file.endsWith('.md')
             )
             .map(file => ({
-                name: file.replace('.md', ''),
+                name: file.replace('.md', '').split('/').pop(),
                 path: file
             }));
+
+        console.log('Filtered suggestions:', suggestions);
+
+        return suggestions;
     } catch (error) {
         console.error('Error fetching mention suggestions:', error);
         alert('Failed to load mention suggestions. Please check your Obsidian API settings and ensure that the Obsidian Local REST API plugin is running.');
@@ -646,24 +684,24 @@ async function replaceMentionsWithFileContent(messageText) {
 }
 
 // 11. Update the fetchObsidianFileContent function
-async function fetchObsidianFileContent(fileName) {
+async function fetchObsidianFileContent(filePath) {
     try {
         const apiKey = await window.settingsModule.getSetting('obsidian-api-key');
         const endpoint = await window.settingsModule.getSetting('obsidian-endpoint');
 
         // Encode the file path
-        const encodedFileName = encodeURIComponent(`${fileName}.md`);
+        const encodedFilePath = filePath.split('/').map(segment => encodeURIComponent(segment)).join('/');
 
         // Adjust the URL
-        const url = `${endpoint.replace(/\/$/, '')}/vault/${encodedFileName}`;
+        const url = `${endpoint.replace(/\/$/, '')}/vault/${encodedFilePath}`;
 
         console.log('Fetching file content from URL:', url);
 
         const response = await fetch(url, {
             headers: {
-              'Authorization': `Bearer ${apiKey}`, // Updated to match documents.js
-              'Accept': 'text/markdown'
-          }
+                'Authorization': `Bearer ${apiKey}`,
+                'Accept': 'text/markdown'
+            }
         });
 
         if (response.ok) {
@@ -671,8 +709,8 @@ async function fetchObsidianFileContent(fileName) {
             return content;
         } else {
             const errorText = await response.text();
-            console.error(`Failed to fetch file: ${fileName}, status: ${response.status}, message: ${errorText}`);
-            throw new Error(`Failed to fetch file: ${fileName}`);
+            console.error(`Failed to fetch file: ${filePath}, status: ${response.status}, message: ${errorText}`);
+            throw new Error(`Failed to fetch file: ${filePath}`);
         }
     } catch (error) {
         console.error('Error fetching Obsidian file content:', error);
@@ -1480,5 +1518,8 @@ async function saveToObsidianVault(content) {
         alert(`Failed to save the session to Obsidian. Error: ${error.message}\nPlease check your settings and try again.`);
     }
 }
+
+// Expose the fetchObsidianFileContent function
+window.fetchObsidianFileContent = fetchObsidianFileContent;
 
 
