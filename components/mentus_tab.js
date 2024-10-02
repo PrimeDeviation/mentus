@@ -736,7 +736,7 @@ async function fetchObsidianFileContent(filePath) {
 
 // 12. Add the handleTokenLimits and tokenize functions
 function handleTokenLimits(content) {
-    const maxTokens = 32000; // Adjust based on your model's token limit
+    const maxTokens = 100000; // Adjust based on your model's token limit
     const tokens = tokenize(content);
 
     if (tokens.length > maxTokens) {
