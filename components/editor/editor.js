@@ -340,6 +340,7 @@ document.addEventListener("DOMContentLoaded", initializeEditor);
 
 console.log('Editor module loaded');
 
+// Expose editorModule to the global scope
 window.editorModule = {
     openFileInEditor,
     createNewFile,

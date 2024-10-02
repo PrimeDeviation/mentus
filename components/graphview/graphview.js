@@ -568,6 +568,36 @@ function initializeGraph() {
     // Initial color update
     updateColors(document.body.classList.contains('dark-mode'));
 
+    // Add double-click event listener to nodes
+    node.on('dblclick', async function(event, d) {
+        console.log('Node double-clicked:', d);
+
+        // Fetch file content and open in editor
+        try {
+            const filePath = d.id; // Assuming d.id contains the file path
+            const fileName = d.label || d.id.split('/').pop();
+
+            // Use the fetchObsidianFileContent function
+            const content = await window.fetchObsidianFileContent(filePath);
+
+            // Use the editor's openFileInEditor function
+            if (window.editorModule && typeof window.editorModule.openFileInEditor === 'function') {
+                window.editorModule.openFileInEditor(filePath, fileName, content, 'text/markdown');
+
+                // Switch to the Editor tab
+                const editorTab = document.querySelector('.tab-button[data-tab="editor"]');
+                if (editorTab) {
+                    editorTab.click();
+                }
+            } else {
+                console.error('Editor module or openFileInEditor function not found');
+            }
+        } catch (error) {
+            console.error('Error opening file from graphview:', error);
+            alert(`Failed to open the file "${d.label}".\nError: ${error.message}`);
+        }
+    });
+
     console.log("Graph initialization complete");
     console.log("Nodes rendered:", graphData.nodes.length);
     console.log("Links rendered:", graphData.links.length);
