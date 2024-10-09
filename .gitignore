@@ -132,7 +132,6 @@ docker-compose.yml
 .dockerignore
 
 # Webpack build artifacts
-dist/
 
 # Node modules
 node_modules/
