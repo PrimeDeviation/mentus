@@ -1193,7 +1193,7 @@ async function saveCurrentSession() {
   if (saveToObsidian) {
     await saveToObsidianVault(markdownContent);
   } else {
-    await saveToGoogleDrive(markdownContent);
+    await saveToGoogleDrive(markdownContent); // Call the function here
   }
 
   // Update local storage
@@ -1451,5 +1451,126 @@ async function saveToObsidianVault(content) {
         console.error('Error saving session to Obsidian:', error);
         alert(`Failed to save the session to Obsidian. Error: ${error.message}\nPlease check your settings and try again.`);
     }
+}
+
+// Add this function to handle saving sessions to Google Drive
+async function saveToGoogleDrive(content) {
+  console.log('Saving session to Google Drive');
+  try {
+    // Obtain the OAuth token
+    const token = await getGoogleAuthToken();
+
+    if (!token) {
+      throw new Error('Google OAuth token not available. Please connect your Google account.');
+    }
+
+    // Ensure the Mentus Workspace folder exists
+    const folderId = await window.ensureMentusWorkspaceFolder(token);
+    if (!folderId) {
+      throw new Error('Mentus Workspace folder could not be found or created.');
+    }
+
+    // Prepare the metadata for the file to be saved
+    const fileName = `${currentSession.name}.md`;
+    const fileMetadata = {
+      name: fileName,
+      mimeType: 'text/markdown',
+      parents: [folderId] // Save the file into the Mentus Workspace folder
+    };
+
+    // Prepare the multipart request body
+    const form = new FormData();
+    form.append('metadata', new Blob([JSON.stringify(fileMetadata)], { type: 'application/json' }));
+    form.append('file', new Blob([content], { type: 'text/markdown' }));
+
+    // Send the request to Google Drive API
+    const response = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`
+      },
+      body: form
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error('Google Drive API Error:', errorData);
+      throw new Error(`Google Drive API Error: ${errorData.error.message}`);
+    }
+
+    const data = await response.json();
+    console.log('Session saved to Google Drive:', data);
+  } catch (error) {
+    console.error('Error saving session to Google Drive:', error);
+    alert(`Failed to save the session to Google Drive. Error: ${error.message}\nPlease check your Google account connection and try again.`);
+  }
+}
+
+// Helper function to get Google OAuth token
+async function getGoogleAuthToken() {
+  return new Promise((resolve) => {
+    chrome.identity.getAuthToken({ interactive: true }, function(token) {
+      if (chrome.runtime.lastError) {
+        console.error('Error getting auth token:', chrome.runtime.lastError);
+        resolve(null);
+      } else {
+        resolve(token);
+      }
+    });
+  });
+}
+
+// Add this function to mentus_tab.js
+async function ensureMentusWorkspaceFolder(token) {
+  console.log('Ensuring Mentus Workspace folder exists');
+  
+  // Try to get the folder ID from local storage
+  const storedFolderId = await new Promise((resolve) => {
+    chrome.storage.local.get('mentusFolderId', function(result) {
+      resolve(result.mentusFolderId);
+    });
+  });
+
+  if (storedFolderId) {
+    console.log('Mentus Workspace folder ID retrieved from storage:', storedFolderId);
+    return storedFolderId;
+  }
+
+  try {
+    // Search for an existing "Mentus Workspace" folder
+    const searchResponse = await fetch(
+      'https://www.googleapis.com/drive/v3/files?q=name%3D%27Mentus%20Workspace%27%20and%20mimeType%3D%27application/vnd.google-apps.folder%27%20and%20trashed%3Dfalse',
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+    const searchData = await searchResponse.json();
+
+    if (searchData.files && searchData.files.length > 0) {
+      const folderId = searchData.files[0].id;
+      console.log('Existing Mentus Workspace folder found:', folderId);
+      await chrome.storage.local.set({ mentusFolderId: folderId });
+      return folderId;
+    }
+
+    // If the folder doesn't exist, create it
+    console.log('Mentus Workspace folder not found, creating a new one');
+    const createResponse = await fetch('https://www.googleapis.com/drive/v3/files', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        name: 'Mentus Workspace',
+        mimeType: 'application/vnd.google-apps.folder'
+      })
+    });
+    const folder = await createResponse.json();
+    console.log('New Mentus Workspace folder created:', folder.id);
+    await chrome.storage.local.set({ mentusFolderId: folder.id });
+    return folder.id;
+  } catch (error) {
+    console.error('Error ensuring Mentus Workspace folder:', error);
+    throw error;
+  }
 }
 

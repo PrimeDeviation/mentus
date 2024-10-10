@@ -667,5 +667,8 @@ window.createMarkdownFile = createMarkdownFile;
 window.loadObsidianDocuments = loadObsidianDocuments;
 window.showTopLevelView = showTopLevelView;
 
+// Export functions to be called from other modules
+window.ensureMentusWorkspaceFolder = ensureMentusWorkspaceFolder;
+
 // Add this line to check if the script is loaded
 console.log('Documents script loaded');
