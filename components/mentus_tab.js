@@ -29,17 +29,110 @@ let currentSession = {
 
 let profileDataReady = false;
 
-// Initialize the Mentus Tab
+// Onboarding steps definition
+const onboardingSteps = [
+  {
+    title: "Welcome to Mentus!",
+    content: `<p>Mentus is your interactive learning assistant.</p>
+              <p>Let's take a quick tour to get you started.</p>`
+  },
+  {
+    title: "Configure API Keys",
+    content: `<p>Go to the <strong>Settings</strong> tab to enter your API keys for OpenAI, Anthropic, and Obsidian.</p>
+              <p>This will enable AI chat functionality and data synchronization.</p>`
+  },
+  {
+    title: "AI-Powered Chat",
+    content: `<p>Use the chat sidebar to communicate with AI models.</p>
+              <p>Select different models and manage your chat sessions.</p>`
+  },
+  {
+    title: "Knowledge Graph",
+    content: `<p>Visualize and explore your knowledge through the interactive graph.</p>
+              <p>Access it from the <strong>Graph</strong> tab.</p>`
+  },
+  {
+    title: "Document Management",
+    content: `<p>Manage your documents and files in the <strong>Docs</strong> tab.</p>
+              <p>Edit and create markdown files seamlessly.</p>`
+  },
+  {
+    title: "Markdown Editor",
+    content: `<p>Create and edit markdown files using the built-in editor.</p>
+              <p>Access it from the <strong>Editor</strong> tab.</p>`
+  },
+  {
+    title: "Dark Mode",
+    content: `<p>Toggle between light and dark themes using the button at the top of the chat sidebar.</p>`
+  },
+  {
+    title: "Get Started",
+    content: `<p>You're all set! Explore Mentus and enhance your learning experience.</p>`
+  }
+];
+
+function initializeOnboarding() {
+  const onboardingModal = document.getElementById('onboarding-modal');
+  const onboardingContent = document.getElementById('onboarding-step-content');
+  const onboardingClose = document.getElementById('onboarding-close');
+  const onboardingPrev = document.getElementById('onboarding-prev');
+  const onboardingNext = document.getElementById('onboarding-next');
+  const onboardingSkip = document.getElementById('onboarding-skip');
+
+  let currentStep = 0;
+
+  function showStep(stepIndex) {
+    const step = onboardingSteps[stepIndex];
+    onboardingContent.innerHTML = `
+      <h2>${step.title}</h2>
+      ${step.content}
+    `;
+    onboardingPrev.disabled = stepIndex === 0;
+    onboardingNext.textContent = stepIndex === onboardingSteps.length - 1 ? 'Finish' : 'Next';
+  }
+
+  function closeOnboarding() {
+    onboardingModal.style.display = 'none';
+    // Save to local storage that onboarding is completed
+    localStorage.setItem('mentusOnboardingCompleted', 'true');
+  }
+
+  onboardingPrev.addEventListener('click', () => {
+    if (currentStep > 0) {
+      currentStep--;
+      showStep(currentStep);
+    }
+  });
+
+  onboardingNext.addEventListener('click', () => {
+    if (currentStep < onboardingSteps.length - 1) {
+      currentStep++;
+      showStep(currentStep);
+    } else {
+      closeOnboarding();
+    }
+  });
+
+  onboardingSkip.addEventListener('click', closeOnboarding);
+  onboardingClose.addEventListener('click', closeOnboarding);
+
+  // Start the onboarding
+  onboardingModal.style.display = 'block';
+  showStep(currentStep);
+}
+
+// Modify the initializeMentusTab function to include onboarding
 async function initializeMentusTab() {
   try {
     console.log('Initializing Mentus Tab');
     initializeTabButtons();
     console.log('Tab buttons initialized');
     initializeDraggableResizer();
+    console.log('Draggable resizer initialized');
     initializeDarkModeToggle();
     console.log('Dark mode toggle initialized');
 
-    // Load settings first
+    // Load settings
     if (window.settingsModule) {
       console.log('Loading existing settings');
       await window.settingsModule.loadExistingSettings();
@@ -49,7 +142,7 @@ async function initializeMentusTab() {
       console.error('Settings module not found');
     }
 
-    // Load chat models after settings are loaded
+    // Load chat models
     console.log('About to load chat models');
     await loadChatModels();
     console.log('Chat models loaded');
@@ -73,18 +166,25 @@ async function initializeMentusTab() {
     initializeChatListeners();
     console.log('Chat listeners initialized');
     initializeDocumentsListeners();
-    console.log('Document listeners initialized');
+    console.log('Documents listeners initialized');
     initializeSessionListeners();
     console.log('Session listeners initialized');
 
     if (!currentSession.id) {
-      console.log('Starting new session');
+      console.log('No current session, starting new session');
       await startNewSession();
     }
 
     // Show the settings tab by default
     showTab('settings');
     console.log('Settings tab displayed');
+
+    // Initialize onboarding if not completed
+    const onboardingCompleted = localStorage.getItem('mentusOnboardingCompleted');
+    if (!onboardingCompleted) {
+      console.log('Starting onboarding');
+      initializeOnboarding();
+    }
 
     console.log('Mentus Tab initialization complete');
   } catch (error) {
