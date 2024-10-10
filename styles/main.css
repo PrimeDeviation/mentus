@@ -1088,7 +1088,7 @@ input[type="range"]::-moz-range-thumb {
 /* Include Virgil Font */
 @font-face {
   font-family: 'Virgil';
-  src: url('./fonts/Virgil.ttf') format('truetype');
+  src: url('../public/fonts/Virgil.woff2') format('woff2');
   font-weight: normal;
   font-style: normal;
 }
@@ -1096,6 +1096,9 @@ input[type="range"]::-moz-range-thumb {
 /* Apply Virgil font to the body */
 body {
   font-family: 'Virgil', sans-serif;
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  transition: background-color 0.3s, color 0.3s;
 }
 
 /* Onboarding Modal Styles */
