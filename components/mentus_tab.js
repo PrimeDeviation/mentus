@@ -547,7 +547,7 @@ async function fetchMentionSuggestions(query) {
         });
 
         if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
+            throw new Error(`HTTP error! status: ${response.status});
         }
 
         const data = await response.json();
@@ -1677,7 +1677,8 @@ function initializePaywall() {
   }
 }
 
-function passPaywall() {
+// Corrected function with async
+async function passPaywall() {
   // User has passed the paywall
   localStorage.setItem('mentusPaywallPassed', 'true');
   // Close paywall modal
