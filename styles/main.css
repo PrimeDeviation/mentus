@@ -1140,7 +1140,7 @@ body {
 
 .onboarding-controls button {
   background-color: var(--border-color);
-  color: var(--text-color);
+  color: #ffffff; /* Changed text color to white for better contrast */
   border: none;
   padding: 10px 20px;
   cursor: pointer;
@@ -1174,7 +1174,7 @@ body.dark-mode .modal-content {
 
 body.dark-mode .onboarding-controls button {
   background-color: var(--border-color);
-  color: var(--text-color);
+  color: #ffffff; /* Ensure text remains white in dark mode */
 }
 
 body.dark-mode .onboarding-controls button:hover {
@@ -1187,4 +1187,58 @@ body.dark-mode .close-button {
 
 body.dark-mode .close-button:hover {
   color: var(--text-color);
+}
+
+/* Style for auth-select-button */
+.auth-select-button {
+  background-color: var(--border-color);
+  color: #ffffff;
+  border: none;
+  padding: 8px 16px;
+  cursor: pointer;
+  border-radius: 4px;
+  margin: 5px 0;
+  font-family: 'Virgil', sans-serif;
+}
+
+.auth-select-button:hover {
+  background-color: var(--hover-bg-color);
+}
+
+/* Adjust list items in onboarding modal */
+.modal-content ul {
+  list-style-type: none;
+  padding: 0;
+}
+
+.modal-content li {
+  margin-bottom: 10px;
+}
+
+/* Paywall Modal Styles */
+#paywall-modal {
+  /* Reuse styles from the onboarding modal */
+}
+
+#paywall-modal .modal-content {
+  /* Same styles as .modal-content */
+}
+
+#paywall-modal .close-button {
+  /* Same styles as .close-button */
+}
+
+#paywall-modal .btn {
+  /* Button styling */
+  background-color: var(--border-color);
+  color: #ffffff;
+  border: none;
+  padding: 10px 20px;
+  cursor: pointer;
+  border-radius: 4px;
+  font-family: 'Virgil', sans-serif;
+}
+
+#paywall-modal .btn:hover {
+  background-color: var(--hover-bg-color);
 }

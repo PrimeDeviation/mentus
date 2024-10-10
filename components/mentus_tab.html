@@ -23,6 +23,19 @@
       </div>
     </div>
   </div>
+
+  <!-- Paywall Modal -->
+  <div id="paywall-modal" class="modal" style="display: none;">
+    <div class="modal-content">
+      <span id="paywall-close" class="close-button">&times;</span>
+      <div id="paywall-content">
+        <h2>Unlock Full Access</h2>
+        <p>Please purchase a subscription to access all features of Mentus.</p>
+        <button id="paywall-button" class="btn">Unlock Now</button>
+      </div>
+    </div>
+  </div>
+
   <div class="container">
     <div id="chatbar" class="chatbar">
       <div id="chatbar-content">
@@ -171,6 +184,16 @@
                 <button type="button" id="google-auth-button">Connect Google Account</button>
                 <button type="button" id="google-disconnect-button">Disconnect Google Account</button>
               </div>
+
+              <!-- GitHub Auth Section -->
+              <div class="form-group">
+                <label>GitHub Account Status:</label>
+                <div id="github-account" class="current-value">Not Connected</div>
+              </div>
+              <div class="form-group">
+                <button type="button" id="github-auth-button">Connect GitHub Account</button>
+                <button type="button" id="github-disconnect-button" style="display:none;">Disconnect GitHub Account</button>
+              </div>
             </div>
           </div>
         </div>
@@ -178,10 +201,9 @@
     </div>
   </div>
   <script src="../lib/codemirror.js"></script>
-  <!-- Replace the existing D3 script tag with this one -->
   <script src="../lib/d3/dist/d3.min.js"></script>
   <script src="./settings/settings.js"></script>
-  <script src="./documents/documents.js"></script> <!-- Load documents.js before mentus_tab.js -->
+  <script src="./documents/documents.js"></script>
   <script src="mentus_tab.js"></script>
   <script src="./editor/editor.js"></script>
   <script src="./userprofile/userprofile.js"></script>

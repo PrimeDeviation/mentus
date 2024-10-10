@@ -32,19 +32,19 @@ let profileDataReady = false;
 // Onboarding steps definition
 const onboardingSteps = [
   {
-    title: "Connect Your Google Account",
-    content: `<p>To personalize your experience, please connect your Google account.</p>
-              <p>Go to the <strong>User Profile</strong> tab and click on <strong>Connect Google Account</strong>.</p>`
-  },
-  {
-    title: "Welcome to Mentus!",
-    content: `<p>Mentus is your interactive learning assistant.</p>
-              <p>Let's take a quick tour to get you started.</p>`
+    title: "Select Authentication Provider",
+    content: `
+      <p>Please select your preferred authentication provider:</p>
+      <ul>
+        <li><button id="select-google-auth" class="auth-select-button">Google Account</button> - for saving sessions to Google Drive.</li>
+        <li><button id="select-github-auth" class="auth-select-button">GitHub Account</button> - for integrating with Obsidian via GitHub.</li>
+      </ul>
+    `
   },
   {
     title: "Configure API Keys",
-    content: `<p>Go to the <strong>Settings</strong> tab to enter your API keys for OpenAI, Anthropic, and Obsidian.</p>
-              <p>This will enable AI chat functionality and data synchronization.</p>`
+    content: `<p>Let's set up your API keys for OpenAI, Anthropic, and Obsidian.</p>
+              <p>You'll be directed to the <strong>Settings</strong> tab.</p>`
   },
   {
     title: "AI-Powered Chat",
@@ -94,12 +94,51 @@ function initializeOnboarding() {
     `;
     onboardingPrev.disabled = stepIndex === 0;
     onboardingNext.textContent = stepIndex === onboardingSteps.length - 1 ? 'Finish' : 'Next';
+
+    // Handle actions based on the current step
+    if (stepIndex === 0) {
+      // Step 1: Select Authentication Provider
+      const googleAuthButton = document.getElementById('select-google-auth');
+      const githubAuthButton = document.getElementById('select-github-auth');
+
+      if (googleAuthButton) {
+        googleAuthButton.addEventListener('click', () => {
+          // Navigate to User Profile tab and focus on Google Auth button
+          showTab('userprofile');
+          const googleButton = document.getElementById('google-auth-button');
+          if (googleButton) {
+            googleButton.focus();
+          }
+        });
+      }
+
+      if (githubAuthButton) {
+        githubAuthButton.addEventListener('click', () => {
+          // Navigate to User Profile tab and focus on GitHub Auth button
+          showTab('userprofile');
+          const githubButton = document.getElementById('github-auth-button');
+          if (githubButton) {
+            githubButton.focus();
+          }
+        });
+      }
+    } else if (stepIndex === 1) {
+      // Step 2: Configure API Keys
+      showTab('settings');
+      const openaiKeyInput = document.getElementById('openai-api-key');
+      if (openaiKeyInput) {
+        openaiKeyInput.focus();
+      }
+    }
+    // Additional steps can be handled similarly if needed
   }
 
   function closeOnboarding() {
     onboardingModal.style.display = 'none';
     // Save to local storage that onboarding is completed
     localStorage.setItem('mentusOnboardingCompleted', 'true');
+    // After onboarding, initialize features
+    initializeFeatures();
   }
 
   onboardingPrev.addEventListener('click', () => {
@@ -126,7 +165,7 @@ function initializeOnboarding() {
   showStep(currentStep);
 }
 
-// Modify the initializeMentusTab function to include onboarding
+// Modify the initializeMentusTab function
 async function initializeMentusTab() {
   try {
     console.log('Initializing Mentus Tab');
@@ -147,6 +186,25 @@ async function initializeMentusTab() {
       console.error('Settings module not found');
     }
 
+    // Check if onboarding has been completed
+    const onboardingCompleted = localStorage.getItem('mentusOnboardingCompleted');
+    if (!onboardingCompleted) {
+      console.log('Starting onboarding');
+      initializeOnboarding();
+    } else {
+      console.log('Onboarding already completed, initializing features');
+      await initializeFeatures();
+    }
+
+    console.log('Mentus Tab initialization complete');
+  } catch (error) {
+    console.error('Error in initializeMentusTab:', error);
+  }
+}
+
+// Function to initialize features after onboarding
+async function initializeFeatures() {
+  try {
     // Load chat models
     console.log('About to load chat models');
     await loadChatModels();
@@ -180,20 +238,11 @@ async function initializeMentusTab() {
       await startNewSession();
     }
 
-    // Show the settings tab by default
+    // Show the default tab (e.g., settings)
     showTab('settings');
-    console.log('Settings tab displayed');
-
-    // Initialize onboarding if not completed
-    const onboardingCompleted = localStorage.getItem('mentusOnboardingCompleted');
-    if (!onboardingCompleted) {
-      console.log('Starting onboarding');
-      initializeOnboarding();
-    }
-
-    console.log('Mentus Tab initialization complete');
+    console.log('Default tab displayed');
   } catch (error) {
-    console.error('Error in initializeMentusTab:', error);
+    console.error('Error in initializeFeatures:', error);
   }
 }
 
@@ -285,50 +334,29 @@ function initializeTabButtons() {
 
 // Show a specific tab
 function showTab(tabName) {
+  const paywallPassed = localStorage.getItem('mentusPaywallPassed');
+  if (!paywallPassed && tabName !== 'settings' && tabName !== 'userprofile') {
+    alert('Please complete the onboarding and pass the paywall to access this feature.');
+    return;
+  }
+
   console.log(`Showing tab: ${tabName}`);
-  
-  const tabContents = document.querySelectorAll('.tab-content');
+  const tabs = document.querySelectorAll('.tab-content');
   const tabButtons = document.querySelectorAll('.tab-button');
 
-  tabContents.forEach(content => content.style.display = 'none');
-  tabButtons.forEach(button => button.classList.remove('active'));
+  tabs.forEach(tab => {
+    tab.style.display = tab.id === tabName ? 'block' : 'none';
+  });
 
-  const activeTab = document.getElementById(tabName);
-  const activeButton = document.querySelector(`.tab-button[data-tab="${tabName}"]`);
-
-  if (activeTab && activeButton) {
-    activeTab.style.width = '100%';
-    activeTab.style.display = 'block';
-    activeButton.classList.add('active');
-    console.log(`Tab ${tabName} is now visible`);
-
-    // Additional logic for specific tabs
-    if (tabName === 'docs') {
-      if (typeof window.showDocumentsTab === 'function') {
-        window.showDocumentsTab();
-      }
-    } else if (tabName === 'editor') {
-      if (typeof window.editorModule !== 'undefined' && typeof window.editorModule.ensureEditorInitialized === 'function') {
-        window.editorModule.ensureEditorInitialized();
-      }
-    } else if (tabName === 'graph') {
-      console.log("Graph tab selected");
-      let graphContainer = document.getElementById('graph-container');
-      if (!graphContainer) {
-        graphContainer = document.createElement('div');
-        graphContainer.id = 'graph-container';
-        document.getElementById('graph').appendChild(graphContainer);
-      }
-      if (typeof window.checkGraphStatus === 'function') {
-        console.log("Calling checkGraphStatus");
-        window.checkGraphStatus();
-      } else {
-        console.error('checkGraphStatus function not found');
-      }
+  tabButtons.forEach(button => {
+    if (button.getAttribute('data-tab') === tabName) {
+      button.classList.add('active');
+    } else {
+      button.classList.remove('active');
     }
-  } else {
-    console.error(`Tab content or button not found for: ${tabName}`);
-  }
+  });
+
+  console.log(`Tab ${tabName} is now visible`);
 }
 
 // Add this constant to identify visual models
@@ -1188,12 +1216,16 @@ async function saveCurrentSession() {
   // Create markdown content
   let markdownContent = await createMarkdownFromSession(currentSession);
 
-  // Check if we should save to Obsidian
+  // Check if we should save to Obsidian via GitHub
   const saveToObsidian = await window.settingsModule.getSetting('save-to-obsidian');
-  if (saveToObsidian) {
+  const isGitHubConnected = await window.isGitHubAuthenticated();
+
+  if (saveToObsidian && isGitHubConnected) {
+    await saveToGitHub(markdownContent);
+  } else if (saveToObsidian) {
     await saveToObsidianVault(markdownContent);
   } else {
-    await saveToGoogleDrive(markdownContent); // Call the function here
+    await saveToGoogleDrive(markdownContent);
   }
 
   // Update local storage
@@ -1572,5 +1604,91 @@ async function ensureMentusWorkspaceFolder(token) {
     console.error('Error ensuring Mentus Workspace folder:', error);
     throw error;
   }
+}
+
+// Implement saveToGitHub function
+async function saveToGitHub(content) {
+  console.log('Saving session to GitHub');
+  const token = await window.getGitHubToken();
+
+  if (!token) {
+    alert('GitHub token not available. Please connect your GitHub account.');
+    return;
+  }
+
+  // Implement logic to commit the session file to the user's GitHub repository
+  // This involves interacting with the GitHub API to create or update files in a repository
+
+  // Example code (simplified and needs to be adapted):
+  const owner = 'your-username'; // Or get from user input or GitHub API
+  const repo = 'your-repo'; // Or get from user input or settings
+  const path = `sessions/${currentSession.name}.md`;
+  const message = `Add session ${currentSession.name}`;
+  const contentEncoded = btoa(content);
+
+  try {
+    const response = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${path}`, {
+      method: 'PUT',
+      headers: {
+        'Authorization': `token ${token}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        message: message,
+        content: contentEncoded
+      })
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error('GitHub API Error:', errorData);
+      throw new Error(`GitHub API Error: ${errorData.message}`);
+    }
+
+    console.log('Session saved to GitHub');
+  } catch (error) {
+    console.error('Error saving session to GitHub:', error);
+    alert(`Failed to save the session to GitHub. Error: ${error.message}\nPlease check your GitHub connection and try again.`);
+  }
+}
+
+function initializePaywall() {
+  console.log('Displaying paywall');
+  const paywallModal = document.getElementById('paywall-modal');
+  if (paywallModal) {
+    paywallModal.style.display = 'block';
+
+    const paywallClose = document.getElementById('paywall-close');
+    const paywallButton = document.getElementById('paywall-button');
+
+    paywallClose.addEventListener('click', () => {
+      alert('Access is restricted until the paywall is passed.');
+    });
+
+    paywallButton.addEventListener('click', async () => {
+      // Implement paywall logic here
+      // For example, redirect to a payment page or integrate with a payment API
+      // After successful payment, call passPaywall()
+      // For demonstration purposes, we'll just call passPaywall()
+      await passPaywall();
+    });
+  } else {
+    console.error('Paywall modal not found');
+  }
+}
+
+function passPaywall() {
+  // User has passed the paywall
+  localStorage.setItem('mentusPaywallPassed', 'true');
+  // Close paywall modal
+  const paywallModal = document.getElementById('paywall-modal');
+  if (paywallModal) {
+    paywallModal.style.display = 'none';
+  }
+
+  window.onboardingMode = false;
+  // Proceed with normal initialization or unlock features
+  await initializeFeatures(); // Initialize features after paywall is passed
+  console.log('Paywall passed, features unlocked');
 }
 

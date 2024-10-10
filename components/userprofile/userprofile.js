@@ -3,6 +3,7 @@ console.log('User profile script loaded');
 function initializeProfileListeners() {
     console.log('Initializing profile listeners');
     
+    // Google Auth Buttons
     const googleAuthButton = document.getElementById('google-auth-button');
     const googleDisconnectButton = document.getElementById('google-disconnect-button');
     
@@ -18,20 +19,40 @@ function initializeProfileListeners() {
         console.warn('Google disconnect button not found');
     }
 
-    // Listen for messages from the background script
+    // GitHub Auth Buttons
+    const githubAuthButton = document.getElementById('github-auth-button');
+    const githubDisconnectButton = document.getElementById('github-disconnect-button');
+
+    if (githubAuthButton) {
+        githubAuthButton.addEventListener('click', window.handleGitHubAuth);
+    } else {
+        console.warn('GitHub auth button not found');
+    }
+
+    if (githubDisconnectButton) {
+        githubDisconnectButton.addEventListener('click', window.handleGitHubLogout);
+    } else {
+        console.warn('GitHub disconnect button not found');
+    }
+
+    // Listen for messages to update auth UI
     chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
         if (request.action === "updateGoogleAuthUI") {
             console.log('Received updateGoogleAuthUI message:', request);
-            updateProfileDisplay(request.isConnected, request.email);
+            updateGoogleProfileDisplay(request.isConnected, request.email);
+        } else if (request.action === "updateGitHubUI") {
+            console.log('Received updateGitHubUI message:', request);
+            updateGitHubProfileDisplay(request.isConnected);
         }
     });
 
     // Initial check of auth status
     window.initializeGoogleAuth();
+    checkGitHubAuthStatus();
 }
 
-function updateProfileDisplay(isConnected, email = '') {
-    console.log('Updating profile display:', isConnected, email);
+function updateGoogleProfileDisplay(isConnected, email = '') {
+    console.log('Updating Google profile display:', isConnected, email);
     const googleAccountDisplay = document.getElementById('google-account');
     const googleEmailDisplay = document.getElementById('google-email');
     const googleAuthButton = document.getElementById('google-auth-button');
@@ -47,6 +68,28 @@ function updateProfileDisplay(isConnected, email = '') {
         if (googleEmailDisplay) googleEmailDisplay.textContent = 'N/A';
         if (googleAuthButton) googleAuthButton.style.display = 'block';
         if (googleDisconnectButton) googleDisconnectButton.style.display = 'none';
+    }
+}
+
+async function checkGitHubAuthStatus() {
+    const isConnected = await window.isGitHubAuthenticated();
+    updateGitHubProfileDisplay(isConnected);
+}
+
+function updateGitHubProfileDisplay(isConnected) {
+    console.log('Updating GitHub profile display:', isConnected);
+    const githubAccountDisplay = document.getElementById('github-account');
+    const githubAuthButton = document.getElementById('github-auth-button');
+    const githubDisconnectButton = document.getElementById('github-disconnect-button');
+
+    if (isConnected) {
+        if (githubAccountDisplay) githubAccountDisplay.textContent = 'Connected';
+        if (githubAuthButton) githubAuthButton.style.display = 'none';
+        if (githubDisconnectButton) githubDisconnectButton.style.display = 'block';
+    } else {
+        if (githubAccountDisplay) githubAccountDisplay.textContent = 'Not Connected';
+        if (githubAuthButton) githubAuthButton.style.display = 'block';
+        if (githubDisconnectButton) githubDisconnectButton.style.display = 'none';
     }
 }
 
