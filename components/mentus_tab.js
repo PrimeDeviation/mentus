@@ -32,6 +32,11 @@ let profileDataReady = false;
 // Onboarding steps definition
 const onboardingSteps = [
   {
+    title: "Connect Your Google Account",
+    content: `<p>To personalize your experience, please connect your Google account.</p>
+              <p>Go to the <strong>User Profile</strong> tab and click on <strong>Connect Google Account</strong>.</p>`
+  },
+  {
     title: "Welcome to Mentus!",
     content: `<p>Mentus is your interactive learning assistant.</p>
               <p>Let's take a quick tour to get you started.</p>`
