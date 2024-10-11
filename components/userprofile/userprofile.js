@@ -3,6 +3,7 @@ console.log('User profile script loaded');
 function initializeProfileListeners() {
     console.log('Initializing profile listeners');
     
+    // Google Auth Buttons
     const googleAuthButton = document.getElementById('google-auth-button');
     const googleDisconnectButton = document.getElementById('google-disconnect-button');
     
@@ -18,20 +19,21 @@ function initializeProfileListeners() {
         console.warn('Google disconnect button not found');
     }
 
-    // Listen for messages from the background script
+    // Listen for messages to update auth UI
     chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
         if (request.action === "updateGoogleAuthUI") {
             console.log('Received updateGoogleAuthUI message:', request);
-            updateProfileDisplay(request.isConnected, request.email);
+            updateGoogleProfileDisplay(request.isConnected, request.email);
         }
+        // ... existing code ...
     });
 
     // Initial check of auth status
     window.initializeGoogleAuth();
 }
 
-function updateProfileDisplay(isConnected, email = '') {
-    console.log('Updating profile display:', isConnected, email);
+function updateGoogleProfileDisplay(isConnected, email = '') {
+    console.log('Updating Google profile display:', isConnected, email);
     const googleAccountDisplay = document.getElementById('google-account');
     const googleEmailDisplay = document.getElementById('google-email');
     const googleAuthButton = document.getElementById('google-auth-button');
@@ -39,13 +41,13 @@ function updateProfileDisplay(isConnected, email = '') {
 
     if (isConnected) {
         if (googleAccountDisplay) googleAccountDisplay.textContent = 'Connected';
-        if (googleEmailDisplay) googleEmailDisplay.textContent = email;
+        if (googleEmailDisplay) googleEmailDisplay.textContent = email || 'Email not available';
         if (googleAuthButton) googleAuthButton.style.display = 'none';
-        if (googleDisconnectButton) googleDisconnectButton.style.display = 'block';
+        if (googleDisconnectButton) googleDisconnectButton.style.display = 'inline-block';
     } else {
         if (googleAccountDisplay) googleAccountDisplay.textContent = 'Not Connected';
         if (googleEmailDisplay) googleEmailDisplay.textContent = 'N/A';
-        if (googleAuthButton) googleAuthButton.style.display = 'block';
+        if (googleAuthButton) googleAuthButton.style.display = 'inline-block';
         if (googleDisconnectButton) googleDisconnectButton.style.display = 'none';
     }
 }
