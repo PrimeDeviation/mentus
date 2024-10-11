@@ -334,12 +334,6 @@ function initializeTabButtons() {
 
 // Show a specific tab
 function showTab(tabName) {
-  const paywallPassed = localStorage.getItem('mentusPaywallPassed');
-  if (!paywallPassed && tabName !== 'settings' && tabName !== 'userprofile') {
-    alert('Please complete the onboarding and pass the paywall to access this feature.');
-    return;
-  }
-
   console.log(`Showing tab: ${tabName}`);
   const tabs = document.querySelectorAll('.tab-content');
   const tabButtons = document.querySelectorAll('.tab-button');
@@ -1650,46 +1644,5 @@ async function saveToGitHub(content) {
     console.error('Error saving session to GitHub:', error);
     alert(`Failed to save the session to GitHub. Error: ${error.message}\nPlease check your GitHub connection and try again.`);
   }
-}
-
-function initializePaywall() {
-  console.log('Displaying paywall');
-  const paywallModal = document.getElementById('paywall-modal');
-  if (paywallModal) {
-    paywallModal.style.display = 'block';
-
-    const paywallClose = document.getElementById('paywall-close');
-    const paywallButton = document.getElementById('paywall-button');
-
-    paywallClose.addEventListener('click', () => {
-      alert('Access is restricted until the paywall is passed.');
-    });
-
-    paywallButton.addEventListener('click', async () => {
-      // Implement paywall logic here
-      // For example, redirect to a payment page or integrate with a payment API
-      // After successful payment, call passPaywall()
-      // For demonstration purposes, we'll just call passPaywall()
-      await passPaywall();
-    });
-  } else {
-    console.error('Paywall modal not found');
-  }
-}
-
-// Corrected function with async
-async function passPaywall() {
-  // User has passed the paywall
-  localStorage.setItem('mentusPaywallPassed', 'true');
-  // Close paywall modal
-  const paywallModal = document.getElementById('paywall-modal');
-  if (paywallModal) {
-    paywallModal.style.display = 'none';
-  }
-
-  window.onboardingMode = false;
-  // Proceed with normal initialization or unlock features
-  await initializeFeatures(); // Initialize features after paywall is passed
-  console.log('Paywall passed, features unlocked');
 }
 
