@@ -201,14 +201,18 @@ async function initializeMentusTab() {
       console.error('Settings module not found');
     }
 
+    // Initialize essential features needed during onboarding
+    await initializeEssentialFeatures();
+    console.log('Essential features initialized');
+
     // Check if onboarding has been completed
     const onboardingCompleted = localStorage.getItem('mentusOnboardingCompleted');
     if (!onboardingCompleted) {
       console.log('Starting onboarding');
       initializeOnboarding();
     } else {
-      console.log('Onboarding already completed, initializing features');
-      await initializeFeatures();
+      console.log('Onboarding already completed, initializing remaining features');
+      await initializeRemainingFeatures();
     }
 
     console.log('Mentus Tab initialization complete');
@@ -217,18 +221,43 @@ async function initializeMentusTab() {
   }
 }
 
-// Function to initialize features after onboarding
-async function initializeFeatures() {
+// Initialize essential features needed during onboarding
+async function initializeEssentialFeatures() {
   try {
-    // Load chat models
-    console.log('About to load chat models');
-    await loadChatModels();
-    console.log('Chat models loaded');
+    // Initialize Documents
+    if (window.initializeDocuments) {
+      console.log('Initializing Documents');
+      await window.initializeDocuments();
+      console.log('Documents initialized');
+    } else {
+      console.error('initializeDocuments function not found');
+    }
 
+    // Initialize Graph View
+    if (window.loadGraphView) {
+      console.log('Initializing Graph View');
+      await window.loadGraphView();
+      console.log('Graph View initialized');
+    } else {
+      console.error('loadGraphView function not found');
+    }
+  } catch (error) {
+    console.error('Error in initializeEssentialFeatures:', error);
+  }
+}
+
+// Initialize remaining features after onboarding
+async function initializeRemainingFeatures() {
+  try {
     // Initialize Obsidian
     console.log('Initializing Obsidian');
     await initializeObsidian();
     console.log('Obsidian initialized');
+
+    // Load chat models
+    console.log('About to load chat models');
+    await loadChatModels();
+    console.log('Chat models loaded');
 
     // Load sessions
     console.log('Loading sessions');
@@ -241,23 +270,22 @@ async function initializeFeatures() {
     console.log('Sessions loaded');
     updateSessionList();
 
+    // Initialize chat and session listeners
     initializeChatListeners();
     console.log('Chat listeners initialized');
-    initializeDocumentsListeners();
-    console.log('Documents listeners initialized');
     initializeSessionListeners();
     console.log('Session listeners initialized');
 
+    // Start a new session if none exists
     if (!currentSession.id) {
       console.log('No current session, starting new session');
       await startNewSession();
     }
 
-    // Show the default tab (e.g., settings)
-    showTab('settings');
-    console.log('Default tab displayed');
+    // Optionally, show a default tab
+    // showTab('chat');
   } catch (error) {
-    console.error('Error in initializeFeatures:', error);
+    console.error('Error in initializeRemainingFeatures:', error);
   }
 }
 

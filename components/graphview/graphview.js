@@ -124,7 +124,10 @@ async function populateGraphData() {
         const obsidianEndpoint = await window.settingsModule.getSetting('obsidian-endpoint');
 
         if (!obsidianApiKey || !obsidianEndpoint) {
-            throw new Error('Obsidian API key or endpoint not set');
+            console.warn('Obsidian API key or endpoint not set. Graph may be incomplete.');
+            // Optionally, display a message to the user in the graph container
+            updateLoadingMessage('Obsidian settings are not configured. Please set them in the Settings tab to view the full graph.');
+            return;
         }
 
         // Fetch Obsidian data
@@ -728,4 +731,8 @@ async function buildGraphData() {
     await populateGraphData();
 }
 
+// Export the loadGraphView function
 window.loadGraphView = buildGraphData;
+
+// Add this line to check if the script is loaded
+console.log('Graphview script loaded');

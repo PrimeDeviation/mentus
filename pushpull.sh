@@ -19,7 +19,7 @@ git pull --strategy-option=theirs origin $(git rev-parse --abbrev-ref HEAD)
 git push origin $(git rev-parse --abbrev-ref HEAD)
 
 # Wait for 30 seconds
-sleep 30
+sleep 60
 
 # Download the zip file from GitHub
 curl -L -o mentus-extension.zip https://github.com/PrimeDeviation/mentus/blob/paywall/mentus-extension.zip?raw=true

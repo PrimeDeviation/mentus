@@ -38,9 +38,7 @@ async function initializeDocuments() {
         const driveConfigured = await checkGoogleDriveConfiguration();
         const obsidianConfigured = await checkObsidianConfiguration();
 
-        console.log('Google Drive configured:', driveConfigured);
-        console.log('Obsidian configured:', obsidianConfigured);
-
+        // If neither is configured, inform the user
         if (!driveConfigured && !obsidianConfigured) {
             documentsList.innerHTML = '<p>Please configure a documents source in the Settings tab.</p>';
             return;
