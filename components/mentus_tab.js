@@ -29,163 +29,96 @@ let currentSession = {
 
 let profileDataReady = false;
 
-// Onboarding steps definition
-const onboardingSteps = [
-  {
-    title: "Welcome to Mentus",
-    content: `
-      <p>Welcome to Mentus! Let's get started with setting up your environment.</p>
-    `,
-    tab: 'chat' // Default to chat tab
-  },
-  {
-    title: "Connect Your Google Account",
-    content: `
-      <p>Please connect your Google account to enable saving sessions to Google Drive.</p>
-      <button id="connect-google-btn">Connect Google Account</button>
-    `,
-    tab: 'userprofile' // Show the User Profile tab
-  },
-  {
-    title: "Set API Keys",
-    content: `
-      <p>Please enter your API keys for OpenAI and/or Anthropic to enable AI-powered chat.</p>
-      <button id="open-settings-btn">Go to Settings</button>
-    `,
-    tab: 'settings' // Show the Settings tab
-  },
-  {
-    title: "Configure Obsidian Plugin",
-    content: `
-      <p>If you use Obsidian, configure the Local REST API plugin for seamless integration.</p>
-      <button id="open-obsidian-settings-btn">Configure Obsidian Settings</button>
-    `,
-    tab: 'settings' // Remain on the Settings tab
-  },
-  {
-    title: "Chat Interface Overview",
-    content: `
-      <p>The chat interface allows you to interact with AI models. Try it out by typing a message!</p>
-      <img src="../images/chat_interface.png" alt="Chat Interface" style="max-width: 100%; height: auto;">
-    `,
-    tab: 'chat' // Show the Chat tab
-  },
-  {
-    title: "Graph Interface Overview",
-    content: `
-      <p>The graph interface visualizes your knowledge connections. Explore it under the Graph tab.</p>
-      <!-- Include an image or description of the graph interface -->
-    `,
-    tab: 'graph' // Show the Graph tab
-  },
-  {
-    title: "Get Started",
-    content: `
-      <p>You're all set! Enjoy using Mentus to enhance your learning experience.</p>
-    `,
-    tab: 'chat' // Default to chat tab after onboarding
-  }
-];
-
+// Onboarding steps definition using Intro.js
 function initializeOnboarding() {
-  console.log('Starting interactive onboarding');
+  console.log('Starting interactive onboarding with Intro.js');
 
-  // Import Shepherd
-  const tour = new Shepherd.Tour({
-    defaults: {
-      classes: 'shepherd-theme-arrows',
-      scrollTo: true,
-    },
-  });
-
-  // Keep track of which steps to include based on user status
+  // Initialize the steps array
   const steps = [];
 
   // Step 1: Welcome
   steps.push({
-    id: 'welcome',
-    text: 'Welcome to Mentus! Let\'s get started with setting up your environment.',
-    buttons: [
-      {
-        text: 'Next',
-        action: tour.next,
-      },
-    ],
+    intro: "Welcome to Mentus! Let's get started with setting up your environment.",
   });
 
   // Check if Google Account is connected
-  const isGoogleConnected = /* Logic to check if Google is connected */;
-  if (!isGoogleConnected) {
+  const googleConnected = isGoogleConnected();
+  if (!googleConnected) {
     // Step 2: Connect Google Account
     steps.push({
-      id: 'connect-google',
-      text: 'Please connect your Google account to enable saving sessions to Google Drive.',
-      attachTo: {
-        element: '#google-auth-button',
-        on: 'bottom',
-      },
-      buttons: [
-        {
-          text: 'Connect Google Account',
-          action: () => {
-            // Trigger Google Authentication
-            if (window.handleGoogleAuth) {
-              window.handleGoogleAuth();
-            } else {
-              console.error('Google Auth function not found');
-            }
-            tour.next();
-          },
-        },
-      ],
+      element: '#google-auth-button',
+      intro: 'Please connect your Google account to enable saving sessions to Google Drive.',
+      position: 'bottom',
     });
   }
 
   // Step 3: Set API Keys
-  // Check if API keys are set
-  const hasOpenAIKey = /* Logic to check OpenAI key */;
-  const hasAnthropicKey = /* Logic to check Anthropic key */;
-  if (!hasOpenAIKey && !hasAnthropicKey) {
-    steps.push({
-      id: 'set-api-keys',
-      text: 'Please enter your API keys for OpenAI and/or Anthropic to enable AI-powered chat.',
-      attachTo: {
+  hasAPIKeys().then((apiKeysSet) => {
+    if (!apiKeysSet) {
+      // Step to enter API keys
+      steps.push({
         element: '#openai-api-key',
-        on: 'bottom',
-      },
-      buttons: [
-        {
-          text: 'Next',
-          action: tour.next,
-        },
-      ],
-    });
-  }
+        intro: 'Please enter your API keys for OpenAI and/or Anthropic to enable AI-powered chat.',
+        position: 'bottom',
+      });
+    }
 
-  // Continue adding steps as per your requirements
-  // For example, highlighting the chat model dropdown
-  steps.push({
-    id: 'chat-models',
-    text: 'Select your preferred AI model here.',
-    attachTo: {
+    // Step 4: Chat Model Selection
+    steps.push({
       element: '#chat-models',
-      on: 'bottom',
-    },
-    buttons: [
-      {
-        text: 'Next',
-        action: tour.next,
-      },
-    ],
+      intro: 'Select your preferred AI model here.',
+      position: 'bottom',
+    });
+
+    // Step 5: Graph Interface Overview
+    steps.push({
+      element: '#graph-container',
+      intro: 'The graph interface visualizes your knowledge connections. It may take some time to populate if your Obsidian graph is large.',
+      position: 'top',
+    });
+
+    // Start the Intro.js tour
+    introJs()
+      .setOptions({
+        steps: steps,
+        showProgress: true,
+        exitOnOverlayClick: false,
+      })
+      .onbeforeexit(() => {
+        // Set onboarding as completed when the tour finishes or is exited
+        localStorage.setItem('mentusOnboardingCompleted', 'true');
+        // Initialize remaining features
+        initializeFeatures();
+      })
+      .onchange((targetElement) => {
+        // Handle tab changes based on the element being highlighted
+        if (targetElement.id === 'google-auth-button') {
+          showTab('userprofile');
+        } else if (targetElement.id === 'openai-api-key') {
+          showTab('settings');
+        } else if (targetElement.id === 'chat-models') {
+          showTab('chat');
+        } else if (targetElement.id === 'graph-container') {
+          showTab('graph');
+        }
+      })
+      .start();
+  }).catch((error) => {
+    console.error('Error checking API keys:', error);
   });
+}
 
-  // Continue with other steps...
+// Implement isGoogleConnected function
+function isGoogleConnected() {
+  // Replace with actual logic to check if Google is connected
+  return window.googleUser && window.googleUser.isConnected;
+}
 
-  // Initialize the tour with the steps
-  steps.forEach((step) => tour.addStep(step));
-
-  // Start the tour
-  tour.start();
+// Implement hasAPIKeys function
+async function hasAPIKeys() {
+  const openAIKey = await window.settingsModule.getSetting('openai-api-key');
+  const anthropicKey = await window.settingsModule.getSetting('anthropic-api-key');
+  return openAIKey || anthropicKey;
 }
 
 // Modify the initializeMentusTab function
@@ -1678,16 +1611,5 @@ async function saveToGitHub(content) {
     console.error('Error saving session to GitHub:', error);
     alert(`Failed to save the session to GitHub. Error: ${error.message}\nPlease check your GitHub connection and try again.`);
   }
-}
-
-function isGoogleConnected() {
-  // Implement logic to check if Google account is connected
-  return window.googleUser && window.googleUser.isConnected;
-}
-
-async function hasAPIKeys() {
-  const openAIKey = await window.settingsModule.getSetting('openai-api-key');
-  const anthropicKey = await window.settingsModule.getSetting('anthropic-api-key');
-  return openAIKey || anthropicKey;
 }
 

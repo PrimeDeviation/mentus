@@ -5,9 +5,8 @@
   <title>Mentus Tab</title>
   <link rel="stylesheet" type="text/css" href="../styles/main.css">
   <link rel="stylesheet" type="text/css" href="../lib/codemirror.css">
-  <!-- Shepherd.js CSS -->
-  <link rel="stylesheet" href="https://unpkg.com/shepherd.js/dist/css/shepherd.css">
-
+  <!-- Include Intro.js CSS -->
+  <link rel="stylesheet" href="../lib/intro.js/introjs.min.css">
 </head>
 
 <body>
@@ -166,8 +165,8 @@
     </div>
   </div>
   <script src="../lib/codemirror.js"></script>
-  <!-- Replace the existing D3 script tag with this one -->
-  <script src="../lib/d3/dist/d3.min.js"></script>
+  <!-- Include D3.js locally -->
+  <script src="../lib/d3/d3.min.js"></script>
   <script src="./settings/settings.js"></script>
   <script src="./documents/documents.js"></script> <!-- Load documents.js before mentus_tab.js -->
   <script src="mentus_tab.js"></script>
@@ -175,7 +174,7 @@
   <script src="./userprofile/userprofile.js"></script>
   <script src="../utils/auth.js"></script>
   <script src="./graphview/graphview.js"></script>
-  <!-- Add this at the end of the body -->
-  <script src="https://unpkg.com/shepherd.js/dist/js/shepherd.min.js"></script>
+  <!-- Include Intro.js -->
+  <script src="../lib/intro.js/intro.min.js"></script>
 </body>
 </html>

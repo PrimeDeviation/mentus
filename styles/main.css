@@ -1044,7 +1044,6 @@ body {
 
 /* Add these styles for the slider controls */
 input[type="range"] {
-  -webkit-appearance: none;
   width: 100%;
   height: 5px;
   border-radius: 5px;
@@ -1217,46 +1216,12 @@ body.dark-mode .close-button:hover {
   margin-bottom: 10px;
 }
 
-/* Paywall Modal Styles */
-#paywall-modal {
-  /* Reuse styles from the onboarding modal */
-}
-
-#paywall-modal .modal-content {
-  /* Same styles as .modal-content */
-}
-
-#paywall-modal .close-button {
-  /* Same styles as .close-button */
-}
-
-#paywall-modal .btn {
-  /* Button styling */
-  background-color: var(--border-color);
-  color: #ffffff;
-  border: none;
-  padding: 10px 20px;
-  cursor: pointer;
-  border-radius: 4px;
-  font-family: 'Virgil', sans-serif;
-}
-
-#paywall-modal .btn:hover {
-  background-color: var(--hover-bg-color);
-}
-
-#user-profile-form button {
-    /* Ensure buttons are displayed inline and with proper spacing */
-    display: inline-block;
-    margin: 5px;
-}
-
-/* Add this style to ensure the modal overlays other content */
+/* Remove modal-related styles as they're no longer needed */
+/*
 .modal {
-  z-index: 10000; /* Increase z-index to make sure it's on top */
+  z-index: 10000;
 }
 
-/* Optionally, disable pointer events on the background during onboarding */
 body.onboarding-active {
   pointer-events: none;
 }
@@ -1265,7 +1230,6 @@ body.onboarding-active .modal {
   pointer-events: auto;
 }
 
-/* Darken the background during onboarding */
 body.onboarding-active::before {
   content: "";
   position: fixed;
@@ -1278,6 +1242,8 @@ body.onboarding-active::before {
 }
 
 .modal {
-  /* Ensure the modal is above the darkened background */
   z-index: 10000;
 }
+*/
+
+/* ... rest of your styles ... */
