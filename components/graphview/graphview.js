@@ -736,3 +736,15 @@ window.loadGraphView = buildGraphData;
 
 // Add this line to check if the script is loaded
 console.log('Graphview script loaded');
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Ensure D3.js is loaded
+    if (typeof d3 === 'undefined') {
+        console.error('D3 library is not loaded. Please check the script tag in mentus_tab.html');
+        return;
+    }
+    // Now safe to initialize the graph
+    if (isDataFetched) {
+        initializeGraph();
+    }
+});

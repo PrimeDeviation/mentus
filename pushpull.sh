@@ -30,4 +30,6 @@ rm -rf /mnt/e/localcode/mentus-extension-o1/*
 # Extract the zip file to the specified directory
 unzip mentus-extension.zip -d /mnt/e/localcode/mentus-extension-o1
 
+sleep 10
+
 rm mentus-extension.zip
