@@ -60,13 +60,13 @@ function updateGoogleProfileDisplay(isConnected, email = '') {
 
     if (isConnected) {
         if (googleAccountDisplay) googleAccountDisplay.textContent = 'Connected';
-        if (googleEmailDisplay) googleEmailDisplay.textContent = email;
+        if (googleEmailDisplay) googleEmailDisplay.textContent = email || 'Email not available';
         if (googleAuthButton) googleAuthButton.style.display = 'none';
-        if (googleDisconnectButton) googleDisconnectButton.style.display = 'block';
+        if (googleDisconnectButton) googleDisconnectButton.style.display = 'inline-block';
     } else {
         if (googleAccountDisplay) googleAccountDisplay.textContent = 'Not Connected';
         if (googleEmailDisplay) googleEmailDisplay.textContent = 'N/A';
-        if (googleAuthButton) googleAuthButton.style.display = 'block';
+        if (googleAuthButton) googleAuthButton.style.display = 'inline-block';
         if (googleDisconnectButton) googleDisconnectButton.style.display = 'none';
     }
 }
@@ -85,10 +85,10 @@ function updateGitHubProfileDisplay(isConnected) {
     if (isConnected) {
         if (githubAccountDisplay) githubAccountDisplay.textContent = 'Connected';
         if (githubAuthButton) githubAuthButton.style.display = 'none';
-        if (githubDisconnectButton) githubDisconnectButton.style.display = 'block';
+        if (githubDisconnectButton) githubDisconnectButton.style.display = 'inline-block';
     } else {
         if (githubAccountDisplay) githubAccountDisplay.textContent = 'Not Connected';
-        if (githubAuthButton) githubAuthButton.style.display = 'block';
+        if (githubAuthButton) githubAuthButton.style.display = 'inline-block';
         if (githubDisconnectButton) githubDisconnectButton.style.display = 'none';
     }
 }

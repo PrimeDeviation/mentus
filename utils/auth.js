@@ -1,5 +1,8 @@
 console.log('utils/auth.js loaded');
 
+/** Constants **/
+const GITHUB_CLIENT_ID = 'Ov23liHRV3Oj4MASdWjh'; // Your GitHub Client ID
+
 /** Google Authentication **/
 
 function initializeGoogleAuth() {
@@ -96,76 +99,62 @@ function updateGoogleAuthUI(isConnected, email = '') {
 
 async function handleGitHubAuth() {
   console.log('Starting GitHub authentication');
-  const clientId = 'YOUR_GITHUB_CLIENT_ID'; // Replace with your GitHub Client ID
+  const clientId = GITHUB_CLIENT_ID;
+  const redirectUri = chrome.identity.getRedirectURL();
 
-  try {
-    // Step 1: Request Device Code
-    const deviceCodeResponse = await fetch('https://github.com/login/device/code', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-      body: JSON.stringify({
-        client_id: clientId,
-        scope: 'repo' // Adjust scopes as needed
-      })
-    });
+  const authUrl = `https://github.com/login/oauth/authorize` +
+                  `?client_id=${clientId}` +
+                  `&redirect_uri=${encodeURIComponent(redirectUri)}` +
+                  `&scope=repo`;
 
-    const deviceCodeData = await deviceCodeResponse.json();
-    console.log('GitHub Device Code Data:', deviceCodeData);
+  chrome.identity.launchWebAuthFlow(
+    {
+      url: authUrl,
+      interactive: true
+    },
+    async function(responseUrl) {
+      if (chrome.runtime.lastError) {
+        console.error('Error during GitHub authentication:', chrome.runtime.lastError);
+        alert('GitHub authentication failed. Please try again.');
+        return;
+      }
 
-    if (deviceCodeData.error) {
-      throw new Error(`GitHub Device Code Error: ${deviceCodeData.error_description}`);
+      // Extract the code from responseUrl
+      const urlParams = new URLSearchParams(new URL(responseUrl).search);
+      const code = urlParams.get('code');
+
+      if (code) {
+        // Exchange code for access token
+        const tokenData = await exchangeCodeForToken(clientId, code);
+        if (tokenData && tokenData.access_token) {
+          await saveGitHubToken(tokenData.access_token);
+          updateGitHubAuthUI(true);
+        } else {
+          console.error('Failed to obtain GitHub access token', tokenData);
+          alert('Failed to obtain GitHub access token. Please try again.');
+        }
+      } else {
+        console.error('No code found in response URL');
+        alert('GitHub authentication failed. Please try again.');
+      }
     }
-
-    // Step 2: Prompt User to Authorize
-    alert(`To authorize, please visit ${deviceCodeData.verification_uri} and enter code: ${deviceCodeData.user_code}`);
-
-    // Step 3: Poll for Access Token
-    const tokenData = await pollForGitHubToken(clientId, deviceCodeData);
-    if (tokenData && tokenData.access_token) {
-      // Save token and update UI
-      await saveGitHubToken(tokenData.access_token);
-      updateGitHubAuthUI(true);
-    } else {
-      console.error('Failed to obtain GitHub access token');
-      alert('Failed to obtain GitHub access token. Please try again.');
-    }
-  } catch (error) {
-    console.error('Error in GitHub authentication:', error);
-    alert(`GitHub authentication failed: ${error.message}. Please try again.`);
-  }
+  );
 }
 
-async function pollForGitHubToken(clientId, deviceCodeData) {
-  const pollInterval = deviceCodeData.interval * 1000;
-  const maxTries = Math.ceil(300 / deviceCodeData.interval); // e.g., 5 minutes max
-  let tries = 0;
+async function exchangeCodeForToken(clientId, code) {
+  const backendUrl = `https://your-backend.com/github/oauth?code=${encodeURIComponent(code)}`;
 
-  while (tries < maxTries) {
-    await new Promise(resolve => setTimeout(resolve, pollInterval));
-
-    const tokenResponse = await fetch('https://github.com/login/oauth/access_token', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-      body: JSON.stringify({
-        client_id: clientId,
-        device_code: deviceCodeData.device_code,
-        grant_type: 'urn:ietf:params:oauth:grant-type:device_code'
-      })
+  try {
+    const response = await fetch(backendUrl, {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' }
     });
-
-    const tokenData = await tokenResponse.json();
-
-    if (tokenData.access_token) {
-      return tokenData;
-    } else if (tokenData.error !== 'authorization_pending') {
-      console.error('GitHub Token Error:', tokenData);
-      break;
-    }
-
-    tries++;
+    const tokenData = await response.json();
+    return tokenData;
+  } catch (error) {
+    console.error('Error fetching GitHub access token from backend:', error);
+    return null;
   }
-
-  return null;
 }
 
 async function saveGitHubToken(token) {

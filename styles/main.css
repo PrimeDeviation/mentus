@@ -1103,23 +1103,24 @@ body {
 
 /* Onboarding Modal Styles */
 .modal {
+  display: none; /* This is overridden in JavaScript when showing the modal */
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(0, 0, 0, 0.5);
-  z-index: 2000;
+  overflow: auto;
+  background-color: rgba(0,0,0,0.5);
+  z-index: 1000; /* Ensure it's on top of other elements */
 }
 
 .modal-content {
   background-color: var(--bg-color);
-  color: var(--text-color);
-  margin: 5% auto;
+  margin: 10% auto;
   padding: 20px;
-  width: 60%;
-  max-width: 700px;
-  position: relative;
+  border: 1px solid var(--border-color);
+  width: 80%;
+  max-width: 600px;
   border-radius: 8px;
 }
 
@@ -1241,4 +1242,10 @@ body.dark-mode .close-button:hover {
 
 #paywall-modal .btn:hover {
   background-color: var(--hover-bg-color);
+}
+
+#user-profile-form button {
+    /* Ensure buttons are displayed inline and with proper spacing */
+    display: inline-block;
+    margin: 5px;
 }
