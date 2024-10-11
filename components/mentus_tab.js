@@ -52,11 +52,13 @@ function initializeOnboarding() {
     });
   }
 
-  // Proceed after checking API keys
-  hasAPIKeys().then((apiKeysSet) => {
-    // Step 3: Set API Keys
-    // Check if OpenAI API Key is set
-    if (!apiKeysSet.openAIKeySet) {
+  hasAPIKeys().then(async (apiKeysSet) => {
+    // Steps for entering API keys
+    const needsOpenAIKey = !apiKeysSet.openAIKeySet;
+    const needsAnthropicKey = !apiKeysSet.anthropicKeySet;
+
+    // Step 3: OpenAI API Key
+    if (needsOpenAIKey) {
       steps.push({
         element: '#openai-api-key',
         intro: 'Please enter your OpenAI API key to enable AI-powered chat with OpenAI models.',
@@ -64,8 +66,8 @@ function initializeOnboarding() {
       });
     }
 
-    // Check if Anthropic API Key is set
-    if (!apiKeysSet.anthropicKeySet) {
+    // Step 4: Anthropic API Key
+    if (needsAnthropicKey) {
       steps.push({
         element: '#anthropic-api-key',
         intro: 'Please enter your Anthropic API key to enable AI-powered chat with Anthropic models.',
@@ -73,7 +75,7 @@ function initializeOnboarding() {
       });
     }
 
-    // Step 4: Obsidian REST API Settings
+    // Step 5: Obsidian REST API Settings
     steps.push({
       element: '#obsidian-api-key',
       intro: 'If you use Obsidian, please enter the API key from the Local REST API plugin settings.',
@@ -96,21 +98,19 @@ function initializeOnboarding() {
       intro: 'Please ensure that you have installed and configured the Obsidian Local REST API plugin in your Obsidian application.',
     });
 
-    // Step 5: Refresh Models and Sessions
+    // Add this step to reinitialize the graph view after Obsidian settings are provided
     steps.push({
-      intro: 'Now that the API keys are set, we will refresh the models and sessions.',
-      onbeforechange: () => {
-        // Reload models and sessions
-        loadChatModels();
-        loadSessions();
-      },
-    });
+      intro: 'Now that you have provided the Obsidian settings, we will reinitialize the graph view.',
+      onbeforechange: async () => {
+        // Save all settings entered so far
+        await window.settingsModule.saveAllSettings();
 
-    // Step 6: Chat Model Selection
-    steps.push({
-      element: '#chat-models',
-      intro: 'Select your preferred AI model here.',
-      position: 'bottom',
+        // Initialize Obsidian
+        await initializeObsidian();
+
+        // Reinitialize the graph view now that settings are available
+        await loadGraphView();
+      },
     });
 
     // Step 7: Graph Interface Overview
@@ -132,11 +132,11 @@ function initializeOnboarding() {
         showProgress: true,
         exitOnOverlayClick: false,
       })
-      .onbeforeexit(() => {
+      .onbeforeexit(async () => {
         // Set onboarding as completed when the tour finishes or is exited
         localStorage.setItem('mentusOnboardingCompleted', 'true');
         // Initialize remaining features
-        initializeFeatures();
+        await initializeRemainingFeatures();
       })
       .onchange((targetElement) => {
         // Handle tab changes based on the element being highlighted
@@ -155,6 +155,8 @@ function initializeOnboarding() {
             showTab('chat');
           } else if (targetElement.id === 'graph-container') {
             showTab('graph');
+          } else if (targetElement.id === 'document-list') {
+            showTab('docs');
           }
         }
       })
