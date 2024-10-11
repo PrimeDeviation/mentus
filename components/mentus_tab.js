@@ -32,19 +32,14 @@ let profileDataReady = false;
 // Onboarding steps definition
 const onboardingSteps = [
   {
-    title: "Select Authentication Provider",
-    content: `
-      <p>Please select your preferred authentication provider:</p>
-      <ul>
-        <li><button id="select-google-auth" class="auth-select-button">Google Account</button> - for saving sessions to Google Drive.</li>
-        <li><button id="select-github-auth" class="auth-select-button">GitHub Account</button> - for integrating with Obsidian via GitHub.</li>
-      </ul>
-    `
+    title: "Welcome to Mentus!",
+    content: `<p>Mentus is your interactive learning assistant.</p>
+              <p>Let's take a quick tour to get you started.</p>`
   },
   {
     title: "Configure API Keys",
-    content: `<p>Let's set up your API keys for OpenAI, Anthropic, and Obsidian.</p>
-              <p>You'll be directed to the <strong>Settings</strong> tab.</p>`
+    content: `<p>Go to the <strong>Settings</strong> tab to enter your API keys for OpenAI, Anthropic, and Obsidian.</p>
+              <p>This will enable AI chat functionality and data synchronization.</p>`
   },
   {
     title: "AI-Powered Chat",
@@ -77,26 +72,12 @@ const onboardingSteps = [
 ];
 
 function initializeOnboarding() {
-  console.log('initializeOnboarding function called');
-
   const onboardingModal = document.getElementById('onboarding-modal');
   const onboardingContent = document.getElementById('onboarding-step-content');
   const onboardingClose = document.getElementById('onboarding-close');
   const onboardingPrev = document.getElementById('onboarding-prev');
   const onboardingNext = document.getElementById('onboarding-next');
   const onboardingSkip = document.getElementById('onboarding-skip');
-
-  console.log('onboardingModal:', onboardingModal);
-  console.log('onboardingContent:', onboardingContent);
-  console.log('onboardingClose:', onboardingClose);
-  console.log('onboardingPrev:', onboardingPrev);
-  console.log('onboardingNext:', onboardingNext);
-  console.log('onboardingSkip:', onboardingSkip);
-
-  if (!onboardingModal || !onboardingContent || !onboardingClose || !onboardingPrev || !onboardingNext || !onboardingSkip) {
-    console.error('One or more onboarding elements not found');
-    return;
-  }
 
   let currentStep = 0;
 
@@ -108,57 +89,12 @@ function initializeOnboarding() {
     `;
     onboardingPrev.disabled = stepIndex === 0;
     onboardingNext.textContent = stepIndex === onboardingSteps.length - 1 ? 'Finish' : 'Next';
-
-    // Handle actions based on the current step
-    if (stepIndex === 0) {
-      // Step 1: Select Authentication Provider
-      const googleAuthButton = document.getElementById('select-google-auth');
-      const githubAuthButton = document.getElementById('select-github-auth');
-
-      if (googleAuthButton) {
-        console.log('Attaching event listener to googleAuthButton');
-        googleAuthButton.addEventListener('click', () => {
-          // Navigate to User Profile tab and focus on Google Auth button
-          showTab('userprofile');
-          const googleButton = document.getElementById('google-auth-button');
-          if (googleButton) {
-            googleButton.focus();
-          }
-        });
-      } else {
-        console.warn('googleAuthButton not found');
-      }
-
-      if (githubAuthButton) {
-        console.log('Attaching event listener to githubAuthButton');
-        githubAuthButton.addEventListener('click', () => {
-          // Navigate to User Profile tab and focus on GitHub Auth button
-          showTab('userprofile');
-          const githubButton = document.getElementById('github-auth-button');
-          if (githubButton) {
-            githubButton.focus();
-          }
-        });
-      } else {
-        console.warn('githubAuthButton not found');
-      }
-    } else if (stepIndex === 1) {
-      // Step 2: Configure API Keys
-      showTab('settings');
-      const openaiKeyInput = document.getElementById('openai-api-key');
-      if (openaiKeyInput) {
-        openaiKeyInput.focus();
-      }
-    }
-    // Additional steps can be handled similarly if needed
   }
 
   function closeOnboarding() {
     onboardingModal.style.display = 'none';
     // Save to local storage that onboarding is completed
     localStorage.setItem('mentusOnboardingCompleted', 'true');
-    // After onboarding, initialize features
-    initializeFeatures();
   }
 
   onboardingPrev.addEventListener('click', () => {
@@ -185,7 +121,7 @@ function initializeOnboarding() {
   showStep(currentStep);
 }
 
-// Modify the initializeMentusTab function
+// Modify the initializeMentusTab function to include onboarding
 async function initializeMentusTab() {
   try {
     console.log('Initializing Mentus Tab');
@@ -206,25 +142,6 @@ async function initializeMentusTab() {
       console.error('Settings module not found');
     }
 
-    // Check if onboarding has been completed
-    const onboardingCompleted = localStorage.getItem('mentusOnboardingCompleted');
-    if (!onboardingCompleted) {
-      console.log('Starting onboarding');
-      initializeOnboarding();
-    } else {
-      console.log('Onboarding already completed, initializing features');
-      await initializeFeatures();
-    }
-
-    console.log('Mentus Tab initialization complete');
-  } catch (error) {
-    console.error('Error in initializeMentusTab:', error);
-  }
-}
-
-// Function to initialize features after onboarding
-async function initializeFeatures() {
-  try {
     // Load chat models
     console.log('About to load chat models');
     await loadChatModels();
@@ -258,11 +175,20 @@ async function initializeFeatures() {
       await startNewSession();
     }
 
-    // Show the default tab (e.g., settings)
+    // Show the settings tab by default
     showTab('settings');
-    console.log('Default tab displayed');
+    console.log('Settings tab displayed');
+
+    // Initialize onboarding if not completed
+    const onboardingCompleted = localStorage.getItem('mentusOnboardingCompleted');
+    if (!onboardingCompleted) {
+      console.log('Starting onboarding');
+      initializeOnboarding();
+    }
+
+    console.log('Mentus Tab initialization complete');
   } catch (error) {
-    console.error('Error in initializeFeatures:', error);
+    console.error('Error in initializeMentusTab:', error);
   }
 }
 
@@ -355,22 +281,49 @@ function initializeTabButtons() {
 // Show a specific tab
 function showTab(tabName) {
   console.log(`Showing tab: ${tabName}`);
-  const tabs = document.querySelectorAll('.tab-content');
+  
+  const tabContents = document.querySelectorAll('.tab-content');
   const tabButtons = document.querySelectorAll('.tab-button');
 
-  tabs.forEach(tab => {
-    tab.style.display = tab.id === tabName ? 'block' : 'none';
-  });
+  tabContents.forEach(content => content.style.display = 'none');
+  tabButtons.forEach(button => button.classList.remove('active'));
 
-  tabButtons.forEach(button => {
-    if (button.getAttribute('data-tab') === tabName) {
-      button.classList.add('active');
-    } else {
-      button.classList.remove('active');
+  const activeTab = document.getElementById(tabName);
+  const activeButton = document.querySelector(`.tab-button[data-tab="${tabName}"]`);
+
+  if (activeTab && activeButton) {
+    activeTab.style.width = '100%';
+    activeTab.style.display = 'block';
+    activeButton.classList.add('active');
+    console.log(`Tab ${tabName} is now visible`);
+
+    // Additional logic for specific tabs
+    if (tabName === 'docs') {
+      if (typeof window.showDocumentsTab === 'function') {
+        window.showDocumentsTab();
+      }
+    } else if (tabName === 'editor') {
+      if (typeof window.editorModule !== 'undefined' && typeof window.editorModule.ensureEditorInitialized === 'function') {
+        window.editorModule.ensureEditorInitialized();
+      }
+    } else if (tabName === 'graph') {
+      console.log("Graph tab selected");
+      let graphContainer = document.getElementById('graph-container');
+      if (!graphContainer) {
+        graphContainer = document.createElement('div');
+        graphContainer.id = 'graph-container';
+        document.getElementById('graph').appendChild(graphContainer);
+      }
+      if (typeof window.checkGraphStatus === 'function') {
+        console.log("Calling checkGraphStatus");
+        window.checkGraphStatus();
+      } else {
+        console.error('checkGraphStatus function not found');
+      }
     }
-  });
-
-  console.log(`Tab ${tabName} is now visible`);
+  } else {
+    console.error(`Tab content or button not found for: ${tabName}`);
+  }
 }
 
 // Add this constant to identify visual models
@@ -1230,13 +1183,9 @@ async function saveCurrentSession() {
   // Create markdown content
   let markdownContent = await createMarkdownFromSession(currentSession);
 
-  // Check if we should save to Obsidian via GitHub
+  // Check if we should save to Obsidian
   const saveToObsidian = await window.settingsModule.getSetting('save-to-obsidian');
-  const isGitHubConnected = await window.isGitHubAuthenticated();
-
-  if (saveToObsidian && isGitHubConnected) {
-    await saveToGitHub(markdownContent);
-  } else if (saveToObsidian) {
+  if (saveToObsidian) {
     await saveToObsidianVault(markdownContent);
   } else {
     await saveToGoogleDrive(markdownContent);
@@ -1498,178 +1447,4 @@ async function saveToObsidianVault(content) {
         alert(`Failed to save the session to Obsidian. Error: ${error.message}\nPlease check your settings and try again.`);
     }
 }
-
-// Add this function to handle saving sessions to Google Drive
-async function saveToGoogleDrive(content) {
-  console.log('Saving session to Google Drive');
-  try {
-    // Obtain the OAuth token
-    const token = await getGoogleAuthToken();
-
-    if (!token) {
-      throw new Error('Google OAuth token not available. Please connect your Google account.');
-    }
-
-    // Ensure the Mentus Workspace folder exists
-    const folderId = await window.ensureMentusWorkspaceFolder(token);
-    if (!folderId) {
-      throw new Error('Mentus Workspace folder could not be found or created.');
-    }
-
-    // Prepare the metadata for the file to be saved
-    const fileName = `${currentSession.name}.md`;
-    const fileMetadata = {
-      name: fileName,
-      mimeType: 'text/markdown',
-      parents: [folderId] // Save the file into the Mentus Workspace folder
-    };
-
-    // Prepare the multipart request body
-    const form = new FormData();
-    form.append('metadata', new Blob([JSON.stringify(fileMetadata)], { type: 'application/json' }));
-    form.append('file', new Blob([content], { type: 'text/markdown' }));
-
-    // Send the request to Google Drive API
-    const response = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${token}`
-      },
-      body: form
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json();
-      console.error('Google Drive API Error:', errorData);
-      throw new Error(`Google Drive API Error: ${errorData.error.message}`);
-    }
-
-    const data = await response.json();
-    console.log('Session saved to Google Drive:', data);
-  } catch (error) {
-    console.error('Error saving session to Google Drive:', error);
-    alert(`Failed to save the session to Google Drive. Error: ${error.message}\nPlease check your Google account connection and try again.`);
-  }
-}
-
-// Helper function to get Google OAuth token
-async function getGoogleAuthToken() {
-  return new Promise((resolve) => {
-    chrome.identity.getAuthToken({ interactive: true }, function(token) {
-      if (chrome.runtime.lastError) {
-        console.error('Error getting auth token:', chrome.runtime.lastError);
-        resolve(null);
-      } else {
-        resolve(token);
-      }
-    });
-  });
-}
-
-// Add this function to mentus_tab.js
-async function ensureMentusWorkspaceFolder(token) {
-  console.log('Ensuring Mentus Workspace folder exists');
-  
-  // Try to get the folder ID from local storage
-  const storedFolderId = await new Promise((resolve) => {
-    chrome.storage.local.get('mentusFolderId', function(result) {
-      resolve(result.mentusFolderId);
-    });
-  });
-
-  if (storedFolderId) {
-    console.log('Mentus Workspace folder ID retrieved from storage:', storedFolderId);
-    return storedFolderId;
-  }
-
-  try {
-    // Search for an existing "Mentus Workspace" folder
-    const searchResponse = await fetch(
-      'https://www.googleapis.com/drive/v3/files?q=name%3D%27Mentus%20Workspace%27%20and%20mimeType%3D%27application/vnd.google-apps.folder%27%20and%20trashed%3Dfalse',
-      { headers: { Authorization: `Bearer ${token}` } }
-    );
-    const searchData = await searchResponse.json();
-
-    if (searchData.files && searchData.files.length > 0) {
-      const folderId = searchData.files[0].id;
-      console.log('Existing Mentus Workspace folder found:', folderId);
-      await chrome.storage.local.set({ mentusFolderId: folderId });
-      return folderId;
-    }
-
-    // If the folder doesn't exist, create it
-    console.log('Mentus Workspace folder not found, creating a new one');
-    const createResponse = await fetch('https://www.googleapis.com/drive/v3/files', {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${token}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        name: 'Mentus Workspace',
-        mimeType: 'application/vnd.google-apps.folder'
-      })
-    });
-    const folder = await createResponse.json();
-    console.log('New Mentus Workspace folder created:', folder.id);
-    await chrome.storage.local.set({ mentusFolderId: folder.id });
-    return folder.id;
-  } catch (error) {
-    console.error('Error ensuring Mentus Workspace folder:', error);
-    throw error;
-  }
-}
-
-// Implement saveToGitHub function
-async function saveToGitHub(content) {
-  console.log('Saving session to GitHub');
-  const token = await window.getGitHubToken();
-
-  if (!token) {
-    alert('GitHub token not available. Please connect your GitHub account.');
-    return;
-  }
-
-  // Implement logic to commit the session file to the user's GitHub repository
-  // This involves interacting with the GitHub API to create or update files in a repository
-
-  // Example code (simplified and needs to be adapted):
-  const owner = 'your-username'; // Or get from user input or GitHub API
-  const repo = 'your-repo'; // Or get from user input or settings
-  const path = `sessions/${currentSession.name}.md`;
-  const message = `Add session ${currentSession.name}`;
-  const contentEncoded = btoa(content);
-
-  try {
-    const response = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${path}`, {
-      method: 'PUT',
-      headers: {
-        'Authorization': `token ${token}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        message: message,
-        content: contentEncoded
-      })
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json();
-      console.error('GitHub API Error:', errorData);
-      throw new Error(`GitHub API Error: ${errorData.message}`);
-    }
-
-    console.log('Session saved to GitHub');
-  } catch (error) {
-    console.error('Error saving session to GitHub:', error);
-    alert(`Failed to save the session to GitHub. Error: ${error.message}\nPlease check your GitHub connection and try again.`);
-  }
-}
-
-// At the end of mentus_tab.js
-
-document.addEventListener('DOMContentLoaded', function() {
-  console.log('DOM fully loaded and parsed');
-  initializeMentusTab();
-});
 
