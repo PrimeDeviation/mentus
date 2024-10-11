@@ -1155,6 +1155,17 @@ function initializeSessionListeners() {
     sessionNameInput.addEventListener('change', handleSessionNameChange);
     sessionNameInput.addEventListener('blur', handleSessionNameChange);
   }
+
+  // Add event listener for Restart Onboarding button
+  const restartOnboardingButton = document.getElementById('restart-onboarding');
+  if (restartOnboardingButton) {
+    restartOnboardingButton.addEventListener('click', () => {
+      // Clear the onboarding completed flag
+      localStorage.removeItem('mentusOnboardingCompleted');
+      // Start the onboarding process
+      initializeOnboarding();
+    });
+  }
 }
 
 // Add this function to handle dark mode toggle
