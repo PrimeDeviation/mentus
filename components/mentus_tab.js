@@ -88,113 +88,104 @@ const onboardingSteps = [
 ];
 
 function initializeOnboarding() {
-  const onboardingModal = document.getElementById('onboarding-modal');
-  const onboardingContent = document.getElementById('onboarding-step-content');
-  const onboardingClose = document.getElementById('onboarding-close');
-  const onboardingPrev = document.getElementById('onboarding-prev');
-  const onboardingNext = document.getElementById('onboarding-next');
-  const onboardingSkip = document.getElementById('onboarding-skip');
+  console.log('Starting interactive onboarding');
 
-  let currentStep = 0;
-
-  // Add this line to add a class to the body
-  document.body.classList.add('onboarding-active');
-
-  function showStep(stepIndex) {
-    const step = onboardingSteps[stepIndex];
-    onboardingContent.innerHTML = `
-      <h2>${step.title}</h2>
-      ${step.content}
-    `;
-    onboardingPrev.disabled = stepIndex === 0;
-    onboardingNext.textContent = stepIndex === onboardingSteps.length - 1 ? 'Finish' : 'Next';
-
-    // Navigate to the specified tab if it exists
-    if (step.tab) {
-      showTab(step.tab);
-    }
-
-    // Attach event listeners based on the current step
-    if (stepIndex === 1) {
-      // Step 2: Connect Google Account
-      const connectGoogleBtn = document.getElementById('connect-google-btn');
-      if (connectGoogleBtn) {
-        connectGoogleBtn.addEventListener('click', () => {
-          // Trigger Google Authentication
-          if (window.handleGoogleAuth) {
-            window.handleGoogleAuth();
-          } else {
-            console.error('Google Auth function not found');
-          }
-        });
-      }
-    } else if (stepIndex === 2) {
-      // Step 3: Set API Keys
-      const openSettingsBtn = document.getElementById('open-settings-btn');
-      if (openSettingsBtn) {
-        openSettingsBtn.addEventListener('click', () => {
-          // Navigate to Settings tab
-          showTab('settings');
-        });
-      }
-    } else if (stepIndex === 3) {
-      // Step 4: Configure Obsidian Plugin
-      const openObsidianSettingsBtn = document.getElementById('open-obsidian-settings-btn');
-      if (openObsidianSettingsBtn) {
-        openObsidianSettingsBtn.addEventListener('click', () => {
-          // Navigate to Settings tab and focus on Obsidian settings
-          showTab('settings');
-          const obsidianApiKeyInput = document.getElementById('obsidian-api-key');
-          if (obsidianApiKeyInput) {
-            obsidianApiKeyInput.focus();
-          }
-        });
-      }
-    } else if (stepIndex === 4) {
-      // Step 5: Explain Chat Interface
-      // Optionally, highlight the chat interface or provide additional guidance
-    } else if (stepIndex === 5) {
-      // Step 6: Explain Graph Interface
-      // Optionally, navigate to the Graph tab
-      showTab('graph');
-    }
-  }
-
-  function closeOnboarding() {
-    onboardingModal.style.display = 'none';
-    // Save to local storage that onboarding is completed
-    localStorage.setItem('mentusOnboardingCompleted', 'true');
-    // Remove the class from the body
-    document.body.classList.remove('onboarding-active');
-
-    // After onboarding, initialize features
-    initializeFeatures();
-    // Optionally, navigate to a default tab
-    showTab('chat'); // Or any preferred default tab
-  }
-
-  onboardingPrev.addEventListener('click', () => {
-    if (currentStep > 0) {
-      currentStep--;
-      showStep(currentStep);
-    }
+  // Import Shepherd
+  const tour = new Shepherd.Tour({
+    defaults: {
+      classes: 'shepherd-theme-arrows',
+      scrollTo: true,
+    },
   });
 
-  onboardingNext.addEventListener('click', () => {
-    if (currentStep < onboardingSteps.length - 1) {
-      currentStep++;
-      showStep(currentStep);
-    } else {
-      closeOnboarding();
-    }
+  // Keep track of which steps to include based on user status
+  const steps = [];
+
+  // Step 1: Welcome
+  steps.push({
+    id: 'welcome',
+    text: 'Welcome to Mentus! Let\'s get started with setting up your environment.',
+    buttons: [
+      {
+        text: 'Next',
+        action: tour.next,
+      },
+    ],
   });
 
-  onboardingSkip.addEventListener('click', closeOnboarding);
-  onboardingClose.addEventListener('click', closeOnboarding);
+  // Check if Google Account is connected
+  const isGoogleConnected = /* Logic to check if Google is connected */;
+  if (!isGoogleConnected) {
+    // Step 2: Connect Google Account
+    steps.push({
+      id: 'connect-google',
+      text: 'Please connect your Google account to enable saving sessions to Google Drive.',
+      attachTo: {
+        element: '#google-auth-button',
+        on: 'bottom',
+      },
+      buttons: [
+        {
+          text: 'Connect Google Account',
+          action: () => {
+            // Trigger Google Authentication
+            if (window.handleGoogleAuth) {
+              window.handleGoogleAuth();
+            } else {
+              console.error('Google Auth function not found');
+            }
+            tour.next();
+          },
+        },
+      ],
+    });
+  }
 
-  // Start the onboarding
-  onboardingModal.style.display = 'block';
-  showStep(currentStep);
+  // Step 3: Set API Keys
+  // Check if API keys are set
+  const hasOpenAIKey = /* Logic to check OpenAI key */;
+  const hasAnthropicKey = /* Logic to check Anthropic key */;
+  if (!hasOpenAIKey && !hasAnthropicKey) {
+    steps.push({
+      id: 'set-api-keys',
+      text: 'Please enter your API keys for OpenAI and/or Anthropic to enable AI-powered chat.',
+      attachTo: {
+        element: '#openai-api-key',
+        on: 'bottom',
+      },
+      buttons: [
+        {
+          text: 'Next',
+          action: tour.next,
+        },
+      ],
+    });
+  }
+
+  // Continue adding steps as per your requirements
+  // For example, highlighting the chat model dropdown
+  steps.push({
+    id: 'chat-models',
+    text: 'Select your preferred AI model here.',
+    attachTo: {
+      element: '#chat-models',
+      on: 'bottom',
+    },
+    buttons: [
+      {
+        text: 'Next',
+        action: tour.next,
+      },
+    ],
+  });
+
+  // Continue with other steps...
+
+  // Initialize the tour with the steps
+  steps.forEach((step) => tour.addStep(step));
+
+  // Start the tour
+  tour.start();
 }
 
 // Modify the initializeMentusTab function
@@ -358,11 +349,6 @@ function initializeTabButtons() {
   const tabButtons = document.querySelectorAll('.tab-button');
   tabButtons.forEach(button => {
     button.addEventListener('click', () => {
-      const onboardingModal = document.getElementById('onboarding-modal');
-      if (onboardingModal && onboardingModal.style.display === 'block') {
-        // Prevent manual tab switching during onboarding
-        return;
-      }
       const tabName = button.getAttribute('data-tab');
       showTab(tabName);
     });
@@ -371,13 +357,6 @@ function initializeTabButtons() {
 
 // Show a specific tab
 function showTab(tabName) {
-  // Prevent tab switching during onboarding
-  const onboardingModal = document.getElementById('onboarding-modal');
-  if (onboardingModal && onboardingModal.style.display === 'block') {
-    // Allow tab switching only through onboarding steps
-    return;
-  }
-
   console.log(`Showing tab: ${tabName}`);
   const tabs = document.querySelectorAll('.tab-content');
   const tabButtons = document.querySelectorAll('.tab-button');
@@ -1699,5 +1678,16 @@ async function saveToGitHub(content) {
     console.error('Error saving session to GitHub:', error);
     alert(`Failed to save the session to GitHub. Error: ${error.message}\nPlease check your GitHub connection and try again.`);
   }
+}
+
+function isGoogleConnected() {
+  // Implement logic to check if Google account is connected
+  return window.googleUser && window.googleUser.isConnected;
+}
+
+async function hasAPIKeys() {
+  const openAIKey = await window.settingsModule.getSetting('openai-api-key');
+  const anthropicKey = await window.settingsModule.getSetting('anthropic-api-key');
+  return openAIKey || anthropicKey;
 }
 
