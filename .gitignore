@@ -10,7 +10,6 @@ __pycache__/
 .Python
 build/
 develop-eggs/
-dist/
 downloads/
 eggs/
 .eggs/
@@ -133,7 +132,7 @@ docker-compose.yml
 .dockerignore
 
 # Webpack build artifacts
-dist/
+
 
 # Node modules
 node_modules/
