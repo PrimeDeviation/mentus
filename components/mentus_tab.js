@@ -77,12 +77,26 @@ const onboardingSteps = [
 ];
 
 function initializeOnboarding() {
+  console.log('initializeOnboarding function called');
+
   const onboardingModal = document.getElementById('onboarding-modal');
   const onboardingContent = document.getElementById('onboarding-step-content');
   const onboardingClose = document.getElementById('onboarding-close');
   const onboardingPrev = document.getElementById('onboarding-prev');
   const onboardingNext = document.getElementById('onboarding-next');
   const onboardingSkip = document.getElementById('onboarding-skip');
+
+  console.log('onboardingModal:', onboardingModal);
+  console.log('onboardingContent:', onboardingContent);
+  console.log('onboardingClose:', onboardingClose);
+  console.log('onboardingPrev:', onboardingPrev);
+  console.log('onboardingNext:', onboardingNext);
+  console.log('onboardingSkip:', onboardingSkip);
+
+  if (!onboardingModal || !onboardingContent || !onboardingClose || !onboardingPrev || !onboardingNext || !onboardingSkip) {
+    console.error('One or more onboarding elements not found');
+    return;
+  }
 
   let currentStep = 0;
 
@@ -102,6 +116,7 @@ function initializeOnboarding() {
       const githubAuthButton = document.getElementById('select-github-auth');
 
       if (googleAuthButton) {
+        console.log('Attaching event listener to googleAuthButton');
         googleAuthButton.addEventListener('click', () => {
           // Navigate to User Profile tab and focus on Google Auth button
           showTab('userprofile');
@@ -110,9 +125,12 @@ function initializeOnboarding() {
             googleButton.focus();
           }
         });
+      } else {
+        console.warn('googleAuthButton not found');
       }
 
       if (githubAuthButton) {
+        console.log('Attaching event listener to githubAuthButton');
         githubAuthButton.addEventListener('click', () => {
           // Navigate to User Profile tab and focus on GitHub Auth button
           showTab('userprofile');
@@ -121,6 +139,8 @@ function initializeOnboarding() {
             githubButton.focus();
           }
         });
+      } else {
+        console.warn('githubAuthButton not found');
       }
     } else if (stepIndex === 1) {
       // Step 2: Configure API Keys
@@ -541,7 +561,7 @@ async function fetchMentionSuggestions(query) {
         });
 
         if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
+            throw new Error(`HTTP error! status: ${response.status});
         }
 
         const data = await response.json();
@@ -1645,4 +1665,11 @@ async function saveToGitHub(content) {
     alert(`Failed to save the session to GitHub. Error: ${error.message}\nPlease check your GitHub connection and try again.`);
   }
 }
+
+// At the end of mentus_tab.js
+
+document.addEventListener('DOMContentLoaded', function() {
+  console.log('DOM fully loaded and parsed');
+  initializeMentusTab();
+});
 

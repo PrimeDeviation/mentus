@@ -1114,9 +1114,10 @@ body {
   z-index: 1000; /* Ensure it's on top of other elements */
 }
 
+/* Ensure .modal-content is centered and visible */
 .modal-content {
   background-color: var(--bg-color);
-  margin: 10% auto;
+  margin: 5% auto; /* Adjusted margin for better vertical alignment */
   padding: 20px;
   border: 1px solid var(--border-color);
   width: 80%;
