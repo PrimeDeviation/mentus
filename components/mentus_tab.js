@@ -52,25 +52,68 @@ function initializeOnboarding() {
     });
   }
 
-  // Step 3: Set API Keys
+  // Proceed after checking API keys
   hasAPIKeys().then((apiKeysSet) => {
-    if (!apiKeysSet) {
-      // Step to enter API keys
+    // Step 3: Set API Keys
+    // Check if OpenAI API Key is set
+    if (!apiKeysSet.openAIKeySet) {
       steps.push({
         element: '#openai-api-key',
-        intro: 'Please enter your API keys for OpenAI and/or Anthropic to enable AI-powered chat.',
+        intro: 'Please enter your OpenAI API key to enable AI-powered chat with OpenAI models.',
         position: 'bottom',
       });
     }
 
-    // Step 4: Chat Model Selection
+    // Check if Anthropic API Key is set
+    if (!apiKeysSet.anthropicKeySet) {
+      steps.push({
+        element: '#anthropic-api-key',
+        intro: 'Please enter your Anthropic API key to enable AI-powered chat with Anthropic models.',
+        position: 'bottom',
+      });
+    }
+
+    // Step 4: Obsidian REST API Settings
+    steps.push({
+      element: '#obsidian-api-key',
+      intro: 'If you use Obsidian, please enter the API key from the Local REST API plugin settings.',
+      position: 'bottom',
+    });
+
+    steps.push({
+      element: '#obsidian-endpoint',
+      intro: 'Enter the REST API endpoint URL from your Obsidian Local REST API plugin settings.',
+      position: 'bottom',
+    });
+
+    steps.push({
+      element: '#obsidian-chat-path',
+      intro: 'Specify the path in your Obsidian vault where chat sessions will be saved.',
+      position: 'bottom',
+    });
+
+    steps.push({
+      intro: 'Please ensure that you have installed and configured the Obsidian Local REST API plugin in your Obsidian application.',
+    });
+
+    // Step 5: Refresh Models and Sessions
+    steps.push({
+      intro: 'Now that the API keys are set, we will refresh the models and sessions.',
+      onbeforechange: () => {
+        // Reload models and sessions
+        loadChatModels();
+        loadSessions();
+      },
+    });
+
+    // Step 6: Chat Model Selection
     steps.push({
       element: '#chat-models',
       intro: 'Select your preferred AI model here.',
       position: 'bottom',
     });
 
-    // Step 5: Graph Interface Overview
+    // Step 7: Graph Interface Overview
     steps.push({
       element: '#graph-container',
       intro: 'The graph interface visualizes your knowledge connections. It may take some time to populate if your Obsidian graph is large.',
@@ -92,14 +135,22 @@ function initializeOnboarding() {
       })
       .onchange((targetElement) => {
         // Handle tab changes based on the element being highlighted
-        if (targetElement.id === 'google-auth-button') {
-          showTab('userprofile');
-        } else if (targetElement.id === 'openai-api-key') {
-          showTab('settings');
-        } else if (targetElement.id === 'chat-models') {
-          showTab('chat');
-        } else if (targetElement.id === 'graph-container') {
-          showTab('graph');
+        if (targetElement && targetElement.id) {
+          if (targetElement.id === 'google-auth-button') {
+            showTab('userprofile');
+          } else if (
+            targetElement.id === 'openai-api-key' ||
+            targetElement.id === 'anthropic-api-key' ||
+            targetElement.id === 'obsidian-api-key' ||
+            targetElement.id === 'obsidian-endpoint' ||
+            targetElement.id === 'obsidian-chat-path'
+          ) {
+            showTab('settings');
+          } else if (targetElement.id === 'chat-models') {
+            showTab('chat');
+          } else if (targetElement.id === 'graph-container') {
+            showTab('graph');
+          }
         }
       })
       .start();
@@ -110,15 +161,18 @@ function initializeOnboarding() {
 
 // Implement isGoogleConnected function
 function isGoogleConnected() {
-  // Replace with actual logic to check if Google is connected
+  // Implement logic to check if Google account is connected
   return window.googleUser && window.googleUser.isConnected;
 }
 
-// Implement hasAPIKeys function
+// Modify the hasAPIKeys function
 async function hasAPIKeys() {
   const openAIKey = await window.settingsModule.getSetting('openai-api-key');
   const anthropicKey = await window.settingsModule.getSetting('anthropic-api-key');
-  return openAIKey || anthropicKey;
+  return {
+    openAIKeySet: !!openAIKey,
+    anthropicKeySet: !!anthropicKey,
+  };
 }
 
 // Modify the initializeMentusTab function
