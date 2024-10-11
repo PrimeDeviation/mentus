@@ -32,47 +32,51 @@ let profileDataReady = false;
 // Onboarding steps definition
 const onboardingSteps = [
   {
-    title: "Select Authentication Provider",
+    title: "Welcome to Mentus",
     content: `
-      <p>Please select your preferred authentication provider:</p>
-      <ul>
-        <li><button id="select-google-auth" class="auth-select-button">Google Account</button> - for saving sessions to Google Drive.</li>
-        <li><button id="select-github-auth" class="auth-select-button">GitHub Account</button> - for integrating with Obsidian via GitHub.</li>
-      </ul>
+      <p>Welcome to Mentus! Let's get started with setting up your environment.</p>
     `
   },
   {
-    title: "Configure API Keys",
-    content: `<p>Let's set up your API keys for OpenAI, Anthropic, and Obsidian.</p>
-              <p>You'll be directed to the <strong>Settings</strong> tab.</p>`
+    title: "Connect Your Google Account",
+    content: `
+      <p>Please connect your Google account to enable saving sessions to Google Drive.</p>
+      <button id="connect-google-btn">Connect Google Account</button>
+    `
   },
   {
-    title: "AI-Powered Chat",
-    content: `<p>Use the chat sidebar to communicate with AI models.</p>
-              <p>Select different models and manage your chat sessions.</p>`
+    title: "Set API Keys",
+    content: `
+      <p>Please enter your API keys for OpenAI and/or Anthropic to enable AI-powered chat.</p>
+      <button id="open-settings-btn">Go to Settings</button>
+    `
   },
   {
-    title: "Knowledge Graph",
-    content: `<p>Visualize and explore your knowledge through the interactive graph.</p>
-              <p>Access it from the <strong>Graph</strong> tab.</p>`
+    title: "Configure Obsidian Plugin",
+    content: `
+      <p>If you use Obsidian, configure the Local REST API plugin for seamless integration.</p>
+      <button id="open-obsidian-settings-btn">Configure Obsidian Settings</button>
+    `
   },
   {
-    title: "Document Management",
-    content: `<p>Manage your documents and files in the <strong>Docs</strong> tab.</p>
-              <p>Edit and create markdown files seamlessly.</p>`
+    title: "Chat Interface Overview",
+    content: `
+      <p>The chat interface allows you to interact with AI models. Try it out by typing a message!</p>
+      <img src="../images/chat_interface.png" alt="Chat Interface" style="max-width: 100%; height: auto;">
+    `
   },
   {
-    title: "Markdown Editor",
-    content: `<p>Create and edit markdown files using the built-in editor.</p>
-              <p>Access it from the <strong>Editor</strong> tab.</p>`
-  },
-  {
-    title: "Dark Mode",
-    content: `<p>Toggle between light and dark themes using the button at the top of the chat sidebar.</p>`
+    title: "Graph Interface Overview",
+    content: `
+      <p>The graph interface visualizes your knowledge connections. Explore it under the Graph tab.</p>
+      <!-- Include an image or description of the graph interface -->
+    `
   },
   {
     title: "Get Started",
-    content: `<p>You're all set! Explore Mentus and enhance your learning experience.</p>`
+    content: `
+      <p>You're all set! Enjoy using Mentus to enhance your learning experience.</p>
+    `
   }
 ];
 
@@ -95,42 +99,50 @@ function initializeOnboarding() {
     onboardingPrev.disabled = stepIndex === 0;
     onboardingNext.textContent = stepIndex === onboardingSteps.length - 1 ? 'Finish' : 'Next';
 
-    // Handle actions based on the current step
-    if (stepIndex === 0) {
-      // Step 1: Select Authentication Provider
-      const googleAuthButton = document.getElementById('select-google-auth');
-      const githubAuthButton = document.getElementById('select-github-auth');
-
-      if (googleAuthButton) {
-        googleAuthButton.addEventListener('click', () => {
-          // Navigate to User Profile tab and focus on Google Auth button
-          showTab('userprofile');
-          const googleButton = document.getElementById('google-auth-button');
-          if (googleButton) {
-            googleButton.focus();
+    // Attach event listeners based on the current step
+    if (stepIndex === 1) {
+      // Step 2: Connect Google Account
+      const connectGoogleBtn = document.getElementById('connect-google-btn');
+      if (connectGoogleBtn) {
+        connectGoogleBtn.addEventListener('click', () => {
+          // Trigger Google Authentication
+          if (window.handleGoogleAuth) {
+            window.handleGoogleAuth();
+          } else {
+            console.error('Google Auth function not found');
           }
         });
       }
-
-      if (githubAuthButton) {
-        githubAuthButton.addEventListener('click', () => {
-          // Navigate to User Profile tab and focus on GitHub Auth button
-          showTab('userprofile');
-          const githubButton = document.getElementById('github-auth-button');
-          if (githubButton) {
-            githubButton.focus();
+    } else if (stepIndex === 2) {
+      // Step 3: Set API Keys
+      const openSettingsBtn = document.getElementById('open-settings-btn');
+      if (openSettingsBtn) {
+        openSettingsBtn.addEventListener('click', () => {
+          // Navigate to Settings tab
+          showTab('settings');
+        });
+      }
+    } else if (stepIndex === 3) {
+      // Step 4: Configure Obsidian Plugin
+      const openObsidianSettingsBtn = document.getElementById('open-obsidian-settings-btn');
+      if (openObsidianSettingsBtn) {
+        openObsidianSettingsBtn.addEventListener('click', () => {
+          // Navigate to Settings tab and focus on Obsidian settings
+          showTab('settings');
+          const obsidianApiKeyInput = document.getElementById('obsidian-api-key');
+          if (obsidianApiKeyInput) {
+            obsidianApiKeyInput.focus();
           }
         });
       }
-    } else if (stepIndex === 1) {
-      // Step 2: Configure API Keys
-      showTab('settings');
-      const openaiKeyInput = document.getElementById('openai-api-key');
-      if (openaiKeyInput) {
-        openaiKeyInput.focus();
-      }
+    } else if (stepIndex === 4) {
+      // Step 5: Explain Chat Interface
+      // Optionally, highlight the chat interface or provide additional guidance
+    } else if (stepIndex === 5) {
+      // Step 6: Explain Graph Interface
+      // Optionally, navigate to the Graph tab
+      showTab('graph');
     }
-    // Additional steps can be handled similarly if needed
   }
 
   function closeOnboarding() {
@@ -139,6 +151,8 @@ function initializeOnboarding() {
     localStorage.setItem('mentusOnboardingCompleted', 'true');
     // After onboarding, initialize features
     initializeFeatures();
+    // Optionally, navigate to a default tab
+    showTab('chat'); // Or any preferred default tab
   }
 
   onboardingPrev.addEventListener('click', () => {
