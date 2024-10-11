@@ -88,11 +88,16 @@ function fetchGoogleUserProfile(token) {
 
 function updateGoogleAuthUI(isConnected, email = '') {
   console.log('Updating Google Auth UI, isConnected:', isConnected, 'email:', email);
-  chrome.runtime.sendMessage({
-    action: "updateGoogleAuthUI",
-    isConnected: isConnected,
-    email: email
+
+  // Dispatch a custom event
+  const event = new CustomEvent('googleAuthStatusChanged', {
+    detail: {
+      isConnected: isConnected,
+      email: email
+    }
   });
+
+  window.dispatchEvent(event);
 }
 
 /** GitHub Authentication **/

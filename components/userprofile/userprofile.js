@@ -19,13 +19,11 @@ function initializeProfileListeners() {
         console.warn('Google disconnect button not found');
     }
 
-    // Listen for messages to update auth UI
-    chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
-        if (request.action === "updateGoogleAuthUI") {
-            console.log('Received updateGoogleAuthUI message:', request);
-            updateGoogleProfileDisplay(request.isConnected, request.email);
-        }
-        // ... existing code ...
+    // Listen for the custom event
+    window.addEventListener('googleAuthStatusChanged', function(event) {
+        const { isConnected, email } = event.detail;
+        console.log('Received googleAuthStatusChanged event:', isConnected, email);
+        updateGoogleProfileDisplay(isConnected, email);
     });
 
     // Initial check of auth status
