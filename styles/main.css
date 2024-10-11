@@ -1250,3 +1250,34 @@ body.dark-mode .close-button:hover {
     display: inline-block;
     margin: 5px;
 }
+
+/* Add this style to ensure the modal overlays other content */
+.modal {
+  z-index: 10000; /* Increase z-index to make sure it's on top */
+}
+
+/* Optionally, disable pointer events on the background during onboarding */
+body.onboarding-active {
+  pointer-events: none;
+}
+
+body.onboarding-active .modal {
+  pointer-events: auto;
+}
+
+/* Darken the background during onboarding */
+body.onboarding-active::before {
+  content: "";
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 9999;
+}
+
+.modal {
+  /* Ensure the modal is above the darkened background */
+  z-index: 10000;
+}

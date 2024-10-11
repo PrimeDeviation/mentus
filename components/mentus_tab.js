@@ -35,48 +35,55 @@ const onboardingSteps = [
     title: "Welcome to Mentus",
     content: `
       <p>Welcome to Mentus! Let's get started with setting up your environment.</p>
-    `
+    `,
+    tab: 'chat' // Default to chat tab
   },
   {
     title: "Connect Your Google Account",
     content: `
       <p>Please connect your Google account to enable saving sessions to Google Drive.</p>
       <button id="connect-google-btn">Connect Google Account</button>
-    `
+    `,
+    tab: 'userprofile' // Show the User Profile tab
   },
   {
     title: "Set API Keys",
     content: `
       <p>Please enter your API keys for OpenAI and/or Anthropic to enable AI-powered chat.</p>
       <button id="open-settings-btn">Go to Settings</button>
-    `
+    `,
+    tab: 'settings' // Show the Settings tab
   },
   {
     title: "Configure Obsidian Plugin",
     content: `
       <p>If you use Obsidian, configure the Local REST API plugin for seamless integration.</p>
       <button id="open-obsidian-settings-btn">Configure Obsidian Settings</button>
-    `
+    `,
+    tab: 'settings' // Remain on the Settings tab
   },
   {
     title: "Chat Interface Overview",
     content: `
       <p>The chat interface allows you to interact with AI models. Try it out by typing a message!</p>
       <img src="../images/chat_interface.png" alt="Chat Interface" style="max-width: 100%; height: auto;">
-    `
+    `,
+    tab: 'chat' // Show the Chat tab
   },
   {
     title: "Graph Interface Overview",
     content: `
       <p>The graph interface visualizes your knowledge connections. Explore it under the Graph tab.</p>
       <!-- Include an image or description of the graph interface -->
-    `
+    `,
+    tab: 'graph' // Show the Graph tab
   },
   {
     title: "Get Started",
     content: `
       <p>You're all set! Enjoy using Mentus to enhance your learning experience.</p>
-    `
+    `,
+    tab: 'chat' // Default to chat tab after onboarding
   }
 ];
 
@@ -90,6 +97,9 @@ function initializeOnboarding() {
 
   let currentStep = 0;
 
+  // Add this line to add a class to the body
+  document.body.classList.add('onboarding-active');
+
   function showStep(stepIndex) {
     const step = onboardingSteps[stepIndex];
     onboardingContent.innerHTML = `
@@ -98,6 +108,11 @@ function initializeOnboarding() {
     `;
     onboardingPrev.disabled = stepIndex === 0;
     onboardingNext.textContent = stepIndex === onboardingSteps.length - 1 ? 'Finish' : 'Next';
+
+    // Navigate to the specified tab if it exists
+    if (step.tab) {
+      showTab(step.tab);
+    }
 
     // Attach event listeners based on the current step
     if (stepIndex === 1) {
@@ -149,6 +164,9 @@ function initializeOnboarding() {
     onboardingModal.style.display = 'none';
     // Save to local storage that onboarding is completed
     localStorage.setItem('mentusOnboardingCompleted', 'true');
+    // Remove the class from the body
+    document.body.classList.remove('onboarding-active');
+
     // After onboarding, initialize features
     initializeFeatures();
     // Optionally, navigate to a default tab
@@ -340,6 +358,11 @@ function initializeTabButtons() {
   const tabButtons = document.querySelectorAll('.tab-button');
   tabButtons.forEach(button => {
     button.addEventListener('click', () => {
+      const onboardingModal = document.getElementById('onboarding-modal');
+      if (onboardingModal && onboardingModal.style.display === 'block') {
+        // Prevent manual tab switching during onboarding
+        return;
+      }
       const tabName = button.getAttribute('data-tab');
       showTab(tabName);
     });
@@ -348,6 +371,13 @@ function initializeTabButtons() {
 
 // Show a specific tab
 function showTab(tabName) {
+  // Prevent tab switching during onboarding
+  const onboardingModal = document.getElementById('onboarding-modal');
+  if (onboardingModal && onboardingModal.style.display === 'block') {
+    // Allow tab switching only through onboarding steps
+    return;
+  }
+
   console.log(`Showing tab: ${tabName}`);
   const tabs = document.querySelectorAll('.tab-content');
   const tabButtons = document.querySelectorAll('.tab-button');
