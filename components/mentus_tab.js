@@ -41,129 +41,113 @@ function initializeOnboarding() {
     intro: "Welcome to Mentus! Let's get started with setting up your environment.",
   });
 
-  // Check if Google Account is connected
-  const googleConnected = isGoogleConnected();
-  if (!googleConnected) {
-    // Step 2: Connect Google Account
-    steps.push({
-      element: '#google-auth-button',
-      intro: 'Please connect your Google account to enable saving sessions to Google Drive.',
-      position: 'bottom',
-    });
-  }
-
-  hasAPIKeys().then(async (apiKeysSet) => {
-    // Steps for entering API keys
-    const needsOpenAIKey = !apiKeysSet.openAIKeySet;
-    const needsAnthropicKey = !apiKeysSet.anthropicKeySet;
-
-    // Step 3: OpenAI API Key
-    if (needsOpenAIKey) {
-      steps.push({
-        element: '#openai-api-key',
-        intro: 'Please enter your OpenAI API key to enable AI-powered chat with OpenAI models.',
-        position: 'bottom',
-      });
-    }
-
-    // Step 4: Anthropic API Key
-    if (needsAnthropicKey) {
-      steps.push({
-        element: '#anthropic-api-key',
-        intro: 'Please enter your Anthropic API key to enable AI-powered chat with Anthropic models.',
-        position: 'bottom',
-      });
-    }
-
-    // Step 5: Obsidian REST API Settings
-    steps.push({
-      element: '#obsidian-api-key',
-      intro: 'If you use Obsidian, please enter the API key from the Local REST API plugin settings.',
-      position: 'bottom',
-    });
-
-    steps.push({
-      element: '#obsidian-endpoint',
-      intro: 'Enter the REST API endpoint URL from your Obsidian Local REST API plugin settings.',
-      position: 'bottom',
-    });
-
-    steps.push({
-      element: '#obsidian-chat-path',
-      intro: 'Specify the path in your Obsidian vault where chat sessions will be saved.',
-      position: 'bottom',
-    });
-
-    steps.push({
-      intro: 'Please ensure that you have installed and configured the Obsidian Local REST API plugin in your Obsidian application.',
-    });
-
-    // Add this step to reinitialize the graph view after Obsidian settings are provided
-    steps.push({
-      intro: 'Now that you have provided the Obsidian settings, we will reinitialize the graph view.',
-      onbeforechange: async () => {
-        // Save all settings entered so far
-        await window.settingsModule.saveAllSettings();
-
-        // Initialize Obsidian
-        await initializeObsidian();
-
-        // Reinitialize the graph view now that settings are available
-        await loadGraphView();
-      },
-    });
-
-    // Step 7: Graph Interface Overview
-    steps.push({
-      element: '#graph-container',
-      intro: 'The graph interface visualizes your knowledge connections. It may take some time to populate if your Obsidian graph is large.',
-      position: 'top',
-    });
-
-    // Step 8: Since you have provided the Obsidian API key and endpoint, your chat sessions will be saved to Obsidian automatically.
-    steps.push({
-      intro: 'Since you have provided the Obsidian API key and endpoint, your chat sessions will be saved to Obsidian automatically.',
-    });
-
-    // Start the Intro.js tour
-    introJs()
-      .setOptions({
-        steps: steps,
-        showProgress: true,
-        exitOnOverlayClick: false,
-      })
-      .onbeforeexit(async () => {
-        // Set onboarding as completed when the tour finishes or is exited
-        localStorage.setItem('mentusOnboardingCompleted', 'true');
-        // Initialize remaining features
-        await initializeRemainingFeatures();
-      })
-      .onchange((targetElement) => {
-        // Handle tab changes based on the element being highlighted
-        if (targetElement && targetElement.id) {
-          if (targetElement.id === 'google-auth-button') {
-            showTab('userprofile');
-          } else if (
-            targetElement.id === 'openai-api-key' ||
-            targetElement.id === 'anthropic-api-key' ||
-            targetElement.id === 'obsidian-api-key' ||
-            targetElement.id === 'obsidian-endpoint' ||
-            targetElement.id === 'obsidian-chat-path'
-          ) {
-            showTab('settings');
-          } else if (targetElement.id === 'chat-models') {
-            showTab('chat');
-          } else if (targetElement.id === 'graph-container') {
-            showTab('graph');
-          } else if (targetElement.id === 'document-list') {
-            showTab('docs');
-          }
-        }
-      })
-      .start();
-  }).catch((error) => {
-    console.error('Error checking API keys:', error);
+  // Step 2: Ensure Obsidian Local REST API Plugin is installed
+  steps.push({
+    intro: 'Please ensure that you have installed and configured the Obsidian Local REST API plugin in your Obsidian application.',
   });
+
+  // Step 3: Connect Google Account
+  steps.push({
+    element: '#google-auth-button',
+    intro: 'Please connect your Google account to enable saving sessions to Google Drive.',
+    position: 'bottom',
+  });
+
+  // Steps for entering API keys (always displayed)
+  steps.push({
+    element: '#openai-api-key',
+    intro: 'Please enter your OpenAI API key to enable AI-powered chat with OpenAI models.',
+    position: 'bottom',
+  });
+
+  steps.push({
+    element: '#anthropic-api-key',
+    intro: 'Please enter your Anthropic API key to enable AI-powered chat with Anthropic models.',
+    position: 'bottom',
+  });
+
+  // Steps for entering Obsidian API settings
+  steps.push({
+    element: '#obsidian-api-key',
+    intro: 'Please enter the API key from the Obsidian Local REST API plugin settings.',
+    position: 'bottom',
+  });
+
+  steps.push({
+    element: '#obsidian-endpoint',
+    intro: 'Enter the REST API endpoint URL from your Obsidian Local REST API plugin settings.',
+    position: 'bottom',
+  });
+
+  steps.push({
+    element: '#obsidian-chat-path',
+    intro: 'Specify the path in your Obsidian vault where chat sessions will be saved.',
+    position: 'bottom',
+  });
+
+  // Step: Reinitialize the graph view after Obsidian settings are provided
+  steps.push({
+    intro: 'Now that you have provided the Obsidian settings, we will reinitialize the graph view.',
+    onbeforechange: async () => {
+      // Save all settings entered so far
+      await window.settingsModule.saveAllSettings();
+
+      // Initialize Obsidian
+      await initializeObsidian();
+
+      // Reinitialize the graph view now that settings are available
+      await loadGraphView();
+    },
+  });
+
+  // Step: Graph Interface Overview
+  steps.push({
+    element: '#graph-container',
+    intro: 'The graph interface visualizes your knowledge connections. It may take some time to populate if your Obsidian graph is large.',
+    position: 'top',
+  });
+
+  // Step: Saving chat sessions to Obsidian
+  steps.push({
+    intro: 'Since you have provided the Obsidian API key and endpoint, your chat sessions will be saved to Obsidian automatically.',
+  });
+
+  // Start the Intro.js tour
+  introJs()
+    .setOptions({
+      steps: steps,
+      showProgress: true,
+      exitOnOverlayClick: false,
+    })
+    .onbeforeexit(async () => {
+      // Set onboarding as completed when the tour finishes or is exited
+      localStorage.setItem('mentusOnboardingCompleted', 'true');
+      // Initialize remaining features
+      await initializeRemainingFeatures();
+    })
+    .onchange((targetElement) => {
+      // Handle tab changes based on the element being highlighted
+      if (targetElement && targetElement.id) {
+        if (targetElement.id === 'google-auth-button') {
+          showTab('userprofile');
+        } else if (
+          targetElement.id === 'openai-api-key' ||
+          targetElement.id === 'anthropic-api-key' ||
+          targetElement.id === 'obsidian-api-key' ||
+          targetElement.id === 'obsidian-endpoint' ||
+          targetElement.id === 'obsidian-chat-path'
+        ) {
+          showTab('settings');
+        } else if (targetElement.id === 'chat-models') {
+          showTab('chat');
+        } else if (targetElement.id === 'graph-container') {
+          showTab('graph');
+        } else if (targetElement.id === 'document-list') {
+          showTab('docs');
+        }
+      }
+    })
+    .start();
 }
 
 // Implement isGoogleConnected function
