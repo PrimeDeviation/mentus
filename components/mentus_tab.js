@@ -120,6 +120,11 @@ function initializeOnboarding() {
       position: 'top',
     });
 
+    // Step 8: Since you have provided the Obsidian API key and endpoint, your chat sessions will be saved to Obsidian automatically.
+    steps.push({
+      intro: 'Since you have provided the Obsidian API key and endpoint, your chat sessions will be saved to Obsidian automatically.',
+    });
+
     // Start the Intro.js tour
     introJs()
       .setOptions({
@@ -295,7 +300,14 @@ async function initializeObsidian() {
   console.log('Initializing Obsidian');
   try {
     const apiKey = await window.settingsModule.getSetting('obsidian-api-key');
-    const endpoint = await window.settingsModule.getSetting('obsidian-endpoint');
+    let endpoint = await window.settingsModule.getSetting('obsidian-endpoint');
+
+    // Remove trailing slash from endpoint
+    if (endpoint.endsWith('/')) {
+      endpoint = endpoint.slice(0, -1);
+    }
+
+    const chatPath = await window.settingsModule.getSetting('obsidian-chat-path');
 
     if (!apiKey || !endpoint) {
       console.log('Obsidian API key or endpoint not set, skipping initialization');
@@ -782,21 +794,18 @@ async function loadObsidianSessions() {
   console.log('Loading Obsidian sessions');
   try {
     const apiKey = await window.settingsModule.getSetting('obsidian-api-key');
-    const endpoint = await window.settingsModule.getSetting('obsidian-endpoint');
+    let endpoint = await window.settingsModule.getSetting('obsidian-endpoint');
     const chatPath = await window.settingsModule.getSetting('obsidian-chat-path');
 
-    console.log('Obsidian API Key:', apiKey ? 'Set' : 'Not set');
-    console.log('Obsidian Endpoint:', endpoint);
-    console.log('Obsidian Chat Path:', chatPath);
-
-    if (!apiKey || !endpoint || !chatPath) {
-      console.error('Obsidian settings are incomplete');
-      return;
+    // Normalize endpoint by removing trailing slash
+    if (endpoint.endsWith('/')) {
+      endpoint = endpoint.slice(0, -1);
     }
 
-    // Ensure the chatPath ends with a forward slash
-    const formattedChatPath = chatPath.endsWith('/') ? chatPath : `${chatPath}/`;
-    const url = `${endpoint.replace(/\/$/, '')}/vault/${formattedChatPath.replace(/^\//, '')}`;
+    // Ensure chatPath starts with a slash
+    const formattedChatPath = chatPath.startsWith('/') ? chatPath : `/${chatPath}`;
+    const url = `${endpoint}/vault${formattedChatPath}`;
+
     console.log('Fetching Obsidian sessions from:', url);
 
     const response = await fetch(url, {
@@ -906,10 +915,18 @@ async function loadSession(sessionId) {
 
 async function loadObsidianSessionContent(session) {
   const apiKey = await window.settingsModule.getSetting('obsidian-api-key');
-  const endpoint = await window.settingsModule.getSetting('obsidian-endpoint');
+  let endpoint = await window.settingsModule.getSetting('obsidian-endpoint');
   const chatPath = await window.settingsModule.getSetting('obsidian-chat-path');
 
-  const url = `${endpoint.replace(/\/$/, '')}/vault/${chatPath.replace(/^\//, '')}/${session.name}`;
+  // Normalize endpoint
+  if (endpoint.endsWith('/')) {
+    endpoint = endpoint.slice(0, -1);
+  }
+
+  // Ensure chatPath starts with a slash and does not end with one
+  const formattedChatPath = chatPath.startsWith('/') ? chatPath : `/${chatPath}`;
+
+  const url = `${endpoint}/vault${formattedChatPath}/${session.name}`;
   console.log('Loading Obsidian session from:', url);
 
   try {
@@ -1453,51 +1470,56 @@ async function sendMessage(message) {
 }
 
 async function saveToObsidianVault(content) {
-    const apiKey = await window.settingsModule.getSetting('obsidian-api-key');
-    const endpoint = await window.settingsModule.getSetting('obsidian-endpoint');
-    const chatPath = await window.settingsModule.getSetting('obsidian-chat-path');
+  const apiKey = await window.settingsModule.getSetting('obsidian-api-key');
+  let endpoint = await window.settingsModule.getSetting('obsidian-endpoint');
+  const chatPath = await window.settingsModule.getSetting('obsidian-chat-path');
 
-    if (!apiKey || !endpoint || !chatPath) {
-        console.error('Obsidian settings are not complete');
-        console.log('API Key:', apiKey ? 'Set' : 'Not set');
-        console.log('Endpoint:', endpoint);
-        console.log('Chat Path:', chatPath);
-        alert('Obsidian settings are not complete. Please check your settings.');
-        return;
+  if (!apiKey || !endpoint || !chatPath) {
+    console.error('Obsidian settings are not complete');
+    alert('Obsidian settings are not complete. Please check your settings.');
+    return;
+  }
+
+  // Normalize endpoint
+  if (endpoint.endsWith('/')) {
+    endpoint = endpoint.slice(0, -1);
+  }
+
+  // Ensure chatPath starts with a slash and does not end with one
+  const formattedChatPath = chatPath.startsWith('/') ? chatPath : `/${chatPath}`;
+
+  const fileName = `${currentSession.name}.md`;
+  const filePath = `${formattedChatPath}/${fileName}`;
+
+  console.log('Saving to Obsidian:', filePath);
+  console.log('Content length:', content.length);
+
+  try {
+    const url = `${endpoint}/vault${filePath}`;
+    console.log('Request URL:', url);
+
+    const response = await fetch(url, {
+      method: 'PUT',
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'text/markdown'
+      },
+      body: content
+    });
+
+    console.log('Response status:', response.status);
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('Error response from Obsidian API:', response.status, errorText);
+      throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
     }
 
-    const fileName = `${currentSession.name}.md`;
-    const filePath = `${chatPath.replace(/^\//, '').replace(/\/$/, '')}/${fileName}`;
-
-    console.log('Saving to Obsidian:', filePath);
-    console.log('Content length:', content.length);
-
-    try {
-        const url = `${endpoint.replace(/\/$/, '')}/vault/${filePath}`;
-        console.log('Request URL:', url);
-
-        const response = await fetch(url, {
-            method: 'PUT',
-            headers: {
-                'Authorization': `Bearer ${apiKey}`,
-                'Content-Type': 'text/markdown'
-            },
-            body: content
-        });
-
-        console.log('Response status:', response.status);
-
-        if (!response.ok) {
-            const errorText = await response.text();
-            console.error('Error response from Obsidian API:', response.status, errorText);
-            throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
-        }
-
-        console.log('Session saved to Obsidian file');
-    } catch (error) {
-        console.error('Error saving session to Obsidian:', error);
-        alert(`Failed to save the session to Obsidian. Error: ${error.message}\nPlease check your settings and try again.`);
-    }
+    console.log('Session saved to Obsidian file');
+  } catch (error) {
+    console.error('Error saving session to Obsidian:', error);
+    alert(`Failed to save the session to Obsidian. Error: ${error.message}\nPlease check your settings and try again.`);
+  }
 }
 
 // Add this function to handle saving sessions to Google Drive
