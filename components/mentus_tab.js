@@ -29,6 +29,11 @@ let currentSession = {
 
 let profileDataReady = false;
 
+// Add this function at the top of your script
+function normalizeEndpoint(endpoint) {
+    return endpoint.replace(/\/+$/, '');
+}
+
 // Onboarding steps definition using Intro.js
 function initializeOnboarding() {
   console.log('Starting interactive onboarding with Intro.js');
@@ -316,10 +321,8 @@ async function initializeObsidian() {
     const apiKey = await window.settingsModule.getSetting('obsidian-api-key');
     let endpoint = await window.settingsModule.getSetting('obsidian-endpoint');
 
-    // Remove trailing slash from endpoint
-    if (endpoint.endsWith('/')) {
-      endpoint = endpoint.slice(0, -1);
-    }
+    // Normalize the endpoint
+    endpoint = normalizeEndpoint(endpoint);
 
     const chatPath = await window.settingsModule.getSetting('obsidian-chat-path');
 
@@ -1336,7 +1339,10 @@ async function createMarkdownFromSession(session) {
 }
 
 async function saveFileToObsidian(apiKey, endpoint, filePath, content) {
-  const url = `${endpoint.replace(/\/$/, '')}/vault/${encodeURIComponent(filePath)}`;
+  // Normalize the endpoint
+  endpoint = normalizeEndpoint(endpoint);
+
+  const url = `${endpoint}/vault/${encodeURIComponent(filePath)}`;
   
   try {
     const response = await fetch(url, {
