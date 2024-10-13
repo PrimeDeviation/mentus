@@ -1247,3 +1247,111 @@ body.onboarding-active::before {
 */
 
 /* ... rest of your styles ... */
+
+/* Intro.js custom styles */
+.introjs-tooltip {
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  border: 1px solid var(--border-color);
+  font-family: 'Virgil', sans-serif;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+}
+
+.introjs-tooltiptext,
+.introjs-tooltip-title {
+  color: var(--text-color);
+}
+
+.introjs-button {
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  border: 1px solid var(--border-color);
+  font-family: 'Virgil', sans-serif;
+  transition: background-color 0.3s, color 0.3s;
+}
+
+.introjs-button:hover {
+  background-color: var(--hover-bg-color);
+  color: var(--text-color);
+}
+
+.introjs-arrow {
+  border-color: var(--border-color);
+}
+
+.introjs-arrow.top,
+.introjs-arrow.top-middle,
+.introjs-arrow.top-right {
+  border-bottom-color: var(--bg-color);
+}
+
+.introjs-arrow.right {
+  border-left-color: var(--bg-color);
+}
+
+.introjs-arrow.bottom,
+.introjs-arrow.bottom-middle,
+.introjs-arrow.bottom-right {
+  border-top-color: var(--bg-color);
+}
+
+.introjs-arrow.left {
+  border-right-color: var(--bg-color);
+}
+
+.introjs-helperLayer {
+  background-color: rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--border-color);
+}
+
+/* Dark mode specific styles */
+body.dark-mode .introjs-tooltip {
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  border-color: var(--border-color);
+}
+
+body.dark-mode .introjs-tooltiptext,
+body.dark-mode .introjs-tooltip-title {
+  color: var(--text-color);
+}
+
+body.dark-mode .introjs-button {
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  border-color: var(--border-color);
+}
+
+body.dark-mode .introjs-button:hover {
+  background-color: var(--hover-bg-color);
+  color: var(--text-color);
+}
+
+body.dark-mode .introjs-arrow {
+  border-color: var(--border-color);
+}
+
+body.dark-mode .introjs-arrow.top,
+body.dark-mode .introjs-arrow.top-middle,
+body.dark-mode .introjs-arrow.top-right {
+  border-bottom-color: var(--bg-color);
+}
+
+body.dark-mode .introjs-arrow.right {
+  border-left-color: var(--bg-color);
+}
+
+body.dark-mode .introjs-arrow.bottom,
+body.dark-mode .introjs-arrow.bottom-middle,
+body.dark-mode .introjs-arrow.bottom-right {
+  border-top-color: var(--bg-color);
+}
+
+body.dark-mode .introjs-arrow.left {
+  border-right-color: var(--bg-color);
+}
+
+body.dark-mode .introjs-helperLayer {
+  background-color: rgba(0, 0, 0, 0.1);
+  border-color: var(--border-color);
+}

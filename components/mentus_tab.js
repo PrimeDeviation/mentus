@@ -118,11 +118,12 @@ function initializeOnboarding() {
   });
 
   // Start the Intro.js tour
-  introJs()
+  const intro = introJs()
     .setOptions({
       steps: steps,
       showProgress: true,
       exitOnOverlayClick: false,
+      tooltipClass: 'customTooltip', // Add this line
     })
     .onbeforeexit(async () => {
       // Set onboarding as completed when the tour finishes or is exited
@@ -152,7 +153,19 @@ function initializeOnboarding() {
         }
       }
     })
-    .start();
+    .onafterchange(() => {
+      // Update Intro.js dark mode after each step
+      chrome.storage.local.get(['darkMode'], function(result) {
+        updateIntroJsDarkMode(result.darkMode);
+      });
+    });
+
+  // Apply initial dark mode state to Intro.js
+  chrome.storage.local.get(['darkMode'], function(result) {
+    updateIntroJsDarkMode(result.darkMode);
+  });
+
+  intro.start();
 }
 
 // Implement isGoogleConnected function
@@ -1207,6 +1220,7 @@ function applyDarkMode(isDarkMode) {
         document.body.classList.remove('dark-mode');
     }
     updateDarkModeButtonText(isDarkMode);
+    updateIntroJsDarkMode(isDarkMode); // Add this line
 }
 
 // Modify the updateDarkModeButtonText function
