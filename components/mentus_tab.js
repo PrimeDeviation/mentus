@@ -51,12 +51,14 @@ function initializeOnboarding() {
     intro: 'Please ensure that you have installed and configured the Obsidian Local REST API plugin in your Obsidian application.',
   });
 
-  // Step 3: Connect Google Account
-  !isGoogleConnected() && steps.push({
-    element: '#google-auth-button',
-    intro: 'Please connect your Google account to enable saving sessions to Google Drive.',
-    position: 'bottom',
-  });
+  // Step 3: Connect Google Account (only if not already connected)
+  if (!isGoogleConnected()) {
+    steps.push({
+      element: '#google-auth-button',
+      intro: 'Please connect your Google account to enable saving sessions to Google Drive.',
+      position: 'bottom',
+    });
+  }
 
   // Steps for entering API keys (always displayed)
   steps.push({
