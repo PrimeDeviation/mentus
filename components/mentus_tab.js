@@ -53,8 +53,10 @@ function initializeOnboarding() {
 
   // Step 3: Connect Google Account
   steps.push({
-    element: '#google-auth-button',
-    intro: 'Please connect your Google account to enable saving sessions to Google Drive.',
+    element: isGoogleConnected() ? '#google-disconnect-button' : '#google-auth-button',
+    intro: isGoogleConnected() 
+      ? 'Your Google account is connected. You can disconnect it if needed.'
+      : 'Please connect your Google account to enable saving sessions to Google Drive.',
     position: 'bottom',
   });
 
