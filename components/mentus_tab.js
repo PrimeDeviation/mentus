@@ -51,19 +51,11 @@ function initializeOnboarding() {
     intro: 'Please ensure that you have installed and configured the Obsidian Local REST API plugin in your Obsidian application.',
   });
 
-  // Step 3: Connect Google Account
+  // Modify only the Google Account connection step
   steps.push({
-    element: function() {
-      const connectButton = document.getElementById('google-auth-button');
-      const disconnectButton = document.getElementById('google-disconnect-button');
-      return isGoogleConnected() ? disconnectButton : connectButton;
-    },
-    intro: function() {
-      return isGoogleConnected() 
-        ? 'Your Google account is connected. You can disconnect it if needed.'
-        : 'Please connect your Google account to enable saving sessions to Google Drive.';
-    },
-    position: 'bottom'
+    element: '#google-auth-button, #google-disconnect-button',
+    intro: 'Connect your Google account to enable saving sessions to Google Drive, or disconnect if already connected.',
+    position: 'bottom',
   });
 
   // Steps for entering API keys (always displayed)
