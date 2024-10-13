@@ -53,7 +53,11 @@ function initializeOnboarding() {
 
   // Step 3: Connect Google Account
   steps.push({
-    element: isGoogleConnected() ? '#google-disconnect-button' : '#google-auth-button',
+    element: () => {
+      const connectButton = document.getElementById('google-auth-button');
+      const disconnectButton = document.getElementById('google-disconnect-button');
+      return isGoogleConnected() ? disconnectButton : connectButton;
+    },
     intro: isGoogleConnected() 
       ? 'Your Google account is connected. You can disconnect it if needed.'
       : 'Please connect your Google account to enable saving sessions to Google Drive.',
@@ -176,10 +180,13 @@ function initializeOnboarding() {
   intro.start();
 }
 
-// Implement isGoogleConnected function
+// Ensure this function is implemented and returns the correct connection status
 function isGoogleConnected() {
   // Implement logic to check if Google account is connected
-  return window.googleUser && window.googleUser.isConnected;
+  // This might involve checking the visibility of the buttons
+  const connectButton = document.getElementById('google-auth-button');
+  const disconnectButton = document.getElementById('google-disconnect-button');
+  return connectButton.style.display === 'none' && disconnectButton.style.display !== 'none';
 }
 
 // Modify the hasAPIKeys function
