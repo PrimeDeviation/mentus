@@ -825,16 +825,15 @@ async function loadObsidianSessions() {
   try {
     const apiKey = await window.settingsModule.getSetting('obsidian-api-key');
     let endpoint = await window.settingsModule.getSetting('obsidian-endpoint');
-    const chatPath = await window.settingsModule.getSetting('obsidian-chat-path');
+    let chatPath = await window.settingsModule.getSetting('obsidian-chat-path');
 
     // Normalize endpoint by removing trailing slash
-    if (endpoint.endsWith('/')) {
-      endpoint = endpoint.slice(0, -1);
-    }
+    endpoint = endpoint.replace(/\/$/, '');
 
-    // Ensure chatPath starts with a slash
-    const formattedChatPath = chatPath.startsWith('/') ? chatPath : `/${chatPath}`;
-    const url = `${endpoint}/vault${formattedChatPath}`;
+    // Normalize chatPath by ensuring it starts with a slash and ends with a slash
+    chatPath = '/' + chatPath.replace(/^\/|\/$/g, '') + '/';
+
+    const url = `${endpoint}/vault${chatPath}`;
 
     console.log('Fetching Obsidian sessions from:', url);
 
@@ -946,17 +945,15 @@ async function loadSession(sessionId) {
 async function loadObsidianSessionContent(session) {
   const apiKey = await window.settingsModule.getSetting('obsidian-api-key');
   let endpoint = await window.settingsModule.getSetting('obsidian-endpoint');
-  const chatPath = await window.settingsModule.getSetting('obsidian-chat-path');
+  let chatPath = await window.settingsModule.getSetting('obsidian-chat-path');
 
   // Normalize endpoint
-  if (endpoint.endsWith('/')) {
-    endpoint = endpoint.slice(0, -1);
-  }
+  endpoint = endpoint.replace(/\/$/, '');
 
-  // Ensure chatPath starts with a slash and does not end with one
-  const formattedChatPath = chatPath.startsWith('/') ? chatPath : `/${chatPath}`;
+  // Normalize chatPath
+  chatPath = '/' + chatPath.replace(/^\/|\/$/g, '') + '/';
 
-  const url = `${endpoint}/vault${formattedChatPath}/${session.name}`;
+  const url = `${endpoint}/vault${chatPath}${session.name}`;
   console.log('Loading Obsidian session from:', url);
 
   try {
