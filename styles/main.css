@@ -1495,3 +1495,70 @@ body.dark-mode #google-auth-button:hover,
 body.dark-mode #google-disconnect-button:hover {
     background-color: var(--hover-bg-color);
 }
+
+/* Add these styles to the end of your main.css file */
+
+/* CodeMirror Editor Dark Mode Styles */
+body.dark-mode .CodeMirror {
+  background-color: var(--bg-color);
+  color: var(--text-color);
+}
+
+body.dark-mode .CodeMirror-gutters {
+  background-color: var(--bg-color);
+  border-color: var(--border-color);
+}
+
+body.dark-mode .CodeMirror-linenumber {
+  color: var(--text-color);
+  opacity: 0.6;
+}
+
+body.dark-mode .CodeMirror-cursor {
+  border-left-color: var(--text-color);
+}
+
+body.dark-mode .CodeMirror-selected {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+body.dark-mode .CodeMirror-focused .CodeMirror-selected {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+body.dark-mode .CodeMirror-line::selection,
+body.dark-mode .CodeMirror-line > span::selection,
+body.dark-mode .CodeMirror-line > span > span::selection {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+body.dark-mode .CodeMirror-activeline-background {
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+/* Ensure proper styles for the editor container in dark mode */
+body.dark-mode .editor-container,
+body.dark-mode .editor-header,
+body.dark-mode .editor-body,
+body.dark-mode .editor-footer,
+body.dark-mode #editor-container,
+body.dark-mode #preview-container {
+  background-color: var(--bg-color);
+  color: var(--text-color);
+}
+
+/* Style for the toolbar in dark mode */
+body.dark-mode .toolbar {
+  background-color: var(--bg-color);
+  border-color: var(--border-color);
+}
+
+body.dark-mode .toolbar button {
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  border-color: var(--border-color);
+}
+
+body.dark-mode .toolbar button:hover {
+  background-color: var(--hover-bg-color);
+}
