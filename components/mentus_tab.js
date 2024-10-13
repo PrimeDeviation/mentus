@@ -53,15 +53,17 @@ function initializeOnboarding() {
 
   // Step 3: Connect Google Account
   steps.push({
-    element: () => {
+    element: function() {
       const connectButton = document.getElementById('google-auth-button');
       const disconnectButton = document.getElementById('google-disconnect-button');
       return isGoogleConnected() ? disconnectButton : connectButton;
     },
-    intro: isGoogleConnected() 
-      ? 'Your Google account is connected. You can disconnect it if needed.'
-      : 'Please connect your Google account to enable saving sessions to Google Drive.',
-    position: 'bottom',
+    intro: function() {
+      return isGoogleConnected() 
+        ? 'Your Google account is connected. You can disconnect it if needed.'
+        : 'Please connect your Google account to enable saving sessions to Google Drive.';
+    },
+    position: 'bottom'
   });
 
   // Steps for entering API keys (always displayed)
@@ -141,11 +143,10 @@ function initializeOnboarding() {
       localStorage.setItem('mentusOnboardingCompleted', 'true');
       // Initialize remaining features
       await initializeRemainingFeatures();
-      // No need to show settings tab here, as it's already shown by default
     })
     .onchange((targetElement) => {
       // Handle tab changes based on the element being highlighted
-      if (targetElement && targetElement.id) {
+      if (targetElement) {
         if (targetElement.id === 'google-auth-button' || targetElement.id === 'google-disconnect-button') {
           showTab('userprofile');
         } else if (
@@ -182,8 +183,6 @@ function initializeOnboarding() {
 
 // Ensure this function is implemented and returns the correct connection status
 function isGoogleConnected() {
-  // Implement logic to check if Google account is connected
-  // This might involve checking the visibility of the buttons
   const connectButton = document.getElementById('google-auth-button');
   const disconnectButton = document.getElementById('google-disconnect-button');
   return connectButton.style.display === 'none' && disconnectButton.style.display !== 'none';
