@@ -1249,11 +1249,17 @@ body.onboarding-active::before {
 /* ... rest of your styles ... */
 
 /* Intro.js custom styles */
+.introjs-tooltip,
+.introjs-tooltiptext,
+.introjs-tooltip-title,
+.introjs-button {
+  font-family: 'Virgil', sans-serif !important;
+}
+
 .introjs-tooltip {
   background-color: var(--bg-color);
   color: var(--text-color);
   border: 1px solid var(--border-color);
-  font-family: 'Virgil', sans-serif;
   box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
 }
 
@@ -1266,7 +1272,6 @@ body.onboarding-active::before {
   background-color: var(--bg-color);
   color: var(--text-color);
   border: 1px solid var(--border-color);
-  font-family: 'Virgil', sans-serif;
   transition: background-color 0.3s, color 0.3s;
 }
 
