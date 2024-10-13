@@ -65,8 +65,12 @@ function ensureEditorInitialized() {
 }
 
 function openFileInEditor(fileId, fileName, content, mimeType) {
-    console.log('openFileInEditor called with:', { fileId, fileName, content: content.substring(0, 100) + '...', mimeType });
+    console.log('openFileInEditor called with:', { fileId, fileName, content: content ? content.substring(0, 100) + '...' : 'undefined', mimeType });
     try {
+        // Set the current file ID and name
+        currentFileId = fileId;
+        currentFileName = fileName;
+
         // Set the file name in the editor
         const fileNameElement = document.getElementById('file-name');
         if (fileNameElement) {
@@ -78,30 +82,36 @@ function openFileInEditor(fileId, fileName, content, mimeType) {
         // Ensure the editor is initialized
         ensureEditorInitialized();
 
-        // Set the content in the editor
-        editor.setValue(content);
+        // Always fetch the content for the new file
+        fetchFileContent(fileId).then(fetchedContent => {
+            editor.setValue(fetchedContent);
+            
+            // Set the appropriate mode based on the MIME type
+            let mode = 'text';
+            if (mimeType === 'text/csv') {
+                mode = 'csv';
+            } else if (fileName.endsWith('.md')) {
+                mode = 'markdown';
+            }
+            // Add more conditions for other file types as needed
 
-        // Set the appropriate mode based on the MIME type
-        let mode = 'text';
-        if (mimeType === 'text/csv') {
-            mode = 'csv';
-        } else if (fileName.endsWith('.md')) {
-            mode = 'markdown';
-        }
-        // Add more conditions for other file types as needed
+            editor.setOption('mode', mode);
 
-        editor.setOption('mode', mode);
+            // Force a refresh of the editor
+            editor.refresh();
 
-        // Force a refresh of the editor
-        editor.refresh();
+            // Move the cursor to the start of the document
+            editor.setCursor(0, 0);
 
-        // Move the cursor to the start of the document
-        editor.setCursor(0, 0);
+            // Focus on the editor
+            editor.focus();
 
-        // Focus on the editor
-        editor.focus();
+            console.log('File opened successfully in editor');
+        }).catch(error => {
+            console.error('Error fetching file content:', error);
+            editor.setValue('Error loading file content');
+        });
 
-        console.log('File opened successfully in editor');
     } catch (error) {
         console.error('Error in openFileInEditor:', error);
     }
@@ -352,3 +362,19 @@ window.editorModule = {
     saveFile,
     ensureEditorInitialized
 };
+
+// Add this function to fetch file content if it's not provided
+async function fetchFileContent(fileId) {
+    const apiKey = await window.settingsModule.getSetting('obsidian-api-key');
+    const endpoint = await window.settingsModule.getSetting('obsidian-endpoint');
+    const url = `${endpoint}/vault/${encodeURIComponent(fileId)}`;
+    const response = await fetch(url, {
+        headers: {
+            'Authorization': `Bearer ${apiKey}`
+        }
+    });
+    if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    return await response.text();
+}

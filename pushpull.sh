@@ -15,8 +15,6 @@ git commit -m "$1"
 # Perform a git pull, always accepting the remote version
 git pull --strategy-option=theirs origin $(git rev-parse --abbrev-ref HEAD)
 
-rm mentus-extension.zip
-
 # Push changes
 git push origin $(git rev-parse --abbrev-ref HEAD)
 
