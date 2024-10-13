@@ -569,6 +569,15 @@ function initializeGraph() {
     resizeGraph(); // Initial call to set correct size
 }
 
+// Add this function to be called when the graph tab is shown
+function showGraph() {
+    if (!isDataFetched) {
+        buildGraphData();
+    } else {
+        resizeGraph();
+    }
+}
+
 // Modify the resizeGraph function
 function resizeGraph() {
     const graphContainer = document.getElementById('graph-container');
@@ -587,20 +596,16 @@ function resizeGraph() {
     }
 }
 
-// Add this function to be called when the graph tab is shown
-function showGraph() {
-    if (!isDataFetched) {
-        buildGraphData();
-    } else {
-        resizeGraph();
-    }
-}
-
 // Expose the showGraph function
 window.graphviewModule = {
     ...window.graphviewModule,
-    showGraph: showGraph
+    showGraph: showGraph,
+    resizeGraph: resizeGraph
 };
+
+// Add this at the end of the initializeGraph function
+window.addEventListener('resize', resizeGraph);
+resizeGraph(); // Initial call to set correct size
 
 async function fetchMentusGraphData(apiKey, endpoint) {
     try {
@@ -774,3 +779,17 @@ document.addEventListener('DOMContentLoaded', function() {
         initializeGraph();
     }
 });
+
+// Add this function to your graphview.js file
+function redrawGraph() {
+  if (simulation) {
+    simulation.alpha(1).restart();
+  }
+  resizeGraph();
+}
+
+// Make sure to expose this function
+window.graphviewModule = {
+  ...window.graphviewModule,
+  redrawGraph: redrawGraph
+};

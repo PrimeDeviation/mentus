@@ -104,6 +104,11 @@ function initializeOnboarding() {
 
       // Reinitialize the graph view now that settings are available
       await loadGraphView();
+
+      // Force a redraw of the graph
+      if (window.graphviewModule && typeof window.graphviewModule.redrawGraph === 'function') {
+        window.graphviewModule.redrawGraph();
+      }
     },
   });
 
@@ -112,10 +117,14 @@ function initializeOnboarding() {
     element: '#graph-container',
     intro: 'The graph interface visualizes your knowledge connections. It may take some time to populate if your Obsidian graph is large.',
     position: 'top',
-    onBeforeChange: function() {
+    onbeforechange: function() {
       showTab('graph');
       // Trigger a resize event to make sure the graph fills the container
       window.dispatchEvent(new Event('resize'));
+      // Force a redraw of the graph
+      if (window.graphviewModule && typeof window.graphviewModule.redrawGraph === 'function') {
+        window.graphviewModule.redrawGraph();
+      }
     }
   });
 
