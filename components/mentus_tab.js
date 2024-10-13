@@ -53,9 +53,15 @@ function initializeOnboarding() {
 
   // Modify only the Google Account connection step
   steps.push({
-    element: '#google-auth-button, #google-disconnect-button',
-    intro: 'Connect your Google account to enable saving sessions to Google Drive, or disconnect if already connected.',
-    position: 'bottom',
+    element: function() {
+      return isGoogleConnected() ? '#google-disconnect-button' : '#google-auth-button';
+    },
+    intro: function() {
+      return isGoogleConnected() 
+        ? 'Your Google account is connected. You can disconnect it if needed.'
+        : 'Please connect your Google account to enable saving sessions to Google Drive.';
+    },
+    position: 'bottom'
   });
 
   // Steps for entering API keys (always displayed)
