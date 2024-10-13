@@ -75,11 +75,8 @@ function openFileInEditor(fileId, fileName, content, mimeType) {
             console.warn('file-name element not found');
         }
 
-        // Get the editor instance (assuming you're using CodeMirror)
-        if (!editor) {
-            console.error('CodeMirror editor instance not found');
-            return;
-        }
+        // Ensure the editor is initialized
+        ensureEditorInitialized();
 
         // Set the content in the editor
         editor.setValue(content);
@@ -94,6 +91,15 @@ function openFileInEditor(fileId, fileName, content, mimeType) {
         // Add more conditions for other file types as needed
 
         editor.setOption('mode', mode);
+
+        // Force a refresh of the editor
+        editor.refresh();
+
+        // Move the cursor to the start of the document
+        editor.setCursor(0, 0);
+
+        // Focus on the editor
+        editor.focus();
 
         console.log('File opened successfully in editor');
     } catch (error) {
