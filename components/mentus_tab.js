@@ -51,17 +51,11 @@ function initializeOnboarding() {
     intro: 'Please ensure that you have installed and configured the Obsidian Local REST API plugin in your Obsidian application.',
   });
 
-  // Modify only the Google Account connection step
+  // Step 3: Connect Google Account
   steps.push({
-    element: function() {
-      return isGoogleConnected() ? '#google-disconnect-button' : '#google-auth-button';
-    },
-    intro: function() {
-      return isGoogleConnected() 
-        ? 'Your Google account is connected. You can disconnect it if needed.'
-        : 'Please connect your Google account to enable saving sessions to Google Drive.';
-    },
-    position: 'bottom'
+    element: '#google-auth-button',
+    intro: 'Please connect your Google account to enable saving sessions to Google Drive.',
+    position: 'bottom',
   });
 
   // Steps for entering API keys (always displayed)
@@ -144,8 +138,8 @@ function initializeOnboarding() {
     })
     .onchange((targetElement) => {
       // Handle tab changes based on the element being highlighted
-      if (targetElement) {
-        if (targetElement.id === 'google-auth-button' || targetElement.id === 'google-disconnect-button') {
+      if (targetElement && targetElement.id) {
+        if (targetElement.id === 'google-auth-button') {
           showTab('userprofile');
         } else if (
           targetElement.id === 'openai-api-key' ||
@@ -805,7 +799,6 @@ async function sendMessageToAnthropic(model, apiKey, messages) {
     throw error;
   }
 }
-
 // Display assistant reply
 function displayAssistantReply(reply) {
   addMessageToChat('assistant-message', reply);
@@ -1738,4 +1731,5 @@ async function saveToGitHub(content) {
     alert(`Failed to save the session to GitHub. Error: ${error.message}\nPlease check your GitHub connection and try again.`);
   }
 }
+
 
