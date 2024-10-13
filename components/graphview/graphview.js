@@ -315,30 +315,19 @@ async function createGraphData() {
 // Declare simulation as a global variable (only once)
 let simulation;
 
+// Modify the initializeGraph function
 function initializeGraph() {
     console.log("Initializing graph");
-    console.log("D3 version:", d3.version);
     const graphContainer = document.getElementById('graph-container');
     if (!graphContainer) {
         console.error('Graph container not found');
         return;
     }
 
-    const width = graphContainer.clientWidth || 800;
-    const height = graphContainer.clientHeight || 600;
-
-    console.log("Graph container dimensions:", width, height);
-
-    if (graphData.nodes.length === 0) {
-        console.warn("No nodes to display in the graph");
-        graphContainer.innerHTML = '<div class="loading-message">No data to display in the graph.</div>';
-        return;
-    }
-
     graphContainer.innerHTML = '';
     const svg = d3.select(graphContainer).append("svg")
-        .attr("width", width)
-        .attr("height", height)
+        .attr("width", '100%')
+        .attr("height", '100%')
         .style("background-color", "var(--bg-color)");
 
     const g = svg.append("g");
@@ -347,7 +336,7 @@ function initializeGraph() {
     simulation = d3.forceSimulation(graphData.nodes)
         .force("link", d3.forceLink(graphData.links).id(d => d.id).distance(100).strength(0.1))
         .force("charge", d3.forceManyBody().strength(-30))
-        .force("center", d3.forceCenter(width / 2, height / 2).strength(0.1)) // Attractive force
+        .force("center", d3.forceCenter(graphContainer.clientWidth / 2, graphContainer.clientHeight / 2).strength(0.1)) // Attractive force
         .force("collision", d3.forceCollide().radius(d => d.size || 5));
 
     const linkOpacity = 0.6; // Increased default opacity
@@ -574,7 +563,44 @@ function initializeGraph() {
     console.log("Graph initialization complete");
     console.log("Nodes rendered:", graphData.nodes.length);
     console.log("Links rendered:", graphData.links.length);
+
+    // Add this at the end of the function
+    window.addEventListener('resize', resizeGraph);
+    resizeGraph(); // Initial call to set correct size
 }
+
+// Modify the resizeGraph function
+function resizeGraph() {
+    const graphContainer = document.getElementById('graph-container');
+    if (!graphContainer) return;
+
+    const width = graphContainer.clientWidth;
+    const height = graphContainer.clientHeight;
+
+    const svg = d3.select("#graph-container svg");
+    svg.attr("width", width).attr("height", height);
+
+    if (simulation) {
+        simulation.force("center", d3.forceCenter(width / 2, height / 2))
+            .alpha(0.3)
+            .restart();
+    }
+}
+
+// Add this function to be called when the graph tab is shown
+function showGraph() {
+    if (!isDataFetched) {
+        buildGraphData();
+    } else {
+        resizeGraph();
+    }
+}
+
+// Expose the showGraph function
+window.graphviewModule = {
+    ...window.graphviewModule,
+    showGraph: showGraph
+};
 
 async function fetchMentusGraphData(apiKey, endpoint) {
     try {

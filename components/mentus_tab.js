@@ -410,6 +410,9 @@ function showTab(tabName) {
   // Trigger a resize event when showing the graph tab
   if (tabName === 'graph') {
     window.dispatchEvent(new Event('resize'));
+    if (window.graphviewModule && window.graphviewModule.showGraph) {
+      window.graphviewModule.showGraph();
+    }
   }
 
   console.log(`Tab ${tabName} is now visible`);
