@@ -350,8 +350,8 @@ async function initializeObsidian() {
     const apiKey = await window.settingsModule.getSetting('obsidian-api-key');
     let endpoint = await window.settingsModule.getSetting('obsidian-endpoint');
 
-    // Normalize the endpoint
-    endpoint = normalizeEndpoint(endpoint);
+    // Remove trailing slash if it exists
+    endpoint = endpoint.replace(/\/$/, '');
 
     const chatPath = await window.settingsModule.getSetting('obsidian-chat-path');
 
@@ -850,11 +850,11 @@ async function loadObsidianSessions() {
     let endpoint = await window.settingsModule.getSetting('obsidian-endpoint');
     let chatPath = await window.settingsModule.getSetting('obsidian-chat-path');
 
-    // Normalize endpoint by removing trailing slash
+    // Remove trailing slash from endpoint
     endpoint = endpoint.replace(/\/$/, '');
 
-    // Normalize chatPath by ensuring it starts with a slash and ends with a slash
-    chatPath = '/' + chatPath.replace(/^\/|\/$/g, '') + '/';
+    // Ensure chatPath starts with a slash
+    chatPath = chatPath.startsWith('/') ? chatPath : '/' + chatPath;
 
     const url = `${endpoint}/vault${chatPath}`;
 
