@@ -1373,7 +1373,7 @@ body.dark-mode .introjs-helperLayer {
   border-right: 1px solid var(--border-color);
   background-color: var(--bg-color);
   white-space: nowrap;
-  padding-right: 10px;
+  width: 40px; /* Increase gutter width */
 }
 
 .CodeMirror-linenumber {
@@ -1398,8 +1398,9 @@ body.dark-mode .introjs-helperLayer {
 .CodeMirror-gutter-wrapper {
   position: absolute;
   z-index: 4;
-  background: none !important;
-  border: none !important;
+  left: -40px !important; /* Align with the gutter width */
+  width: 40px;
+  background-color: var(--bg-color) !important;
 }
 
 .CodeMirror-gutter-wrapper::after {
@@ -1407,7 +1408,7 @@ body.dark-mode .introjs-helperLayer {
   position: absolute;
   top: 0;
   bottom: 0;
-  left: 100%;
+  right: 0;
   width: 1px;
   background-color: var(--border-color);
   opacity: 0.5;
@@ -1425,4 +1426,26 @@ body.dark-mode .CodeMirror-linenumber {
 
 body.dark-mode .CodeMirror-gutter-wrapper::after {
   background-color: var(--border-color);
+}
+
+/* Add a subtle background to the active line number */
+.CodeMirror-activeline-gutter {
+  background-color: rgba(var(--text-color-rgb), 0.1);
+}
+
+/* Ensure the text content starts right after the gutter */
+.CodeMirror-sizer {
+  margin-left: 40px !important;
+}
+
+/* Add a subtle vertical line to separate line numbers from content */
+.CodeMirror-gutters::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  width: 1px;
+  background-color: var(--border-color);
+  opacity: 0.5;
 }

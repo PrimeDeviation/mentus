@@ -135,8 +135,7 @@ function initializeOnboarding() {
       localStorage.setItem('mentusOnboardingCompleted', 'true');
       // Initialize remaining features
       await initializeRemainingFeatures();
-      // Show settings tab after onboarding
-      showTab('settings');
+      // No need to show settings tab here, as it's already shown by default
     })
     .onchange((targetElement) => {
       // Handle tab changes based on the element being highlighted
@@ -224,9 +223,10 @@ async function initializeMentusTab() {
     } else {
       console.log('Onboarding already completed, initializing remaining features');
       await initializeRemainingFeatures();
-      // Show settings tab by default if onboarding is completed
-      showTab('settings');
     }
+
+    // Show settings tab by default on initial load
+    showTab('settings');
 
     console.log('Mentus Tab initialization complete');
   } catch (error) {
