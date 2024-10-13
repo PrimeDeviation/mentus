@@ -52,7 +52,7 @@ function initializeOnboarding() {
   });
 
   // Step 3: Connect Google Account
-  steps.push({
+  !isGoogleConnected() && steps.push({
     element: '#google-auth-button',
     intro: 'Please connect your Google account to enable saving sessions to Google Drive.',
     position: 'bottom',
