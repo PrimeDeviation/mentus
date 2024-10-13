@@ -761,9 +761,9 @@ object {
 .btn, button {
     display: inline-block;
     padding: 8px 16px;
-    background-color: #ffffff;
-    color: #000000;
-    border: 1px solid #000000;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    border: 1px solid var(--border-color);
     border-radius: 4px;
     cursor: pointer;
     font-size: 16px;
@@ -773,21 +773,21 @@ object {
 }
 
 .btn:hover, button:hover {
-    background-color: #f0f0f0;
+    background-color: var(--hover-bg-color);
 }
 
 /* Specific button styles */
 #delete-selected, #create-folder, #back-button,
 #google-auth-button, #google-disconnect-button {
-    background-color: #ffffff;
-    color: #000000;
-    border: 1px solid #000000;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    border: 1px solid var(--border-color);
     font-family: 'Virgil', sans-serif;
 }
 
 #delete-selected:hover, #create-folder:hover, #back-button:hover,
 #google-auth-button:hover, #google-disconnect-button:hover {
-    background-color: #f0f0f0;
+    background-color: var(--hover-bg-color);
 }
 
 /* Tab content styles */
@@ -1448,4 +1448,50 @@ body.dark-mode .CodeMirror-gutter-wrapper::after {
   width: 1px;
   background-color: var(--border-color);
   opacity: 0.5;
+}
+
+/* Add or modify these styles in your main.css file */
+
+/* General button styles */
+.btn, button, 
+#save-settings, 
+#google-auth-button, 
+#google-disconnect-button {
+    display: inline-block;
+    padding: 8px 16px;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+    font-family: 'Virgil', sans-serif;
+    margin: 5px;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+.btn:hover, button:hover,
+#save-settings:hover, 
+#google-auth-button:hover, 
+#google-disconnect-button:hover {
+    background-color: var(--hover-bg-color);
+}
+
+/* Dark mode specific styles */
+body.dark-mode .btn, 
+body.dark-mode button,
+body.dark-mode #save-settings, 
+body.dark-mode #google-auth-button, 
+body.dark-mode #google-disconnect-button {
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    border-color: var(--border-color);
+}
+
+body.dark-mode .btn:hover, 
+body.dark-mode button:hover,
+body.dark-mode #save-settings:hover, 
+body.dark-mode #google-auth-button:hover, 
+body.dark-mode #google-disconnect-button:hover {
+    background-color: var(--hover-bg-color);
 }

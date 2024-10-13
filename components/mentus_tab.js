@@ -142,7 +142,7 @@ function initializeOnboarding() {
     .onchange((targetElement) => {
       // Handle tab changes based on the element being highlighted
       if (targetElement && targetElement.id) {
-        if (targetElement.id === 'google-auth-button') {
+        if (targetElement.id === 'google-auth-button' || targetElement.id === 'google-disconnect-button') {
           showTab('userprofile');
         } else if (
           targetElement.id === 'openai-api-key' ||
