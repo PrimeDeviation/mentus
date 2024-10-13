@@ -224,10 +224,6 @@ async function initializeMentusTab() {
       console.log('Onboarding already completed, initializing remaining features');
       await initializeRemainingFeatures();
     }
-
-    // Show settings tab by default on initial load
-    showTab('settings');
-
     console.log('Mentus Tab initialization complete');
   } catch (error) {
     console.error('Error in initializeMentusTab:', error);
