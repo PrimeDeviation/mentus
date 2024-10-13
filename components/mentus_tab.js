@@ -123,13 +123,15 @@ function initializeOnboarding() {
       steps: steps,
       showProgress: true,
       exitOnOverlayClick: false,
-      tooltipClass: 'customTooltip', // Add this line
+      tooltipClass: 'customTooltip',
     })
     .onbeforeexit(async () => {
       // Set onboarding as completed when the tour finishes or is exited
       localStorage.setItem('mentusOnboardingCompleted', 'true');
       // Initialize remaining features
       await initializeRemainingFeatures();
+      // Show settings tab after onboarding
+      showTab('settings');
     })
     .onchange((targetElement) => {
       // Handle tab changes based on the element being highlighted
@@ -217,6 +219,8 @@ async function initializeMentusTab() {
     } else {
       console.log('Onboarding already completed, initializing remaining features');
       await initializeRemainingFeatures();
+      // Show settings tab by default if onboarding is completed
+      showTab('settings');
     }
 
     console.log('Mentus Tab initialization complete');
@@ -384,7 +388,7 @@ function initializeTabButtons() {
   });
 }
 
-// Show a specific tab
+// Update the showTab function
 function showTab(tabName) {
   console.log(`Showing tab: ${tabName}`);
   const tabs = document.querySelectorAll('.tab-content');
@@ -401,6 +405,11 @@ function showTab(tabName) {
       button.classList.remove('active');
     }
   });
+
+  // Trigger a resize event when showing the graph tab
+  if (tabName === 'graph') {
+    window.dispatchEvent(new Event('resize'));
+  }
 
   console.log(`Tab ${tabName} is now visible`);
 }
