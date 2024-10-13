@@ -1365,33 +1365,64 @@ body.dark-mode .introjs-helperLayer {
 
 .CodeMirror {
   font-family: 'Virgil', monospace;
-  line-height: 1.5;
+  line-height: 1.6;
+  height: 100%;
 }
 
-.CodeMirror-linenumbers {
-  padding-right: 8px;
+.CodeMirror-gutters {
+  border-right: 1px solid var(--border-color);
+  background-color: var(--bg-color);
+  white-space: nowrap;
+  padding-right: 10px;
 }
 
 .CodeMirror-linenumber {
   padding: 0 3px 0 5px;
   min-width: 20px;
   text-align: right;
-  color: #999;
+  color: var(--text-color);
+  opacity: 0.6;
   white-space: nowrap;
 }
 
-.CodeMirror-gutters {
-  border-right: 1px solid #ddd;
-  background-color: #f7f7f7;
-  white-space: nowrap;
-}
-
-/* Ensure the content aligns properly with line numbers */
 .CodeMirror-lines {
   padding: 4px 0;
 }
 
 .CodeMirror pre.CodeMirror-line,
 .CodeMirror pre.CodeMirror-line-like {
-  padding: 0 4px;
+  padding: 0 4px 0 10px;
+}
+
+/* Add vertical line indicators */
+.CodeMirror-gutter-wrapper {
+  position: absolute;
+  z-index: 4;
+  background: none !important;
+  border: none !important;
+}
+
+.CodeMirror-gutter-wrapper::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 100%;
+  width: 1px;
+  background-color: var(--border-color);
+  opacity: 0.5;
+}
+
+/* Ensure proper alignment in dark mode */
+body.dark-mode .CodeMirror-gutters {
+  background-color: var(--bg-color);
+  border-right-color: var(--border-color);
+}
+
+body.dark-mode .CodeMirror-linenumber {
+  color: var(--text-color);
+}
+
+body.dark-mode .CodeMirror-gutter-wrapper::after {
+  background-color: var(--border-color);
 }
