@@ -613,6 +613,11 @@ object {
   --control-bg-color: rgba(240, 240, 240, 0.8);
   --slider-thumb-color: #333333;
   --slider-track-color: #cccccc;
+  --button-bg-color: #e0e0e0;
+  --button-text-color: #000000;
+  --accent-color: #007bff; /* Highlight color */
+  --progress-bg-color: #e9ecef;
+  --progress-color: #007bff;
 }
 
 body.dark-mode {
@@ -627,6 +632,11 @@ body.dark-mode {
   --control-bg-color: rgba(40, 40, 40, 0.8);
   --slider-thumb-color: #cccccc;
   --slider-track-color: #666666;
+  --button-bg-color: #3a3a3a;
+  --button-text-color: #ffffff;
+  --accent-color: #66b2ff; /* Highlight color in dark mode */
+  --progress-bg-color: #555555;
+  --progress-color: #66b2ff;
 }
 
 #graph.tab-content {
@@ -973,6 +983,11 @@ object {
   --control-bg-color: rgba(240, 240, 240, 0.8);
   --slider-thumb-color: #333333;
   --slider-track-color: #cccccc;
+  --button-bg-color: #e0e0e0;
+  --button-text-color: #000000;
+  --accent-color: #007bff; /* Highlight color */
+  --progress-bg-color: #e9ecef;
+  --progress-color: #007bff;
 }
 
 body.dark-mode {
@@ -987,6 +1002,11 @@ body.dark-mode {
   --control-bg-color: rgba(40, 40, 40, 0.8);
   --slider-thumb-color: #cccccc;
   --slider-track-color: #666666;
+  --button-bg-color: #3a3a3a;
+  --button-text-color: #ffffff;
+  --accent-color: #66b2ff; /* Highlight color in dark mode */
+  --progress-bg-color: #555555;
+  --progress-color: #66b2ff;
 }
 
 body {
@@ -1247,3 +1267,124 @@ body.onboarding-active::before {
 */
 
 /* ... rest of your styles ... */
+
+/* ------------------------------------
+   Custom Styles for Intro.js Tooltips
+---------------------------------------*/
+
+/* General tooltip styling */
+.introjs-tooltip,
+.introjs-tooltipReferenceLayer,
+.introjs-tooltip * {
+  background-color: var(--bg-color) !important;
+  color: var(--text-color) !important;
+  font-family: 'Virgil', sans-serif !important;
+  border: 1px solid var(--border-color) !important;
+  box-shadow: none !important;
+}
+
+/* Tooltip title */
+.introjs-tooltip-title {
+  font-family: 'Virgil', sans-serif !important;
+  font-size: 18px !important;
+  font-weight: bold !important;
+  color: var(--text-color) !important;
+}
+
+/* Tooltip text */
+.introjs-tooltiptext {
+  padding: 10px 20px !important;
+  font-size: 14px !important;
+  color: var(--text-color) !important;
+}
+
+/* Buttons within the tooltip */
+.introjs-button,
+.introjs-tooltipbuttons .introjs-button {
+  background-color: var(--button-bg-color) !important;
+  color: var(--button-text-color) !important;
+  font-family: 'Virgil', sans-serif !important;
+  border: none !important;
+  border-radius: 4px !important;
+  padding: 8px 12px !important;
+  margin: 0 5px !important;
+}
+
+/* Skip button (close 'X' button) */
+.introjs-skipbutton {
+  color: var(--text-color) !important;
+  font-size: 18px !important;
+  top: 10px !important;
+  right: 10px !important;
+}
+
+/* Helper number layer (the step number) */
+.introjs-helperNumberLayer {
+  background-color: var(--accent-color) !important;
+  color: var(--bg-color) !important;
+  font-family: 'Virgil', sans-serif !important;
+  font-size: 14px !important;
+  border-radius: 50% !important;
+  width: 30px !important;
+  height: 30px !important;
+  line-height: 30px !important;
+}
+
+/* Progress bar */
+.introjs-progress,
+.introjs-progressbar {
+  background-color: var(--progress-bg-color) !important;
+}
+.introjs-progressbar {
+  background-color: var(--progress-color) !important;
+}
+
+/* Remove default tooltip arrow */
+.introjs-tooltip::after,
+.introjs-tooltip::before {
+  display: none !important;
+}
+
+/* Overlay background */
+.introjs-overlay {
+  background-color: rgba(0, 0, 0, 0.5) !important;
+}
+
+/* Tooltip border radius and padding */
+.introjs-tooltip {
+  border-radius: 5px !important;
+  padding: 0 !important;
+}
+
+/* Adjust the position and styling of buttons */
+.introjs-tooltipbuttons {
+  text-align: right !important;
+  padding: 10px 20px 15px !important;
+  border-top: 1px solid var(--border-color) !important;
+}
+
+/* Highlighted element border */
+.introjs-helperLayer,
+.introjs-highlight {
+  box-shadow: 0 0 0 3px var(--accent-color) !important;
+  border-radius: 5px !important;
+}
+
+/* Ensure tooltips adjust with dark mode */
+body.dark-mode .introjs-tooltip,
+body.dark-mode .introjs-tooltiptext,
+body.dark-mode .introjs-tooltip-title,
+body.dark-mode .introjs-button,
+body.dark-mode .introjs-skipbutton {
+  background-color: var(--bg-color) !important;
+  color: var(--text-color) !important;
+}
+
+/* Optional: Style the progress bar in dark mode */
+body.dark-mode .introjs-progress,
+body.dark-mode .introjs-progressbar {
+  background-color: var(--progress-bg-color) !important;
+}
+body.dark-mode .introjs-progressbar {
+  background-color: var(--progress-color) !important;
+}
