@@ -110,6 +110,11 @@ function initializeOnboarding() {
     element: '#graph-container',
     intro: 'The graph interface visualizes your knowledge connections. It may take some time to populate if your Obsidian graph is large.',
     position: 'top',
+    onBeforeChange: function() {
+      showTab('graph');
+      // Trigger a resize event to make sure the graph fills the container
+      window.dispatchEvent(new Event('resize'));
+    }
   });
 
   // Step: Saving chat sessions to Obsidian
