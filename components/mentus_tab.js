@@ -853,10 +853,10 @@ async function loadObsidianSessions() {
     // Remove trailing slash from endpoint
     endpoint = endpoint.replace(/\/$/, '');
 
-    // Ensure chatPath starts with a slash
-    chatPath = chatPath.startsWith('/') ? chatPath : '/' + chatPath;
+    // Ensure chatPath ends with a slash
+    chatPath = chatPath.endsWith('/') ? chatPath : chatPath + '/';
 
-    const url = `${endpoint}/vault${chatPath}`;
+    const url = `${endpoint}/vault/${chatPath}`;
 
     console.log('Fetching Obsidian sessions from:', url);
 
