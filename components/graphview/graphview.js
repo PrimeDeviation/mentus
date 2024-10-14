@@ -121,17 +121,21 @@ async function populateGraphData() {
 
     try {
         const obsidianApiKey = await window.settingsModule.getSetting('obsidian-api-key');
-        const obsidianEndpoint = await window.settingsModule.getSetting('obsidian-endpoint');
+        let obsidianEndpoint = await window.settingsModule.getSetting('obsidian-endpoint');
 
         if (!obsidianApiKey || !obsidianEndpoint) {
             console.warn('Obsidian API key or endpoint not set. Graph may be incomplete.');
-            // Optionally, display a message to the user in the graph container
             updateLoadingMessage('Obsidian settings are not configured. Please set them in the Settings tab to view the full graph.');
             return;
         }
 
-        // Fetch Obsidian data
+        // Remove trailing slash if it exists
+        obsidianEndpoint = obsidianEndpoint.replace(/\/$/, '');
+
+        // Construct the vault URL
         const vaultUrl = `${obsidianEndpoint}/vault/`;
+
+        // Fetch Obsidian data
         let allFiles = await fetchAllFiles(vaultUrl, obsidianApiKey);
         console.log(`Fetched ${allFiles.length} files from Obsidian`);
 
@@ -195,6 +199,7 @@ async function buildGraphData() {
 
 async function fetchAllFiles(vaultUrl, apiKey, path = '') {
     const encodedPath = path ? encodeURIComponent(path) : '';
+    // Remove the extra slash before the query parameter
     const url = `${vaultUrl}${encodedPath}?links=true`;
     console.log(`Fetching files from: ${url}`);
     
