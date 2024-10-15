@@ -357,7 +357,7 @@ function openGoogleDriveFile(file, token) {
         console.log('File content retrieved, length:', content.length);
         if (typeof window.editorModule !== 'undefined' && typeof window.editorModule.openFileInEditor === 'function') {
             console.log('Calling openFileInEditor function');
-            window.editorModule.openFileInEditor(file.id, file.name, content, 'text/markdown');
+            window.editorModule.openFileInEditor(file.id, file.name, content, 'text/markdown', 'googleDrive');
             
             // Switch to the Editor tab
             const editorTab = document.querySelector('.tab-button[data-tab="editor"]');
@@ -593,7 +593,7 @@ async function openObsidianFile(path) {
         
         // Open the file in the editor
         if (typeof window.editorModule !== 'undefined' && typeof window.editorModule.openFileInEditor === 'function') {
-            window.editorModule.openFileInEditor(path, path.split('/').pop(), content);
+            window.editorModule.openFileInEditor(path, path.split('/').pop(), content, 'text/markdown', 'obsidian');
             // Switch to the Editor tab
             const editorTab = document.querySelector('.tab-button[data-tab="editor"]');
             if (editorTab) {
