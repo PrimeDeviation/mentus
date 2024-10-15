@@ -13,7 +13,7 @@
     "codemirror": "^5.65.17",
     "intro": "^1.0.0",
     "intro.js": "^7.2.0",
-    "langchain": "^0.0.92",
+    "langchain": "^0.3.2",
     "marked": "^14.1.0"
   },
   "keywords": [],
