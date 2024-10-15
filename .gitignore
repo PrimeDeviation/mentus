@@ -132,9 +132,18 @@ docker-compose.yml
 .dockerignore
 
 # Webpack build artifacts
+<<<<<<< HEAD
 
+=======
+>>>>>>> release/v0.6
 
 # Node modules
 node_modules/
 .aider*
+mentus-extension.zip
+
+# Webpack build artifacts
+
+# Node modules
+node_modules/
 mentus-extension.zip
