@@ -560,11 +560,14 @@ function getParentPath(path) {
 
 async function openObsidianFile(path) {
     const apiKey = await window.settingsModule.getSetting('obsidian-api-key');
-    const endpoint = await window.settingsModule.getSetting('obsidian-endpoint');
+    let endpoint = await window.settingsModule.getSetting('obsidian-endpoint');
 
     console.log('Opening Obsidian file:', path);
 
     try {
+        // Remove trailing slash from endpoint if it exists
+        endpoint = endpoint.replace(/\/$/, '');
+        
         const url = `${endpoint}/vault/${encodeURIComponent(path)}`;
         console.log('Request URL:', url);
 

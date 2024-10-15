@@ -365,16 +365,30 @@ window.editorModule = {
 
 // Add this function to fetch file content if it's not provided
 async function fetchFileContent(fileId) {
-    const apiKey = await window.settingsModule.getSetting('obsidian-api-key');
-    const endpoint = await window.settingsModule.getSetting('obsidian-endpoint');
-    const url = `${endpoint}/vault/${encodeURIComponent(fileId)}`;
-    const response = await fetch(url, {
-        headers: {
-            'Authorization': `Bearer ${apiKey}`
+    if (fileId.startsWith('http')) {
+        // This is a Google Drive file
+        const token = await new Promise((resolve) => chrome.identity.getAuthToken({ interactive: true }, resolve));
+        const response = await fetch(`https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`, {
+            headers: { Authorization: `Bearer ${token}` }
+        });
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
         }
-    });
-    if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        return await response.text();
+    } else {
+        // This is an Obsidian file
+        const apiKey = await window.settingsModule.getSetting('obsidian-api-key');
+        let endpoint = await window.settingsModule.getSetting('obsidian-endpoint');
+        endpoint = endpoint.replace(/\/$/, ''); // Remove trailing slash if it exists
+        const url = `${endpoint}/vault/${encodeURIComponent(fileId)}`;
+        const response = await fetch(url, {
+            headers: {
+                'Authorization': `Bearer ${apiKey}`
+            }
+        });
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return await response.text();
     }
-    return await response.text();
 }
