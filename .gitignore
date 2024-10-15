@@ -137,3 +137,4 @@ docker-compose.yml
 # Node modules
 node_modules/
 .aider*
+mentus-extension.zip
