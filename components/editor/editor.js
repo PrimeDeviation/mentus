@@ -64,9 +64,13 @@ function ensureEditorInitialized() {
     }
 }
 
-function openFileInEditor(fileId, fileName, content, mimeType) {
-    console.log('openFileInEditor called with:', { fileId, fileName, content: content.substring(0, 100) + '...', mimeType });
+function openFileInEditor(fileId, fileName, content, mimeType, source) {
+    console.log('openFileInEditor called with:', { fileId, fileName, content: content ? content.substring(0, 100) + '...' : 'undefined', mimeType, source });
     try {
+        // Set the current file ID and name
+        currentFileId = fileId;
+        currentFileName = fileName;
+
         // Set the file name in the editor
         const fileNameElement = document.getElementById('file-name');
         if (fileNameElement) {
@@ -75,27 +79,39 @@ function openFileInEditor(fileId, fileName, content, mimeType) {
             console.warn('file-name element not found');
         }
 
-        // Get the editor instance (assuming you're using CodeMirror)
-        if (!editor) {
-            console.error('CodeMirror editor instance not found');
-            return;
-        }
+        // Ensure the editor is initialized
+        ensureEditorInitialized();
 
-        // Set the content in the editor
-        editor.setValue(content);
+        // Always fetch the content for the new file
+        fetchFileContent(fileId, source).then(fetchedContent => {
+            editor.setValue(fetchedContent);
+            
+            // Set the appropriate mode based on the MIME type
+            let mode = 'text';
+            if (mimeType === 'text/csv') {
+                mode = 'csv';
+            } else if (fileName.endsWith('.md')) {
+                mode = 'markdown';
+            }
+            // Add more conditions for other file types as needed
 
-        // Set the appropriate mode based on the MIME type
-        let mode = 'text';
-        if (mimeType === 'text/csv') {
-            mode = 'csv';
-        } else if (fileName.endsWith('.md')) {
-            mode = 'markdown';
-        }
-        // Add more conditions for other file types as needed
+            editor.setOption('mode', mode);
 
-        editor.setOption('mode', mode);
+            // Force a refresh of the editor
+            editor.refresh();
 
-        console.log('File opened successfully in editor');
+            // Move the cursor to the start of the document
+            editor.setCursor(0, 0);
+
+            // Focus on the editor
+            editor.focus();
+
+            console.log('File opened successfully in editor');
+        }).catch(error => {
+            console.error('Error fetching file content:', error);
+            editor.setValue('Error loading file content');
+        });
+
     } catch (error) {
         console.error('Error in openFileInEditor:', error);
     }
@@ -346,3 +362,34 @@ window.editorModule = {
     saveFile,
     ensureEditorInitialized
 };
+
+// Add this function to fetch file content if it's not provided
+async function fetchFileContent(fileId, source) {
+    switch(source) {
+        case 'googleDrive':
+            const token = await new Promise((resolve) => chrome.identity.getAuthToken({ interactive: true }, resolve));
+            const response = await fetch(`https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return await response.text();
+        case 'obsidian':
+            const apiKey = await window.settingsModule.getSetting('obsidian-api-key');
+            let endpoint = await window.settingsModule.getSetting('obsidian-endpoint');
+            endpoint = endpoint.replace(/\/$/, ''); // Remove trailing slash if it exists
+            const url = `${endpoint}/vault/${encodeURIComponent(fileId)}`;
+            const obsidianResponse = await fetch(url, {
+                headers: {
+                    'Authorization': `Bearer ${apiKey}`
+                }
+            });
+            if (!obsidianResponse.ok) {
+                throw new Error(`HTTP error! status: ${obsidianResponse.status}`);
+            }
+            return await obsidianResponse.text();
+        default:
+            throw new Error(`Unsupported file source: ${source}`);
+    }
+}

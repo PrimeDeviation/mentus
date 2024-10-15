@@ -38,9 +38,7 @@ async function initializeDocuments() {
         const driveConfigured = await checkGoogleDriveConfiguration();
         const obsidianConfigured = await checkObsidianConfiguration();
 
-        console.log('Google Drive configured:', driveConfigured);
-        console.log('Obsidian configured:', obsidianConfigured);
-
+        // If neither is configured, inform the user
         if (!driveConfigured && !obsidianConfigured) {
             documentsList.innerHTML = '<p>Please configure a documents source in the Settings tab.</p>';
             return;
@@ -359,7 +357,7 @@ function openGoogleDriveFile(file, token) {
         console.log('File content retrieved, length:', content.length);
         if (typeof window.editorModule !== 'undefined' && typeof window.editorModule.openFileInEditor === 'function') {
             console.log('Calling openFileInEditor function');
-            window.editorModule.openFileInEditor(file.id, file.name, content, 'text/markdown');
+            window.editorModule.openFileInEditor(file.id, file.name, content, 'text/markdown', 'googleDrive');
             
             // Switch to the Editor tab
             const editorTab = document.querySelector('.tab-button[data-tab="editor"]');
@@ -562,11 +560,14 @@ function getParentPath(path) {
 
 async function openObsidianFile(path) {
     const apiKey = await window.settingsModule.getSetting('obsidian-api-key');
-    const endpoint = await window.settingsModule.getSetting('obsidian-endpoint');
+    let endpoint = await window.settingsModule.getSetting('obsidian-endpoint');
 
     console.log('Opening Obsidian file:', path);
 
     try {
+        // Remove trailing slash from endpoint if it exists
+        endpoint = endpoint.replace(/\/$/, '');
+        
         const url = `${endpoint}/vault/${encodeURIComponent(path)}`;
         console.log('Request URL:', url);
 
@@ -592,7 +593,7 @@ async function openObsidianFile(path) {
         
         // Open the file in the editor
         if (typeof window.editorModule !== 'undefined' && typeof window.editorModule.openFileInEditor === 'function') {
-            window.editorModule.openFileInEditor(path, path.split('/').pop(), content);
+            window.editorModule.openFileInEditor(path, path.split('/').pop(), content, 'text/markdown', 'obsidian');
             // Switch to the Editor tab
             const editorTab = document.querySelector('.tab-button[data-tab="editor"]');
             if (editorTab) {
@@ -666,6 +667,9 @@ window.showDocumentsTab = showDocumentsTab;
 window.createMarkdownFile = createMarkdownFile;
 window.loadObsidianDocuments = loadObsidianDocuments;
 window.showTopLevelView = showTopLevelView;
+
+// Export functions to be called from other modules
+window.ensureMentusWorkspaceFolder = ensureMentusWorkspaceFolder;
 
 // Add this line to check if the script is loaded
 console.log('Documents script loaded');

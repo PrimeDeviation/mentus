@@ -29,17 +29,190 @@ let currentSession = {
 
 let profileDataReady = false;
 
-// Initialize the Mentus Tab
+// Add this function at the top of your script
+function normalizeEndpoint(endpoint) {
+    return endpoint.replace(/\/+$/, '');
+}
+
+// Onboarding steps definition using Intro.js
+function initializeOnboarding() {
+  console.log('Starting interactive onboarding with Intro.js');
+
+  // Initialize the steps array
+  const steps = [];
+
+  // Step 1: Welcome
+  steps.push({
+    intro: "Welcome to Mentus! Let's get started with setting up your environment.",
+  });
+
+  // Step 2: Ensure Obsidian Local REST API Plugin is installed
+  steps.push({
+    intro: 'Please ensure that you have installed and configured the Obsidian Local REST API plugin in your Obsidian application.',
+  });
+
+  // Step 3: Connect Google Account (only if not already connected)
+  if (!isGoogleConnected()) {
+    steps.push({
+      element: '#google-auth-button',
+      intro: 'Please connect your Google account to enable saving sessions to Google Drive.',
+      position: 'bottom',
+    });
+  }
+
+  // Steps for entering API keys (always displayed)
+  steps.push({
+    element: '#openai-api-key',
+    intro: 'Please enter your OpenAI API key to enable AI-powered chat with OpenAI models.',
+    position: 'bottom',
+  });
+
+  steps.push({
+    element: '#anthropic-api-key',
+    intro: 'Please enter your Anthropic API key to enable AI-powered chat with Anthropic models.',
+    position: 'bottom',
+  });
+
+  // Steps for entering Obsidian API settings
+  steps.push({
+    element: '#obsidian-api-key',
+    intro: 'Please enter the API key from the Obsidian Local REST API plugin settings.',
+    position: 'bottom',
+  });
+
+  steps.push({
+    element: '#obsidian-endpoint',
+    intro: 'Enter the REST API endpoint URL from your Obsidian Local REST API plugin settings.',
+    position: 'bottom',
+  });
+
+  steps.push({
+    element: '#obsidian-chat-path',
+    intro: 'Specify the path in your Obsidian vault where chat sessions will be saved.',
+    position: 'bottom',
+  });
+
+  // Step: Reinitialize the graph view after Obsidian settings are provided
+  steps.push({
+    intro: 'Now that you have provided the Obsidian settings, we will reinitialize the graph view.',
+    onbeforechange: async () => {
+      // Save all settings entered so far
+      await window.settingsModule.saveAllSettings();
+
+      // Initialize Obsidian
+      await initializeObsidian();
+
+      // Reinitialize the graph view now that settings are available
+      await loadGraphView();
+
+      // Force a redraw of the graph
+      if (window.graphviewModule && typeof window.graphviewModule.redrawGraph === 'function') {
+        window.graphviewModule.redrawGraph();
+      }
+    },
+  });
+
+  // Step: Graph Interface Overview
+  steps.push({
+    element: '#graph-container',
+    intro: 'The graph interface visualizes your knowledge connections. It may take some time to populate if your Obsidian graph is large.',
+    position: 'top',
+    onbeforechange: function() {
+      showTab('graph');
+      // Trigger a resize event to make sure the graph fills the container
+      window.dispatchEvent(new Event('resize'));
+      // Force a redraw of the graph
+      if (window.graphviewModule && typeof window.graphviewModule.redrawGraph === 'function') {
+        window.graphviewModule.redrawGraph();
+      }
+    }
+  });
+
+  // Step: Saving chat sessions to Obsidian
+  steps.push({
+    intro: 'Since you have provided the Obsidian API key and endpoint, your chat sessions will be saved to Obsidian automatically.',
+  });
+
+  // Start the Intro.js tour
+  const intro = introJs()
+    .setOptions({
+      steps: steps,
+      showProgress: true,
+      exitOnOverlayClick: false,
+      tooltipClass: 'customTooltip',
+    })
+    .onbeforeexit(async () => {
+      // Set onboarding as completed when the tour finishes or is exited
+      localStorage.setItem('mentusOnboardingCompleted', 'true');
+      // Initialize remaining features
+      await initializeRemainingFeatures();
+    })
+    .onchange((targetElement) => {
+      // Handle tab changes based on the element being highlighted
+      if (targetElement && targetElement.id) {
+        if (targetElement.id === 'google-auth-button') {
+          showTab('userprofile');
+        } else if (
+          targetElement.id === 'openai-api-key' ||
+          targetElement.id === 'anthropic-api-key' ||
+          targetElement.id === 'obsidian-api-key' ||
+          targetElement.id === 'obsidian-endpoint' ||
+          targetElement.id === 'obsidian-chat-path'
+        ) {
+          showTab('settings');
+        } else if (targetElement.id === 'chat-models') {
+          showTab('chat');
+        } else if (targetElement.id === 'graph-container') {
+          showTab('graph');
+        } else if (targetElement.id === 'document-list') {
+          showTab('docs');
+        }
+      }
+    })
+    .onafterchange(() => {
+      // Update Intro.js dark mode after each step
+      chrome.storage.local.get(['darkMode'], function(result) {
+        updateIntroJsDarkMode(result.darkMode);
+      });
+    });
+
+  // Apply initial dark mode state to Intro.js
+  chrome.storage.local.get(['darkMode'], function(result) {
+    updateIntroJsDarkMode(result.darkMode);
+  });
+
+  intro.start();
+}
+
+// Ensure this function is implemented and returns the correct connection status
+function isGoogleConnected() {
+  const connectButton = document.getElementById('google-auth-button');
+  const disconnectButton = document.getElementById('google-disconnect-button');
+  return connectButton.style.display === 'none' && disconnectButton.style.display !== 'none';
+}
+
+// Modify the hasAPIKeys function
+async function hasAPIKeys() {
+  const openAIKey = await window.settingsModule.getSetting('openai-api-key');
+  const anthropicKey = await window.settingsModule.getSetting('anthropic-api-key');
+  return {
+    openAIKeySet: !!openAIKey,
+    anthropicKeySet: !!anthropicKey,
+  };
+}
+
+// Modify the initializeMentusTab function
 async function initializeMentusTab() {
   try {
     console.log('Initializing Mentus Tab');
     initializeTabButtons();
     console.log('Tab buttons initialized');
     initializeDraggableResizer();
+    console.log('Draggable resizer initialized');
     initializeDarkModeToggle();
     console.log('Dark mode toggle initialized');
 
-    // Load settings first
+    // Load settings
     if (window.settingsModule) {
       console.log('Loading existing settings');
       await window.settingsModule.loadExistingSettings();
@@ -49,15 +222,62 @@ async function initializeMentusTab() {
       console.error('Settings module not found');
     }
 
-    // Load chat models after settings are loaded
-    console.log('About to load chat models');
-    await loadChatModels();
-    console.log('Chat models loaded');
+    // Initialize essential features needed during onboarding
+    await initializeEssentialFeatures();
+    console.log('Essential features initialized');
 
+    // Check if onboarding has been completed
+    const onboardingCompleted = localStorage.getItem('mentusOnboardingCompleted');
+    if (!onboardingCompleted) {
+      console.log('Starting onboarding');
+      initializeOnboarding();
+    } else {
+      console.log('Onboarding already completed, initializing remaining features');
+      await initializeRemainingFeatures();
+    }
+    console.log('Mentus Tab initialization complete');
+  } catch (error) {
+    console.error('Error in initializeMentusTab:', error);
+  }
+}
+
+// Initialize essential features needed during onboarding
+async function initializeEssentialFeatures() {
+  try {
+    // Initialize Documents
+    if (window.initializeDocuments) {
+      console.log('Initializing Documents');
+      await window.initializeDocuments();
+      console.log('Documents initialized');
+    } else {
+      console.error('initializeDocuments function not found');
+    }
+
+    // Initialize Graph View
+    if (window.loadGraphView) {
+      console.log('Initializing Graph View');
+      await window.loadGraphView();
+      console.log('Graph View initialized');
+    } else {
+      console.error('loadGraphView function not found');
+    }
+  } catch (error) {
+    console.error('Error in initializeEssentialFeatures:', error);
+  }
+}
+
+// Initialize remaining features after onboarding
+async function initializeRemainingFeatures() {
+  try {
     // Initialize Obsidian
     console.log('Initializing Obsidian');
     await initializeObsidian();
     console.log('Obsidian initialized');
+
+    // Load chat models
+    console.log('About to load chat models');
+    await loadChatModels();
+    console.log('Chat models loaded');
 
     // Load sessions
     console.log('Loading sessions');
@@ -70,25 +290,22 @@ async function initializeMentusTab() {
     console.log('Sessions loaded');
     updateSessionList();
 
+    // Initialize chat and session listeners
     initializeChatListeners();
     console.log('Chat listeners initialized');
-    initializeDocumentsListeners();
-    console.log('Document listeners initialized');
     initializeSessionListeners();
     console.log('Session listeners initialized');
 
+    // Start a new session if none exists
     if (!currentSession.id) {
-      console.log('Starting new session');
+      console.log('No current session, starting new session');
       await startNewSession();
     }
 
-    // Show the settings tab by default
-    showTab('settings');
-    console.log('Settings tab displayed');
-
-    console.log('Mentus Tab initialization complete');
+    // Optionally, show a default tab
+    // showTab('chat');
   } catch (error) {
-    console.error('Error in initializeMentusTab:', error);
+    console.error('Error in initializeRemainingFeatures:', error);
   }
 }
 
@@ -131,7 +348,12 @@ async function initializeObsidian() {
   console.log('Initializing Obsidian');
   try {
     const apiKey = await window.settingsModule.getSetting('obsidian-api-key');
-    const endpoint = await window.settingsModule.getSetting('obsidian-endpoint');
+    let endpoint = await window.settingsModule.getSetting('obsidian-endpoint');
+
+    // Remove trailing slash if it exists
+    endpoint = endpoint.replace(/\/$/, '');
+
+    const chatPath = await window.settingsModule.getSetting('obsidian-chat-path');
 
     if (!apiKey || !endpoint) {
       console.log('Obsidian API key or endpoint not set, skipping initialization');
@@ -178,52 +400,33 @@ function initializeTabButtons() {
   });
 }
 
-// Show a specific tab
+// Update the showTab function
 function showTab(tabName) {
   console.log(`Showing tab: ${tabName}`);
-  
-  const tabContents = document.querySelectorAll('.tab-content');
+  const tabs = document.querySelectorAll('.tab-content');
   const tabButtons = document.querySelectorAll('.tab-button');
 
-  tabContents.forEach(content => content.style.display = 'none');
-  tabButtons.forEach(button => button.classList.remove('active'));
+  tabs.forEach(tab => {
+    tab.style.display = tab.id === tabName ? 'block' : 'none';
+  });
 
-  const activeTab = document.getElementById(tabName);
-  const activeButton = document.querySelector(`.tab-button[data-tab="${tabName}"]`);
-
-  if (activeTab && activeButton) {
-    activeTab.style.width = '100%';
-    activeTab.style.display = 'block';
-    activeButton.classList.add('active');
-    console.log(`Tab ${tabName} is now visible`);
-
-    // Additional logic for specific tabs
-    if (tabName === 'docs') {
-      if (typeof window.showDocumentsTab === 'function') {
-        window.showDocumentsTab();
-      }
-    } else if (tabName === 'editor') {
-      if (typeof window.editorModule !== 'undefined' && typeof window.editorModule.ensureEditorInitialized === 'function') {
-        window.editorModule.ensureEditorInitialized();
-      }
-    } else if (tabName === 'graph') {
-      console.log("Graph tab selected");
-      let graphContainer = document.getElementById('graph-container');
-      if (!graphContainer) {
-        graphContainer = document.createElement('div');
-        graphContainer.id = 'graph-container';
-        document.getElementById('graph').appendChild(graphContainer);
-      }
-      if (typeof window.checkGraphStatus === 'function') {
-        console.log("Calling checkGraphStatus");
-        window.checkGraphStatus();
-      } else {
-        console.error('checkGraphStatus function not found');
-      }
+  tabButtons.forEach(button => {
+    if (button.getAttribute('data-tab') === tabName) {
+      button.classList.add('active');
+    } else {
+      button.classList.remove('active');
     }
-  } else {
-    console.error(`Tab content or button not found for: ${tabName}`);
+  });
+
+  // Trigger a resize event when showing the graph tab
+  if (tabName === 'graph') {
+    window.dispatchEvent(new Event('resize'));
+    if (window.graphviewModule && window.graphviewModule.showGraph) {
+      window.graphviewModule.showGraph();
+    }
   }
+
+  console.log(`Tab ${tabName} is now visible`);
 }
 
 // Add this constant to identify visual models
@@ -414,7 +617,7 @@ async function fetchMentionSuggestions(query) {
         });
 
         if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
+          throw new Error(`HTTP error! status: ${response.status}`);
         }
 
         const data = await response.json();
@@ -607,7 +810,6 @@ async function sendMessageToAnthropic(model, apiKey, messages) {
     throw error;
   }
 }
-
 // Display assistant reply
 function displayAssistantReply(reply) {
   addMessageToChat('assistant-message', reply);
@@ -645,21 +847,17 @@ async function loadObsidianSessions() {
   console.log('Loading Obsidian sessions');
   try {
     const apiKey = await window.settingsModule.getSetting('obsidian-api-key');
-    const endpoint = await window.settingsModule.getSetting('obsidian-endpoint');
-    const chatPath = await window.settingsModule.getSetting('obsidian-chat-path');
+    let endpoint = await window.settingsModule.getSetting('obsidian-endpoint');
+    let chatPath = await window.settingsModule.getSetting('obsidian-chat-path');
 
-    console.log('Obsidian API Key:', apiKey ? 'Set' : 'Not set');
-    console.log('Obsidian Endpoint:', endpoint);
-    console.log('Obsidian Chat Path:', chatPath);
+    // Remove trailing slash from endpoint
+    endpoint = endpoint.replace(/\/$/, '');
 
-    if (!apiKey || !endpoint || !chatPath) {
-      console.error('Obsidian settings are incomplete');
-      return;
-    }
+    // Ensure chatPath ends with a slash
+    chatPath = chatPath.endsWith('/') ? chatPath : chatPath + '/';
 
-    // Ensure the chatPath ends with a forward slash
-    const formattedChatPath = chatPath.endsWith('/') ? chatPath : `${chatPath}/`;
-    const url = `${endpoint.replace(/\/$/, '')}/vault/${formattedChatPath.replace(/^\//, '')}`;
+    const url = `${endpoint}/vault/${chatPath}`;
+
     console.log('Fetching Obsidian sessions from:', url);
 
     const response = await fetch(url, {
@@ -769,10 +967,16 @@ async function loadSession(sessionId) {
 
 async function loadObsidianSessionContent(session) {
   const apiKey = await window.settingsModule.getSetting('obsidian-api-key');
-  const endpoint = await window.settingsModule.getSetting('obsidian-endpoint');
-  const chatPath = await window.settingsModule.getSetting('obsidian-chat-path');
+  let endpoint = await window.settingsModule.getSetting('obsidian-endpoint');
+  let chatPath = await window.settingsModule.getSetting('obsidian-chat-path');
 
-  const url = `${endpoint.replace(/\/$/, '')}/vault/${chatPath.replace(/^\//, '')}/${session.name}`;
+  // Normalize endpoint
+  endpoint = endpoint.replace(/\/$/, '');
+
+  // Normalize chatPath
+  chatPath = '/' + chatPath.replace(/^\/|\/$/g, '') + '/';
+
+  const url = `${endpoint}/vault${chatPath}${session.name}`;
   console.log('Loading Obsidian session from:', url);
 
   try {
@@ -984,6 +1188,17 @@ function initializeSessionListeners() {
     sessionNameInput.addEventListener('change', handleSessionNameChange);
     sessionNameInput.addEventListener('blur', handleSessionNameChange);
   }
+
+  // Add event listener for Restart Onboarding button
+  const restartOnboardingButton = document.getElementById('restart-onboarding');
+  if (restartOnboardingButton) {
+    restartOnboardingButton.addEventListener('click', () => {
+      // Clear the onboarding completed flag
+      localStorage.removeItem('mentusOnboardingCompleted');
+      // Start the onboarding process
+      initializeOnboarding();
+    });
+  }
 }
 
 // Add this function to handle dark mode toggle
@@ -1025,6 +1240,7 @@ function applyDarkMode(isDarkMode) {
         document.body.classList.remove('dark-mode');
     }
     updateDarkModeButtonText(isDarkMode);
+    updateIntroJsDarkMode(isDarkMode); // Add this line
 }
 
 // Modify the updateDarkModeButtonText function
@@ -1083,9 +1299,13 @@ async function saveCurrentSession() {
   // Create markdown content
   let markdownContent = await createMarkdownFromSession(currentSession);
 
-  // Check if we should save to Obsidian
+  // Check if we should save to Obsidian via GitHub
   const saveToObsidian = await window.settingsModule.getSetting('save-to-obsidian');
-  if (saveToObsidian) {
+  const isGitHubConnected = await window.isGitHubAuthenticated();
+
+  if (saveToObsidian && isGitHubConnected) {
+    await saveToGitHub(markdownContent);
+  } else if (saveToObsidian) {
     await saveToObsidianVault(markdownContent);
   } else {
     await saveToGoogleDrive(markdownContent);
@@ -1153,7 +1373,10 @@ async function createMarkdownFromSession(session) {
 }
 
 async function saveFileToObsidian(apiKey, endpoint, filePath, content) {
-  const url = `${endpoint.replace(/\/$/, '')}/vault/${encodeURIComponent(filePath)}`;
+  // Normalize the endpoint
+  endpoint = normalizeEndpoint(endpoint);
+
+  const url = `${endpoint}/vault/${encodeURIComponent(filePath)}`;
   
   try {
     const response = await fetch(url, {
@@ -1301,50 +1524,223 @@ async function sendMessage(message) {
 }
 
 async function saveToObsidianVault(content) {
-    const apiKey = await window.settingsModule.getSetting('obsidian-api-key');
-    const endpoint = await window.settingsModule.getSetting('obsidian-endpoint');
-    const chatPath = await window.settingsModule.getSetting('obsidian-chat-path');
+  const apiKey = await window.settingsModule.getSetting('obsidian-api-key');
+  let endpoint = await window.settingsModule.getSetting('obsidian-endpoint');
+  const chatPath = await window.settingsModule.getSetting('obsidian-chat-path');
 
-    if (!apiKey || !endpoint || !chatPath) {
-        console.error('Obsidian settings are not complete');
-        console.log('API Key:', apiKey ? 'Set' : 'Not set');
-        console.log('Endpoint:', endpoint);
-        console.log('Chat Path:', chatPath);
-        alert('Obsidian settings are not complete. Please check your settings.');
-        return;
+  if (!apiKey || !endpoint || !chatPath) {
+    console.error('Obsidian settings are not complete');
+    alert('Obsidian settings are not complete. Please check your settings.');
+    return;
+  }
+
+  // Normalize endpoint
+  if (endpoint.endsWith('/')) {
+    endpoint = endpoint.slice(0, -1);
+  }
+
+  // Ensure chatPath starts with a slash and does not end with one
+  const formattedChatPath = chatPath.startsWith('/') ? chatPath : `/${chatPath}`;
+
+  const fileName = `${currentSession.name}.md`;
+  const filePath = `${formattedChatPath}/${fileName}`;
+
+  console.log('Saving to Obsidian:', filePath);
+  console.log('Content length:', content.length);
+
+  try {
+    const url = `${endpoint}/vault${filePath}`;
+    console.log('Request URL:', url);
+
+    const response = await fetch(url, {
+      method: 'PUT',
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'text/markdown'
+      },
+      body: content
+    });
+
+    console.log('Response status:', response.status);
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('Error response from Obsidian API:', response.status, errorText);
+      throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
     }
 
-    const fileName = `${currentSession.name}.md`;
-    const filePath = `${chatPath.replace(/^\//, '').replace(/\/$/, '')}/${fileName}`;
-
-    console.log('Saving to Obsidian:', filePath);
-    console.log('Content length:', content.length);
-
-    try {
-        const url = `${endpoint.replace(/\/$/, '')}/vault/${filePath}`;
-        console.log('Request URL:', url);
-
-        const response = await fetch(url, {
-            method: 'PUT',
-            headers: {
-                'Authorization': `Bearer ${apiKey}`,
-                'Content-Type': 'text/markdown'
-            },
-            body: content
-        });
-
-        console.log('Response status:', response.status);
-
-        if (!response.ok) {
-            const errorText = await response.text();
-            console.error('Error response from Obsidian API:', response.status, errorText);
-            throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
-        }
-
-        console.log('Session saved to Obsidian file');
-    } catch (error) {
-        console.error('Error saving session to Obsidian:', error);
-        alert(`Failed to save the session to Obsidian. Error: ${error.message}\nPlease check your settings and try again.`);
-    }
+    console.log('Session saved to Obsidian file');
+  } catch (error) {
+    console.error('Error saving session to Obsidian:', error);
+    alert(`Failed to save the session to Obsidian. Error: ${error.message}\nPlease check your settings and try again.`);
+  }
 }
+
+// Add this function to handle saving sessions to Google Drive
+async function saveToGoogleDrive(content) {
+  console.log('Saving session to Google Drive');
+  try {
+    // Obtain the OAuth token
+    const token = await getGoogleAuthToken();
+
+    if (!token) {
+      throw new Error('Google OAuth token not available. Please connect your Google account.');
+    }
+
+    // Ensure the Mentus Workspace folder exists
+    const folderId = await window.ensureMentusWorkspaceFolder(token);
+    if (!folderId) {
+      throw new Error('Mentus Workspace folder could not be found or created.');
+    }
+
+    // Prepare the metadata for the file to be saved
+    const fileName = `${currentSession.name}.md`;
+    const fileMetadata = {
+      name: fileName,
+      mimeType: 'text/markdown',
+      parents: [folderId] // Save the file into the Mentus Workspace folder
+    };
+
+    // Prepare the multipart request body
+    const form = new FormData();
+    form.append('metadata', new Blob([JSON.stringify(fileMetadata)], { type: 'application/json' }));
+    form.append('file', new Blob([content], { type: 'text/markdown' }));
+
+    // Send the request to Google Drive API
+    const response = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`
+      },
+      body: form
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error('Google Drive API Error:', errorData);
+      throw new Error(`Google Drive API Error: ${errorData.error.message}`);
+    }
+
+    const data = await response.json();
+    console.log('Session saved to Google Drive:', data);
+  } catch (error) {
+    console.error('Error saving session to Google Drive:', error);
+    alert(`Failed to save the session to Google Drive. Error: ${error.message}\nPlease check your Google account connection and try again.`);
+  }
+}
+
+// Helper function to get Google OAuth token
+async function getGoogleAuthToken() {
+  return new Promise((resolve) => {
+    chrome.identity.getAuthToken({ interactive: true }, function(token) {
+      if (chrome.runtime.lastError) {
+        console.error('Error getting auth token:', chrome.runtime.lastError);
+        resolve(null);
+      } else {
+        resolve(token);
+      }
+    });
+  });
+}
+
+// Add this function to mentus_tab.js
+async function ensureMentusWorkspaceFolder(token) {
+  console.log('Ensuring Mentus Workspace folder exists');
+  
+  // Try to get the folder ID from local storage
+  const storedFolderId = await new Promise((resolve) => {
+    chrome.storage.local.get('mentusFolderId', function(result) {
+      resolve(result.mentusFolderId);
+    });
+  });
+
+  if (storedFolderId) {
+    console.log('Mentus Workspace folder ID retrieved from storage:', storedFolderId);
+    return storedFolderId;
+  }
+
+  try {
+    // Search for an existing "Mentus Workspace" folder
+    const searchResponse = await fetch(
+      'https://www.googleapis.com/drive/v3/files?q=name%3D%27Mentus%20Workspace%27%20and%20mimeType%3D%27application/vnd.google-apps.folder%27%20and%20trashed%3Dfalse',
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+    const searchData = await searchResponse.json();
+
+    if (searchData.files && searchData.files.length > 0) {
+      const folderId = searchData.files[0].id;
+      console.log('Existing Mentus Workspace folder found:', folderId);
+      await chrome.storage.local.set({ mentusFolderId: folderId });
+      return folderId;
+    }
+
+    // If the folder doesn't exist, create it
+    console.log('Mentus Workspace folder not found, creating a new one');
+    const createResponse = await fetch('https://www.googleapis.com/drive/v3/files', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        name: 'Mentus Workspace',
+        mimeType: 'application/vnd.google-apps.folder'
+      })
+    });
+    const folder = await createResponse.json();
+    console.log('New Mentus Workspace folder created:', folder.id);
+    await chrome.storage.local.set({ mentusFolderId: folder.id });
+    return folder.id;
+  } catch (error) {
+    console.error('Error ensuring Mentus Workspace folder:', error);
+    throw error;
+  }
+}
+
+// Implement saveToGitHub function
+async function saveToGitHub(content) {
+  console.log('Saving session to GitHub');
+  const token = await window.getGitHubToken();
+
+  if (!token) {
+    alert('GitHub token not available. Please connect your GitHub account.');
+    return;
+  }
+
+  // Implement logic to commit the session file to the user's GitHub repository
+  // This involves interacting with the GitHub API to create or update files in a repository
+
+  // Example code (simplified and needs to be adapted):
+  const owner = 'your-username'; // Or get from user input or GitHub API
+  const repo = 'your-repo'; // Or get from user input or settings
+  const path = `sessions/${currentSession.name}.md`;
+  const message = `Add session ${currentSession.name}`;
+  const contentEncoded = btoa(content);
+
+  try {
+    const response = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${path}`, {
+      method: 'PUT',
+      headers: {
+        'Authorization': `token ${token}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        message: message,
+        content: contentEncoded
+      })
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error('GitHub API Error:', errorData);
+      throw new Error(`GitHub API Error: ${errorData.message}`);
+    }
+
+    console.log('Session saved to GitHub');
+  } catch (error) {
+    console.error('Error saving session to GitHub:', error);
+    alert(`Failed to save the session to GitHub. Error: ${error.message}\nPlease check your GitHub connection and try again.`);
+  }
+}
+
 

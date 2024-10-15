@@ -1,6 +1,37 @@
 # Mentus Knowledge Instructor
 
-A Chrome extension to tutor students and maintain a graphical knowledge ontology.
+A Chrome extension for interactive learning, knowledge management, and AI-assisted chat.
+
+## Features
+
+1. **AI-Powered Chat**
+   - Support for multiple AI models (OpenAI GPT and Anthropic Claude)
+   - Visual model support for image-based interactions
+   - Session management for organizing and saving conversations
+
+2. **Knowledge Graph**
+   - Visualize knowledge connections in an interactive graph format
+
+3. **Document Management**
+   - View and manage documents in a file system-like interface
+   - Integration with the knowledge graph
+
+4. **Markdown Editor**
+   - Built-in editor for creating and editing markdown files
+   - Syntax highlighting and preview functionality
+
+5. **Obsidian Integration**
+   - Save chat sessions directly to your Obsidian vault
+   - Utilize Obsidian's local REST API for data synchronization
+
+6. **User Profile**
+   - Google account integration
+
+7. **Dark Mode**
+   - Toggle between light and dark themes
+
+8. **Customizable Layout**
+   - Resizable chat sidebar
 
 ## Installation
 
@@ -34,14 +65,15 @@ A Chrome extension to tutor students and maintain a graphical knowledge ontology
 
 ## Usage
 
-- Open the extension by clicking on the icon in the Chrome toolbar.
-- Enter a subject into the input field and click "Add Subject" to add it.
-- The popup files are located in the `src/chrome-extension/src/popup` directory.
+1. Click the Mentus extension icon to open the full-page interface.
+2. Configure your API keys in the Settings tab (OpenAI, Anthropic, Obsidian).
+3. Start a new chat session or load an existing one.
+4. Use the tabs to switch between Graph, Documents, Editor, and Settings views.
 
 ## Architecture
 
 ### Overview
-Mentus is a Chrome extension designed to curate learning content, validate user learning, and track user-generated content. The UI consists of a full browser window tab with a chat bar on the left, a tabbed navigation at the top, and a central content area for displaying selected features such as graph view, documents/files, editor, or settings. The layout is horizontally drag-adjustable, allowing users to customize the screen segmentation. Any links clicked within the graph UI will open in a new browser window or tab.
+Mentus is a Chrome extension designed to curate learning content, validate user learning, and track user-generated content. The UI consists of a full browser window tab with a chat bar on the left, a tabbed navigation at the top, and a central content area for displaying selected features such as graph view, documents/files, editor, or settings. The layout is horizontally drag-adjustable, allowing users to customize the screen segmentation.
 
 ### Components
 #### Chat Bar
@@ -75,23 +107,6 @@ Mentus is a Chrome extension designed to curate learning content, validate user 
 #### Settings
 - Allows users to configure the extension settings.
 
-#### Diagrams Feature
-
-The Diagram Tab allows users to create, edit, and save diagrams using Excalidraw. Users can also export diagrams in various formats and add them to chat sessions.
-
-### Features
-
-1. **Excalidraw Integration**: Provides a full-featured diagramming experience.
-2. **Diagram Management**: Create, save, load, and export diagrams.
-3. **Integration with Chat**: Add diagrams to chat sessions.
-4. **Theme Support**: Adapts to the extension's light/dark mode settings.
-
-### Usage
-
-1. Navigate to the Diagram Tab.
-2. Use the controls to create, save, load, or export diagrams.
-3. Add diagrams to chat sessions using the "Add to Chat" button.
-
 ### Data Flow and Integration
 - Chat sessions are saved as markdown files.
 - These markdown files are the basis for both the file system in the Documents tab and the graph in the Graph View tab.
@@ -102,7 +117,7 @@ The Diagram Tab allows users to create, edit, and save diagrams using Excalidraw
 - Graph structure is derived from the markdown files' content and links.
 
 ### External API Integration
-- Interacts with external APIs (e.g., GPT-4, Claude 3 Opus) to provide chat functionality and potentially assist in knowledge graph construction.
+- Interacts with external APIs (e.g., GPT-4, Claude 3) to provide chat functionality and potentially assist in knowledge graph construction.
 
 ## Coding Standards
 - Follow JavaScript ES6+ standards.

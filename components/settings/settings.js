@@ -6,8 +6,7 @@ if (!window.SETTINGS) {
         'obsidian-api-key',
         'obsidian-endpoint',
         'obsidian-chat-path',
-        'save-to-obsidian',
-        'diagrams-path'
+        'save-to-obsidian'
     ];
 }
 
@@ -36,14 +35,6 @@ function initializeSettingsListeners() {
             console.warn(`Setting input not found: ${setting}`);
         }
     });
-
-    // Add listener for diagrams path
-    const diagramsPathInput = document.getElementById('diagrams-path');
-    if (diagramsPathInput) {
-        diagramsPathInput.addEventListener('input', function() {
-            saveSetting('diagrams-path', this.value);
-        });
-    }
 
     // Add listener for toggling Obsidian instructions
     const obsidianInstructionsHeader = document.querySelector('.form-group h3');

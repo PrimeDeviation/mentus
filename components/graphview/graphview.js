@@ -121,14 +121,21 @@ async function populateGraphData() {
 
     try {
         const obsidianApiKey = await window.settingsModule.getSetting('obsidian-api-key');
-        const obsidianEndpoint = await window.settingsModule.getSetting('obsidian-endpoint');
+        let obsidianEndpoint = await window.settingsModule.getSetting('obsidian-endpoint');
 
         if (!obsidianApiKey || !obsidianEndpoint) {
-            throw new Error('Obsidian API key or endpoint not set');
+            console.warn('Obsidian API key or endpoint not set. Graph may be incomplete.');
+            updateLoadingMessage('Obsidian settings are not configured. Please set them in the Settings tab to view the full graph.');
+            return;
         }
 
-        // Fetch Obsidian data
+        // Remove trailing slash if it exists
+        obsidianEndpoint = obsidianEndpoint.replace(/\/$/, '');
+
+        // Construct the vault URL
         const vaultUrl = `${obsidianEndpoint}/vault/`;
+
+        // Fetch Obsidian data
         let allFiles = await fetchAllFiles(vaultUrl, obsidianApiKey);
         console.log(`Fetched ${allFiles.length} files from Obsidian`);
 
@@ -192,6 +199,7 @@ async function buildGraphData() {
 
 async function fetchAllFiles(vaultUrl, apiKey, path = '') {
     const encodedPath = path ? encodeURIComponent(path) : '';
+    // Remove the extra slash before the query parameter
     const url = `${vaultUrl}${encodedPath}?links=true`;
     console.log(`Fetching files from: ${url}`);
     
@@ -312,30 +320,19 @@ async function createGraphData() {
 // Declare simulation as a global variable (only once)
 let simulation;
 
+// Modify the initializeGraph function
 function initializeGraph() {
     console.log("Initializing graph");
-    console.log("D3 version:", d3.version);
     const graphContainer = document.getElementById('graph-container');
     if (!graphContainer) {
         console.error('Graph container not found');
         return;
     }
 
-    const width = graphContainer.clientWidth || 800;
-    const height = graphContainer.clientHeight || 600;
-
-    console.log("Graph container dimensions:", width, height);
-
-    if (graphData.nodes.length === 0) {
-        console.warn("No nodes to display in the graph");
-        graphContainer.innerHTML = '<div class="loading-message">No data to display in the graph.</div>';
-        return;
-    }
-
     graphContainer.innerHTML = '';
     const svg = d3.select(graphContainer).append("svg")
-        .attr("width", width)
-        .attr("height", height)
+        .attr("width", '100%')
+        .attr("height", '100%')
         .style("background-color", "var(--bg-color)");
 
     const g = svg.append("g");
@@ -344,7 +341,7 @@ function initializeGraph() {
     simulation = d3.forceSimulation(graphData.nodes)
         .force("link", d3.forceLink(graphData.links).id(d => d.id).distance(100).strength(0.1))
         .force("charge", d3.forceManyBody().strength(-30))
-        .force("center", d3.forceCenter(width / 2, height / 2).strength(0.1)) // Attractive force
+        .force("center", d3.forceCenter(graphContainer.clientWidth / 2, graphContainer.clientHeight / 2).strength(0.1)) // Attractive force
         .force("collision", d3.forceCollide().radius(d => d.size || 5));
 
     const linkOpacity = 0.6; // Increased default opacity
@@ -571,7 +568,49 @@ function initializeGraph() {
     console.log("Graph initialization complete");
     console.log("Nodes rendered:", graphData.nodes.length);
     console.log("Links rendered:", graphData.links.length);
+
+    // Add this at the end of the function
+    window.addEventListener('resize', resizeGraph);
+    resizeGraph(); // Initial call to set correct size
 }
+
+// Add this function to be called when the graph tab is shown
+function showGraph() {
+    if (!isDataFetched) {
+        buildGraphData();
+    } else {
+        resizeGraph();
+    }
+}
+
+// Modify the resizeGraph function
+function resizeGraph() {
+    const graphContainer = document.getElementById('graph-container');
+    if (!graphContainer) return;
+
+    const width = graphContainer.clientWidth;
+    const height = graphContainer.clientHeight;
+
+    const svg = d3.select("#graph-container svg");
+    svg.attr("width", width).attr("height", height);
+
+    if (simulation) {
+        simulation.force("center", d3.forceCenter(width / 2, height / 2))
+            .alpha(0.3)
+            .restart();
+    }
+}
+
+// Expose the showGraph function
+window.graphviewModule = {
+    ...window.graphviewModule,
+    showGraph: showGraph,
+    resizeGraph: resizeGraph
+};
+
+// Add this at the end of the initializeGraph function
+window.addEventListener('resize', resizeGraph);
+resizeGraph(); // Initial call to set correct size
 
 async function fetchMentusGraphData(apiKey, endpoint) {
     try {
@@ -728,4 +767,34 @@ async function buildGraphData() {
     await populateGraphData();
 }
 
+// Export the loadGraphView function
 window.loadGraphView = buildGraphData;
+
+// Add this line to check if the script is loaded
+console.log('Graphview script loaded');
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Ensure D3.js is loaded
+    if (typeof d3 === 'undefined') {
+        console.error('D3 library is not loaded. Please check the script tag in mentus_tab.html');
+        return;
+    }
+    // Now safe to initialize the graph
+    if (isDataFetched) {
+        initializeGraph();
+    }
+});
+
+// Add this function to your graphview.js file
+function redrawGraph() {
+  if (simulation) {
+    simulation.alpha(1).restart();
+  }
+  resizeGraph();
+}
+
+// Make sure to expose this function
+window.graphviewModule = {
+  ...window.graphviewModule,
+  redrawGraph: redrawGraph
+};

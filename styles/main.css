@@ -455,6 +455,8 @@ object {
     width: 100%;
     border-collapse: collapse;
     margin-top: 20px;
+    background-color: var(--bg-color);
+    color: var(--text-color);
 }
 
 .file-browser th, .file-browser td {
@@ -464,43 +466,62 @@ object {
 }
 
 .file-browser th {
-    background-color: var(--table-header-bg-color);
+    background-color: var(--hover-bg-color);
     font-weight: bold;
 }
 
 .file-browser tr:nth-child(even) {
-    background-color: var(--table-row-bg-color);
+    background-color: var(--bg-color);
+}
+
+.file-browser tr:nth-child(odd) {
+    background-color: var(--hover-bg-color);
+}
+
+.file-browser tr:hover {
+    background-color: var(--active-bg-color);
 }
 
 .file-browser button {
     margin-right: 5px;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    border: 1px solid var(--border-color);
 }
 
+.file-browser button:hover {
+    background-color: var(--hover-bg-color);
+}
+
+/* Ensure proper styles for the file viewer in dark mode */
 .file-viewer {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
     background-color: rgba(0, 0, 0, 0.8);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-}
-
-.file-viewer button {
-    margin-bottom: 10px;
 }
 
 .file-viewer pre {
     background-color: var(--bg-color);
-    padding: 20px;
-    border-radius: 5px;
-    max-width: 80%;
-    max-height: 10%;
-    overflow: auto;
     color: var(--text-color);
+}
+
+/* Dark mode specific adjustments */
+body.dark-mode .file-browser {
+    border-color: var(--border-color);
+}
+
+body.dark-mode .file-browser th {
+    background-color: var(--active-bg-color);
+}
+
+body.dark-mode .file-browser tr:nth-child(even) {
+    background-color: var(--bg-color);
+}
+
+body.dark-mode .file-browser tr:nth-child(odd) {
+    background-color: var(--hover-bg-color);
+}
+
+body.dark-mode .file-browser tr:hover {
+    background-color: var(--active-bg-color);
 }
 
 /* Editor Styles */
@@ -761,9 +782,9 @@ object {
 .btn, button {
     display: inline-block;
     padding: 8px 16px;
-    background-color: #ffffff;
-    color: #000000;
-    border: 1px solid #000000;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    border: 1px solid var(--border-color);
     border-radius: 4px;
     cursor: pointer;
     font-size: 16px;
@@ -773,21 +794,21 @@ object {
 }
 
 .btn:hover, button:hover {
-    background-color: #f0f0f0;
+    background-color: var(--hover-bg-color);
 }
 
 /* Specific button styles */
 #delete-selected, #create-folder, #back-button,
 #google-auth-button, #google-disconnect-button {
-    background-color: #ffffff;
-    color: #000000;
-    border: 1px solid #000000;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    border: 1px solid var(--border-color);
     font-family: 'Virgil', sans-serif;
 }
 
 #delete-selected:hover, #create-folder:hover, #back-button:hover,
 #google-auth-button:hover, #google-disconnect-button:hover {
-    background-color: #f0f0f0;
+    background-color: var(--hover-bg-color);
 }
 
 /* Tab content styles */
@@ -1044,7 +1065,6 @@ body {
 
 /* Add these styles for the slider controls */
 input[type="range"] {
-  -webkit-appearance: none;
   width: 100%;
   height: 5px;
   border-radius: 5px;
@@ -1083,4 +1103,483 @@ input[type="range"]::-moz-range-thumb {
   opacity: 0.7;
   margin-bottom: 5px;
   font-style: italic;
+}
+
+/* Include Virgil Font */
+@font-face {
+  font-family: 'Virgil';
+  src: url('../public/fonts/Virgil.woff2') format('woff2');
+  font-weight: normal;
+  font-style: normal;
+}
+
+/* Apply Virgil font to the body */
+body {
+  font-family: 'Virgil', sans-serif;
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  transition: background-color 0.3s, color 0.3s;
+}
+
+/* Onboarding Modal Styles */
+.modal {
+  display: none; /* This is overridden in JavaScript when showing the modal */
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  background-color: rgba(0,0,0,0.5);
+  z-index: 1000; /* Ensure it's on top of other elements */
+}
+
+/* Ensure .modal-content is centered and visible */
+.modal-content {
+  background-color: var(--bg-color);
+  margin: 5% auto; /* Adjusted margin for better vertical alignment */
+  padding: 20px;
+  border: 1px solid var(--border-color);
+  width: 80%;
+  max-width: 600px;
+  border-radius: 8px;
+}
+
+.modal-content h2 {
+  font-size: 24px;
+  margin-bottom: 15px;
+}
+
+.modal-content p {
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+.onboarding-controls {
+  text-align: right;
+  margin-top: 20px;
+}
+
+.onboarding-controls button {
+  background-color: var(--border-color);
+  color: #ffffff; /* Changed text color to white for better contrast */
+  border: none;
+  padding: 10px 20px;
+  cursor: pointer;
+  border-radius: 4px;
+  margin-left: 10px;
+}
+
+.onboarding-controls button:hover {
+  background-color: var(--hover-bg-color);
+}
+
+.close-button {
+  position: absolute;
+  top: 10px;
+  right: 20px;
+  font-size: 28px;
+  font-weight: bold;
+  color: #aaa;
+  cursor: pointer;
+}
+
+.close-button:hover {
+  color: var(--text-color);
+}
+
+/* Dark mode adjustments */
+body.dark-mode .modal-content {
+  background-color: var(--bg-color);
+  color: var(--text-color);
+}
+
+body.dark-mode .onboarding-controls button {
+  background-color: var(--border-color);
+  color: #ffffff; /* Ensure text remains white in dark mode */
+}
+
+body.dark-mode .onboarding-controls button:hover {
+  background-color: var(--hover-bg-color);
+}
+
+body.dark-mode .close-button {
+  color: #ccc;
+}
+
+body.dark-mode .close-button:hover {
+  color: var(--text-color);
+}
+
+/* Style for auth-select-button */
+.auth-select-button {
+  background-color: var(--border-color);
+  color: #ffffff;
+  border: none;
+  padding: 8px 16px;
+  cursor: pointer;
+  border-radius: 4px;
+  margin: 5px 0;
+  font-family: 'Virgil', sans-serif;
+}
+
+.auth-select-button:hover {
+  background-color: var(--hover-bg-color);
+}
+
+/* Adjust list items in onboarding modal */
+.modal-content ul {
+  list-style-type: none;
+  padding: 0;
+}
+
+.modal-content li {
+  margin-bottom: 10px;
+}
+
+/* Remove modal-related styles as they're no longer needed */
+/*
+.modal {
+  z-index: 10000;
+}
+
+body.onboarding-active {
+  pointer-events: none;
+}
+
+body.onboarding-active .modal {
+  pointer-events: auto;
+}
+
+body.onboarding-active::before {
+  content: "";
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 9999;
+}
+
+.modal {
+  z-index: 10000;
+}
+*/
+
+/* ... rest of your styles ... */
+
+/* Intro.js custom styles */
+.introjs-tooltip,
+.introjs-tooltiptext,
+.introjs-tooltip-title,
+.introjs-button {
+  font-family: 'Virgil', sans-serif !important;
+}
+
+.introjs-tooltip {
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  border: 1px solid var(--border-color);
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+}
+
+.introjs-tooltiptext,
+.introjs-tooltip-title {
+  color: var(--text-color);
+}
+
+.introjs-button {
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  border: 1px solid var(--border-color);
+  transition: background-color 0.3s, color 0.3s;
+}
+
+.introjs-button:hover {
+  background-color: var(--hover-bg-color);
+  color: var(--text-color);
+}
+
+.introjs-arrow {
+  border-color: var(--border-color);
+}
+
+.introjs-arrow.top,
+.introjs-arrow.top-middle,
+.introjs-arrow.top-right {
+  border-bottom-color: var(--bg-color);
+}
+
+.introjs-arrow.right {
+  border-left-color: var(--bg-color);
+}
+
+.introjs-arrow.bottom,
+.introjs-arrow.bottom-middle,
+.introjs-arrow.bottom-right {
+  border-top-color: var(--bg-color);
+}
+
+.introjs-arrow.left {
+  border-right-color: var(--bg-color);
+}
+
+.introjs-helperLayer {
+  background-color: rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--border-color);
+}
+
+/* Dark mode specific styles */
+body.dark-mode .introjs-tooltip {
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  border-color: var(--border-color);
+}
+
+body.dark-mode .introjs-tooltiptext,
+body.dark-mode .introjs-tooltip-title {
+  color: var(--text-color);
+}
+
+body.dark-mode .introjs-button {
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  border-color: var(--border-color);
+}
+
+body.dark-mode .introjs-button:hover {
+  background-color: var(--hover-bg-color);
+  color: var(--text-color);
+}
+
+body.dark-mode .introjs-arrow {
+  border-color: var(--border-color);
+}
+
+body.dark-mode .introjs-arrow.top,
+body.dark-mode .introjs-arrow.top-middle,
+body.dark-mode .introjs-arrow.top-right {
+  border-bottom-color: var(--bg-color);
+}
+
+body.dark-mode .introjs-arrow.right {
+  border-left-color: var(--bg-color);
+}
+
+body.dark-mode .introjs-arrow.bottom,
+body.dark-mode .introjs-arrow.bottom-middle,
+body.dark-mode .introjs-arrow.bottom-right {
+  border-top-color: var(--bg-color);
+}
+
+body.dark-mode .introjs-arrow.left {
+  border-right-color: var(--bg-color);
+}
+
+body.dark-mode .introjs-helperLayer {
+  background-color: rgba(0, 0, 0, 0.1);
+  border-color: var(--border-color);
+}
+
+/* Add or modify these styles in your main.css or editor-specific CSS file */
+
+.CodeMirror {
+  font-family: 'Virgil', monospace;
+  line-height: 1.6;
+  height: 100%;
+}
+
+.CodeMirror-gutters {
+  border-right: 1px solid var(--border-color);
+  background-color: var(--bg-color);
+  white-space: nowrap;
+  width: 40px; /* Increase gutter width */
+}
+
+.CodeMirror-linenumber {
+  padding: 0 3px 0 5px;
+  min-width: 20px;
+  text-align: right;
+  color: var(--text-color);
+  opacity: 0.6;
+  white-space: nowrap;
+}
+
+.CodeMirror-lines {
+  padding: 4px 0;
+}
+
+.CodeMirror pre.CodeMirror-line,
+.CodeMirror pre.CodeMirror-line-like {
+  padding: 0 4px 0 10px;
+}
+
+/* Add vertical line indicators */
+.CodeMirror-gutter-wrapper {
+  position: absolute;
+  z-index: 4;
+  left: -40px !important; /* Align with the gutter width */
+  width: 40px;
+  background-color: var(--bg-color) !important;
+}
+
+.CodeMirror-gutter-wrapper::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  width: 1px;
+  background-color: var(--border-color);
+  opacity: 0.5;
+}
+
+/* Ensure proper alignment in dark mode */
+body.dark-mode .CodeMirror-gutters {
+  background-color: var(--bg-color);
+  border-right-color: var(--border-color);
+}
+
+body.dark-mode .CodeMirror-linenumber {
+  color: var(--text-color);
+}
+
+body.dark-mode .CodeMirror-gutter-wrapper::after {
+  background-color: var(--border-color);
+}
+
+/* Add a subtle background to the active line number */
+.CodeMirror-activeline-gutter {
+  background-color: rgba(var(--text-color-rgb), 0.1);
+}
+
+/* Ensure the text content starts right after the gutter */
+.CodeMirror-sizer {
+  margin-left: 40px !important;
+}
+
+/* Add a subtle vertical line to separate line numbers from content */
+.CodeMirror-gutters::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  width: 1px;
+  background-color: var(--border-color);
+  opacity: 0.5;
+}
+
+/* Add or modify these styles in your main.css file */
+
+/* General button styles */
+.btn, button, 
+#save-settings, 
+#google-auth-button, 
+#google-disconnect-button {
+    display: inline-block;
+    padding: 8px 16px;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+    font-family: 'Virgil', sans-serif;
+    margin: 5px;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+.btn:hover, button:hover,
+#save-settings:hover, 
+#google-auth-button:hover, 
+#google-disconnect-button:hover {
+    background-color: var(--hover-bg-color);
+}
+
+/* Dark mode specific styles */
+body.dark-mode .btn, 
+body.dark-mode button,
+body.dark-mode #save-settings, 
+body.dark-mode #google-auth-button, 
+body.dark-mode #google-disconnect-button {
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    border-color: var(--border-color);
+}
+
+body.dark-mode .btn:hover, 
+body.dark-mode button:hover,
+body.dark-mode #save-settings:hover, 
+body.dark-mode #google-auth-button:hover, 
+body.dark-mode #google-disconnect-button:hover {
+    background-color: var(--hover-bg-color);
+}
+
+/* Add these styles to the end of your main.css file */
+
+/* CodeMirror Editor Dark Mode Styles */
+body.dark-mode .CodeMirror {
+  background-color: var(--bg-color);
+  color: var(--text-color);
+}
+
+body.dark-mode .CodeMirror-gutters {
+  background-color: var(--bg-color);
+  border-color: var(--border-color);
+}
+
+body.dark-mode .CodeMirror-linenumber {
+  color: var(--text-color);
+  opacity: 0.6;
+}
+
+body.dark-mode .CodeMirror-cursor {
+  border-left-color: var(--text-color);
+}
+
+body.dark-mode .CodeMirror-selected {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+body.dark-mode .CodeMirror-focused .CodeMirror-selected {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+body.dark-mode .CodeMirror-line::selection,
+body.dark-mode .CodeMirror-line > span::selection,
+body.dark-mode .CodeMirror-line > span > span::selection {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+body.dark-mode .CodeMirror-activeline-background {
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+/* Ensure proper styles for the editor container in dark mode */
+body.dark-mode .editor-container,
+body.dark-mode .editor-header,
+body.dark-mode .editor-body,
+body.dark-mode .editor-footer,
+body.dark-mode #editor-container,
+body.dark-mode #preview-container {
+  background-color: var(--bg-color);
+  color: var(--text-color);
+}
+
+/* Style for the toolbar in dark mode */
+body.dark-mode .toolbar {
+  background-color: var(--bg-color);
+  border-color: var(--border-color);
+}
+
+body.dark-mode .toolbar button {
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  border-color: var(--border-color);
+}
+
+body.dark-mode .toolbar button:hover {
+  background-color: var(--hover-bg-color);
 }
