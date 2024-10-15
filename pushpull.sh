@@ -24,6 +24,8 @@ sleep 60
 # Download the zip file from GitHub
 curl -L -o mentus-extension.zip https://github.com/PrimeDeviation/mentus/blob/paywall/mentus-extension.zip?raw=true
 
+cp mentus-extension.zip -d /mnt/c/localcode
+
 # Delete the contents of the specified directory before extraction
 rm -rf /mnt/c/localcode/mentus-extension-o1/*
 
