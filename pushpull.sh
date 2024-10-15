@@ -27,6 +27,8 @@ curl -L -o mentus-extension.zip https://github.com/PrimeDeviation/mentus/blob/pa
 # Delete the contents of the specified directory before extraction
 rm -rf /mnt/c/localcode/mentus-extension-o1/*
 
+cp mentus-extension.zip -d /mnt/c/localcode
+
 # Extract the zip file to the specified directory
 unzip mentus-extension.zip -d /mnt/c/localcode/mentus-extension-o1
 
