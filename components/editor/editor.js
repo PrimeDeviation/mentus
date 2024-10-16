@@ -162,6 +162,7 @@ async function saveFile(fileId, content) {
 async function saveObsidianFile(path, content) {
     const apiKey = await window.settingsModule.getSetting('obsidian-api-key');
     const endpoint = await window.settingsModule.getSetting('obsidian-endpoint');
+    const chatPath = await window.settingsModule.getSetting('chat-session-path');
 
     console.log('Saving Obsidian file:', path);
     console.log('Endpoint:', endpoint);

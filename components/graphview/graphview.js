@@ -122,6 +122,7 @@ async function populateGraphData() {
     try {
         const obsidianApiKey = await window.settingsModule.getSetting('obsidian-api-key');
         let obsidianEndpoint = await window.settingsModule.getSetting('obsidian-endpoint');
+        const chatPath = await window.settingsModule.getSetting('chat-session-path');
 
         if (!obsidianApiKey || !obsidianEndpoint) {
             console.warn('Obsidian API key or endpoint not set. Graph may be incomplete.');
@@ -624,7 +625,7 @@ async function fetchMentusGraphData(apiKey, endpoint) {
                 gremlin: `g.V().project('id', 'label', 'type').by(id).by(label).by('type').fold().as('nodes').
                            select('nodes').unfold().as('node').
                            outE().project('source', 'target').by(__.select('node').select('id')).by(inV().id()).fold().as('edges').
-                           select('nodes', 'edges')`
+                           select('nodes', 'edges')
             })
         });
 

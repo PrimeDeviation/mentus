@@ -4,7 +4,7 @@ window.SETTINGS = [
   'anthropic-api-key',
   'obsidian-api-key',
   'obsidian-endpoint',
-  'obsidian-chat-path',
+  'chat-session-path', // Changed from 'obsidian-chat-path'
   'save-to-obsidian'
 ];
 
@@ -87,8 +87,8 @@ function initializeOnboarding() {
   });
 
   steps.push({
-    element: '#obsidian-chat-path',
-    intro: 'Specify the path in your Obsidian vault where chat sessions will be saved.',
+    element: '#chat-session-path',
+    intro: 'Specify the path where chat sessions will be saved in both Obsidian and Google Drive.',
     position: 'bottom',
   });
 
@@ -157,7 +157,7 @@ function initializeOnboarding() {
           targetElement.id === 'anthropic-api-key' ||
           targetElement.id === 'obsidian-api-key' ||
           targetElement.id === 'obsidian-endpoint' ||
-          targetElement.id === 'obsidian-chat-path'
+          targetElement.id === 'chat-session-path'
         ) {
           showTab('settings');
         } else if (targetElement.id === 'chat-models') {
@@ -353,7 +353,7 @@ async function initializeObsidian() {
     // Remove trailing slash if it exists
     endpoint = endpoint.replace(/\/$/, '');
 
-    const chatPath = await window.settingsModule.getSetting('obsidian-chat-path');
+    const chatPath = await window.settingsModule.getSetting('chat-session-path');
 
     if (!apiKey || !endpoint) {
       console.log('Obsidian API key or endpoint not set, skipping initialization');
@@ -848,7 +848,7 @@ async function loadObsidianSessions() {
   try {
     const apiKey = await window.settingsModule.getSetting('obsidian-api-key');
     let endpoint = await window.settingsModule.getSetting('obsidian-endpoint');
-    let chatPath = await window.settingsModule.getSetting('obsidian-chat-path');
+    let chatPath = await window.settingsModule.getSetting('chat-session-path');
 
     // Remove trailing slash from endpoint
     endpoint = endpoint.replace(/\/$/, '');
@@ -919,7 +919,7 @@ async function loadSession(sessionId) {
       
       if (saveToObsidian) {
         await loadObsidianSessionContent(session);
-      } else {
+        } else {
         await loadGoogleDriveSessionContent(session);
       }
 
@@ -955,7 +955,7 @@ async function loadSession(sessionId) {
       console.error('Error loading session content:', error);
       alert(`Failed to load session: ${error.message}`);
       // Reset the session dropdown
-      const sessionDropdown = document.getElementById('saved-sessions');
+        const sessionDropdown = document.getElementById('saved-sessions');
       if (sessionDropdown) {
         sessionDropdown.value = '';
       }
@@ -968,7 +968,7 @@ async function loadSession(sessionId) {
 async function loadObsidianSessionContent(session) {
   const apiKey = await window.settingsModule.getSetting('obsidian-api-key');
   let endpoint = await window.settingsModule.getSetting('obsidian-endpoint');
-  let chatPath = await window.settingsModule.getSetting('obsidian-chat-path');
+  let chatPath = await window.settingsModule.getSetting('chat-session-path');
 
   // Normalize endpoint
   endpoint = endpoint.replace(/\/$/, '');
@@ -1013,7 +1013,7 @@ async function loadObsidianSessionContent(session) {
     
     console.log('Session loaded:', session);
     return content;
-  } catch (error) {
+    } catch (error) {
     console.error('Error loading Obsidian session content:', error);
     alert(`Failed to load session content: ${error.message}`);
     throw error;
@@ -1107,50 +1107,50 @@ function updateChatSession() {
 
 // Add a message to the chat UI
 function addMessageToChat(className, message, imageData = null) {
-  const chatMessages = document.getElementById('chat-messages');
-  if (chatMessages) {
-    const messageElement = document.createElement('div');
-    messageElement.className = `chat-message ${className}`;
-    
-    if (imageData) {
-      const imageContainer = document.createElement('div');
-      imageContainer.className = 'image-container';
-      
-      if (imageData.url.startsWith('data:')) {
-        const img = document.createElement('img');
-        img.src = imageData.url;
-        img.className = 'message-image';
-        img.alt = 'Attached image';
-        imageContainer.appendChild(img);
-      } else {
-        const imageName = imageData.url.split('/').pop();
-        const truncatedName = imageName.length > 20 ? imageName.substring(0, 17) + '...' : imageName;
-        const imageLink = document.createElement('a');
-        imageLink.href = '#';
-        imageLink.textContent = `📎 ${truncatedName}`;
-        imageLink.onclick = (e) => {
-          e.preventDefault();
-          // Optionally, add logic to display the image when clicked
-        };
-        imageContainer.appendChild(imageLink);
-      }
-      
-      messageElement.appendChild(imageContainer);
+    const chatMessages = document.getElementById('chat-messages');
+    if (chatMessages) {
+        const messageElement = document.createElement('div');
+        messageElement.className = `chat-message ${className}`;
+        
+        if (imageData) {
+            const imageContainer = document.createElement('div');
+            imageContainer.className = 'image-container';
+            
+            if (imageData.url.startsWith('data:')) {
+                const img = document.createElement('img');
+                img.src = imageData.url;
+                img.className = 'message-image';
+                img.alt = 'Attached image';
+                imageContainer.appendChild(img);
+            } else {
+                const imageName = imageData.url.split('/').pop();
+                const truncatedName = imageName.length > 20 ? imageName.substring(0, 17) + '...' : imageName;
+                const imageLink = document.createElement('a');
+                imageLink.href = '#';
+                imageLink.textContent = `📎 ${truncatedName}`;
+                imageLink.onclick = (e) => {
+                    e.preventDefault();
+                    // Optionally, add logic to display the image when clicked
+                };
+                imageContainer.appendChild(imageLink);
+            }
+            
+            messageElement.appendChild(imageContainer);
+        }
+        
+        if (message) {
+            const messageContent = document.createElement('div');
+                messageContent.textContent = message;
+            messageElement.appendChild(messageContent);
+        }
+        
+        chatMessages.appendChild(messageElement);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+        return messageElement;
+    } else {
+        console.error('Chat messages container not found');
+        return null;
     }
-    
-    if (message) {
-      const messageContent = document.createElement('div');
-      messageContent.textContent = message;
-      messageElement.appendChild(messageContent);
-    }
-    
-    chatMessages.appendChild(messageElement);
-    chatMessages.scrollTop = chatMessages.scrollHeight;
-    return messageElement;
-  } else {
-    console.error('Chat messages container not found');
-    return null;
-  }
 }
 
 // Initialize the Mentus Tab when the DOM is loaded
@@ -1329,7 +1329,7 @@ async function saveCurrentSession() {
 async function saveImageToObsidian(imageData, mimeType) {
   const obsidianApiKey = await window.settingsModule.getSetting('obsidian-api-key');
   const obsidianEndpoint = await window.settingsModule.getSetting('obsidian-endpoint');
-  const obsidianChatPath = await window.settingsModule.getSetting('obsidian-chat-path');
+  const obsidianChatPath = await window.settingsModule.getSetting('chat-session-path');
 
   if (!obsidianApiKey || !obsidianEndpoint || !obsidianChatPath) {
     console.error('Obsidian settings are not complete');
@@ -1338,7 +1338,7 @@ async function saveImageToObsidian(imageData, mimeType) {
 
   const timestamp = Date.now();
   const imageExtension = mimeType.split('/')[1];
-  const imageName = `image_${timestamp}.${imageExtension}`;
+  const imageName = image_${timestamp}.${imageExtension}`;
   const imagePath = `${obsidianChatPath}/images/${imageName}`;
 
   try {
@@ -1435,98 +1435,98 @@ function handleSessionNameChange() {
 }
 
 async function sendMessage(message) {
-  const model = document.getElementById('chat-models').value;
-  if (!model) {
-    alert('Please select a model');
-    return;
-  }
-
-  if (!currentSession.id) {
-    console.warn('No current session, creating a new one');
-    await startNewSession();
-  }
-
-  try {
-    let apiKey;
-    if (model.includes('gpt') || model.includes('o1')) {
-      apiKey = await window.settingsModule.getSetting('openai-api-key');
-    } else if (model.startsWith('claude')) {
-      apiKey = await window.settingsModule.getSetting('anthropic-api-key');
+    const model = document.getElementById('chat-models').value;
+    if (!model) {
+        alert('Please select a model');
+        return;
     }
 
-    if (!apiKey) {
-      throw new Error('API key not found. Please check your settings.');
+    if (!currentSession.id) {
+        console.warn('No current session, creating a new one');
+        await startNewSession();
     }
 
-    console.log('Sending message to model:', model);
-    console.log('API Key (first 4 characters):', apiKey.substring(0, 4));
+    try {
+        let apiKey;
+        if (model.includes('gpt') || model.includes('o1')) {
+            apiKey = await window.settingsModule.getSetting('openai-api-key');
+        } else if (model.startsWith('claude')) {
+            apiKey = await window.settingsModule.getSetting('anthropic-api-key');
+        }
+
+        if (!apiKey) {
+            throw new Error('API key not found. Please check your settings.');
+        }
+
+        console.log('Sending message to model:', model);
+        console.log('API Key (first 4 characters):', apiKey.substring(0, 4));
 
     let messageContent;
-    const hasImage = !!currentSession.pendingImage;
-    if (hasImage) {
-      const imageDataUrl = `data:${currentSession.pendingImage.mimeType};base64,${currentSession.pendingImage.data}`;
+        const hasImage = !!currentSession.pendingImage;
+        if (hasImage) {
+            const imageDataUrl = `data:${currentSession.pendingImage.mimeType};base64,${currentSession.pendingImage.data}`;
       messageContent = [
         {
-          type: "image_url",
-          image_url: {
-            url: imageDataUrl
-          }
+                type: "image_url",
+                image_url: {
+                    url: imageDataUrl
+                }
         },
         {
           type: "text",
           text: message
         }
       ];
-      addMessageToChat('user-message', message, { url: imageDataUrl });
-      
-      // Save image to Obsidian for future reference
-      const imagePath = await saveImageToObsidian(currentSession.pendingImage.data, currentSession.pendingImage.mimeType);
-      if (imagePath) {
-        console.log('Image saved to Obsidian:', imagePath);
-      } else {
-        console.error('Failed to save image to Obsidian');
-      }
-    } else {
+            addMessageToChat('user-message', message, { url: imageDataUrl });
+            
+            // Save image to Obsidian for future reference
+            const imagePath = await saveImageToObsidian(currentSession.pendingImage.data, currentSession.pendingImage.mimeType);
+            if (imagePath) {
+                console.log('Image saved to Obsidian:', imagePath);
+            } else {
+                console.error('Failed to save image to Obsidian');
+            }
+        } else {
       messageContent = [{ type: "text", text: message }];
-      addMessageToChat('user-message', message);
-    }
+            addMessageToChat('user-message', message);
+        }
 
-    currentSession.messages.push({ role: 'user', content: messageContent });
+        currentSession.messages.push({ role: 'user', content: messageContent });
 
-    let response;
-    if (model.includes('gpt') || model.includes('o1')) {
-      response = await sendMessageToOpenAI(model, apiKey, currentSession.messages);
-    } else if (model.startsWith('claude')) {
-      response = await sendMessageToAnthropic(model, apiKey, currentSession.messages);
-    }
+        let response;
+        if (model.includes('gpt') || model.includes('o1')) {
+            response = await sendMessageToOpenAI(model, apiKey, currentSession.messages);
+        } else if (model.startsWith('claude')) {
+            response = await sendMessageToAnthropic(model, apiKey, currentSession.messages);
+        }
 
     addMessageToChat('assistant-message', response);
-    currentSession.messages.push({ role: 'assistant', content: response });
-    await saveCurrentSession();
+        currentSession.messages.push({ role: 'assistant', content: response });
+        await saveCurrentSession();
 
-    // Reset the image attachment UI
-    const imageAttachButton = document.getElementById('image-attach-button');
-    if (imageAttachButton) {
-      imageAttachButton.classList.remove('image-attached');
-      imageAttachButton.textContent = 'IMG';
-    }
-    currentSession.pendingImage = null;
+        // Reset the image attachment UI
+        const imageAttachButton = document.getElementById('image-attach-button');
+        if (imageAttachButton) {
+            imageAttachButton.classList.remove('image-attached');
+            imageAttachButton.textContent = 'IMG';
+        }
+        currentSession.pendingImage = null;
 
-    // Update the session dropdown to maintain the current selection
-    const sessionDropdown = document.getElementById('saved-sessions');
-    if (sessionDropdown && currentSession.id) {
-      sessionDropdown.value = currentSession.id;
+        // Update the session dropdown to maintain the current selection
+        const sessionDropdown = document.getElementById('saved-sessions');
+        if (sessionDropdown && currentSession.id) {
+            sessionDropdown.value = currentSession.id;
+        }
+    } catch (error) {
+        console.error('Error sending message:', error);
+        alert(`Error sending message: ${error.message}`);
     }
-  } catch (error) {
-    console.error('Error sending message:', error);
-    alert(`Error sending message: ${error.message}`);
-  }
 }
 
 async function saveToObsidianVault(content) {
   const apiKey = await window.settingsModule.getSetting('obsidian-api-key');
   let endpoint = await window.settingsModule.getSetting('obsidian-endpoint');
-  const chatPath = await window.settingsModule.getSetting('obsidian-chat-path');
+  const chatPath = await window.settingsModule.getSetting('chat-session-path');
 
   if (!apiKey || !endpoint || !chatPath) {
     console.error('Obsidian settings are not complete');
@@ -1580,25 +1580,24 @@ async function saveToObsidianVault(content) {
 async function saveToGoogleDrive(content) {
   console.log('Saving session to Google Drive');
   try {
-    // Obtain the OAuth token
     const token = await getGoogleAuthToken();
 
     if (!token) {
       throw new Error('Google OAuth token not available. Please connect your Google account.');
     }
 
-    // Ensure the Mentus Workspace folder exists
-    const folderId = await window.ensureMentusWorkspaceFolder(token);
-    if (!folderId) {
-      throw new Error('Mentus Workspace folder could not be found or created.');
-    }
+    // Get the Chat Session Path from settings
+    const chatSessionPath = await window.settingsModule.getSetting('chat-session-path');
+    
+    // Ensure the Chat Session folder exists and get its ID
+    const folderId = await ensureChatSessionFolder(token, chatSessionPath);
 
     // Prepare the metadata for the file to be saved
     const fileName = `${currentSession.name}.md`;
     const fileMetadata = {
       name: fileName,
       mimeType: 'text/markdown',
-      parents: [folderId] // Save the file into the Mentus Workspace folder
+      parents: [folderId] // Save the file in the Chat Session folder
     };
 
     // Prepare the multipart request body
@@ -1629,72 +1628,44 @@ async function saveToGoogleDrive(content) {
   }
 }
 
-// Helper function to get Google OAuth token
-async function getGoogleAuthToken() {
-  return new Promise((resolve) => {
-    chrome.identity.getAuthToken({ interactive: true }, function(token) {
-      if (chrome.runtime.lastError) {
-        console.error('Error getting auth token:', chrome.runtime.lastError);
-        resolve(null);
-      } else {
-        resolve(token);
-      }
-    });
-  });
-}
-
-// Add this function to mentus_tab.js
-async function ensureMentusWorkspaceFolder(token) {
-  console.log('Ensuring Mentus Workspace folder exists');
+// Add this new function to ensure the Chat Session folder exists
+async function ensureChatSessionFolder(token, folderPath) {
+  console.log('Ensuring Chat Session folder exists:', folderPath);
   
-  // Try to get the folder ID from local storage
-  const storedFolderId = await new Promise((resolve) => {
-    chrome.storage.local.get('mentusFolderId', function(result) {
-      resolve(result.mentusFolderId);
-    });
-  });
+  let parentId = 'root'; // Start at the root of Google Drive
+  const folderNames = folderPath.split('/').filter(name => name.trim() !== '');
 
-  if (storedFolderId) {
-    console.log('Mentus Workspace folder ID retrieved from storage:', storedFolderId);
-    return storedFolderId;
-  }
-
-  try {
-    // Search for an existing "Mentus Workspace" folder
+  for (const folderName of folderNames) {
+    // Search for the folder
     const searchResponse = await fetch(
-      'https://www.googleapis.com/drive/v3/files?q=name%3D%27Mentus%20Workspace%27%20and%20mimeType%3D%27application/vnd.google-apps.folder%27%20and%20trashed%3Dfalse',
+      `https://www.googleapis.com/drive/v3/files?q=name='${folderName}' and mimeType='application/vnd.google-apps.folder' and '${parentId}' in parents and trashed=false`,
       { headers: { Authorization: `Bearer ${token}` } }
     );
     const searchData = await searchResponse.json();
 
     if (searchData.files && searchData.files.length > 0) {
-      const folderId = searchData.files[0].id;
-      console.log('Existing Mentus Workspace folder found:', folderId);
-      await chrome.storage.local.set({ mentusFolderId: folderId });
-      return folderId;
+      // Folder found, update parentId for next iteration
+      parentId = searchData.files[0].id;
+    } else {
+      // Folder not found, create it
+      const createResponse = await fetch('https://www.googleapis.com/drive/v3/files', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          name: folderName,
+          mimeType: 'application/vnd.google-apps.folder',
+          parents: [parentId]
+        })
+      });
+      const newFolder = await createResponse.json();
+      parentId = newFolder.id;
     }
-
-    // If the folder doesn't exist, create it
-    console.log('Mentus Workspace folder not found, creating a new one');
-    const createResponse = await fetch('https://www.googleapis.com/drive/v3/files', {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${token}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        name: 'Mentus Workspace',
-        mimeType: 'application/vnd.google-apps.folder'
-      })
-    });
-    const folder = await createResponse.json();
-    console.log('New Mentus Workspace folder created:', folder.id);
-    await chrome.storage.local.set({ mentusFolderId: folder.id });
-    return folder.id;
-  } catch (error) {
-    console.error('Error ensuring Mentus Workspace folder:', error);
-    throw error;
   }
+
+  return parentId; // Return the ID of the final folder in the path
 }
 
 // Implement saveToGitHub function

@@ -5,7 +5,7 @@ if (!window.SETTINGS) {
         'anthropic-api-key',
         'obsidian-api-key',
         'obsidian-endpoint',
-        'obsidian-chat-path',
+        'chat-session-path', // Changed from 'obsidian-chat-path'
         'save-to-obsidian'
     ];
 }
@@ -114,7 +114,7 @@ function updateApiKeyDisplay(setting, value) {
         } else {
             display.textContent = 'No value set';
         }
-    } else if (setting !== 'obsidian-chat-path' && setting !== 'save-to-obsidian') {
+    } else if (setting !== 'chat-session-path' && setting !== 'save-to-obsidian') {
         console.warn(`Display element for ${setting} not found`);
     }
 }
