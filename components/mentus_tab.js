@@ -1325,21 +1325,21 @@ async function saveCurrentSession() {
   console.log('Session saved successfully');
 }
 
-// Modify the saveImageToObsidian function
+// Replace the problematic saveImageToObsidian function with this:
 async function saveImageToObsidian(imageData, mimeType) {
   const obsidianApiKey = await window.settingsModule.getSetting('obsidian-api-key');
   const obsidianEndpoint = await window.settingsModule.getSetting('obsidian-endpoint');
-  const obsidianChatPath = await window.settingsModule.getSetting('chat-session-path');
+  const chatPath = await window.settingsModule.getSetting('chat-session-path');
 
-  if (!obsidianApiKey || !obsidianEndpoint || !obsidianChatPath) {
+  if (!obsidianApiKey || !obsidianEndpoint || !chatPath) {
     console.error('Obsidian settings are not complete');
     return null;
   }
 
   const timestamp = Date.now();
   const imageExtension = mimeType.split('/')[1];
-  const imageName = image_${timestamp}.${imageExtension}`;
-  const imagePath = `${obsidianChatPath}/images/${imageName}`;
+  const imageName = `image_${timestamp}.${imageExtension}`;
+  const imagePath = `${chatPath}/images/${imageName}`;
 
   try {
     await saveFileToObsidian(obsidianApiKey, obsidianEndpoint, imagePath, imageData);
@@ -1372,10 +1372,9 @@ async function createMarkdownFromSession(session) {
   return markdown;
 }
 
+// Update the saveFileToObsidian function
 async function saveFileToObsidian(apiKey, endpoint, filePath, content) {
-  // Normalize the endpoint
   endpoint = normalizeEndpoint(endpoint);
-
   const url = `${endpoint}/vault/${encodeURIComponent(filePath)}`;
   
   try {

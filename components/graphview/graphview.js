@@ -614,34 +614,34 @@ window.addEventListener('resize', resizeGraph);
 resizeGraph(); // Initial call to set correct size
 
 async function fetchMentusGraphData(apiKey, endpoint) {
-    try {
-        const response = await fetch(endpoint, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${apiKey}`
-            },
-            body: JSON.stringify({
-                gremlin: `g.V().project('id', 'label', 'type').by(id).by(label).by('type').fold().as('nodes').
-                           select('nodes').unfold().as('node').
-                           outE().project('source', 'target').by(__.select('node').select('id')).by(inV().id()).fold().as('edges').
-                           select('nodes', 'edges')
-            })
-        });
+  try {
+    const response = await fetch(endpoint, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`
+      },
+      body: JSON.stringify({
+        gremlin: "g.V().project('id', 'label', 'type').by(id).by(label).by('type').fold().as('nodes')." +
+                 "select('nodes').unfold().as('node')." +
+                 "outE().project('source', 'target').by(__.select('node').select('id')).by(inV().id()).fold().as('edges')." +
+                 "select('nodes', 'edges')"
+      })
+    });
 
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
-        const data = await response.json();
-        return {
-            nodes: data.result.data[0].nodes,
-            edges: data.result.data[0].edges
-        };
-    } catch (error) {
-        console.error('Error fetching Mentus graph data:', error);
-        return null;
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
     }
+
+    const data = await response.json();
+    return {
+      nodes: data.result.data[0].nodes,
+      edges: data.result.data[0].edges
+    };
+  } catch (error) {
+    console.error('Error fetching Mentus graph data:', error);
+    return null;
+  }
 }
 
 function mergeMentusData(obsidianData, mentusData) {
@@ -676,29 +676,29 @@ function mergeMentusData(obsidianData, mentusData) {
 }
 
 async function writeToMentusGraph(data, apiKey, endpoint) {
-    try {
-        const response = await fetch(endpoint, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${apiKey}`
-            },
-            body: JSON.stringify({
-                gremlin: `g.addV('${data.type}').property('id', '${data.id}').property('label', '${data.label}')`
-            })
-        });
+  try {
+    const response = await fetch(endpoint, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`
+      },
+      body: JSON.stringify({
+        gremlin: `g.addV('${data.type}').property('id', '${data.id}').property('label', '${data.label}')`
+      })
+    });
 
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
-        const result = await response.json();
-        console.log('Data written to Mentus graph:', result);
-        return result;
-    } catch (error) {
-        console.error('Error writing to Mentus graph:', error);
-        return null;
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
     }
+
+    const result = await response.json();
+    console.log('Data written to Mentus graph:', result);
+    return result;
+  } catch (error) {
+    console.error('Error writing to Mentus graph:', error);
+    return null;
+  }
 }
 
 function fitGraphToContainer(g, zoom) {
@@ -723,16 +723,16 @@ function fitGraphToContainer(g, zoom) {
 }
 
 function updateLoadingMessage(message = '') {
-    const graphContainer = document.getElementById('graph-container');
-    if (graphContainer) {
-        if (isFetching) {
-            graphContainer.innerHTML = '<div class="loading-message">Loading graph data... Please wait.</div>';
-        } else if (!isDataFetched) {
-            graphContainer.innerHTML = '<div class="loading-message">Graph data not loaded. Click to load.</div>';
-        } else if (message) {
-            graphContainer.innerHTML = `<div class="loading-message">${message}</div>`;
-        }
+  const graphContainer = document.getElementById('graph-container');
+  if (graphContainer) {
+    if (isFetching) {
+      graphContainer.innerHTML = '<div class="loading-message">Loading graph data... Please wait.</div>';
+    } else if (!isDataFetched) {
+      graphContainer.innerHTML = '<div class="loading-message">Graph data not loaded. Click to load.</div>';
+    } else if (message) {
+      graphContainer.innerHTML = `<div class="loading-message">${message}</div>`;
     }
+  }
 }
 
 function clearLinkCache() {
