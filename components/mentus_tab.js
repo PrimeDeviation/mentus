@@ -218,6 +218,7 @@ async function initializeMentusTab() {
       await window.settingsModule.loadExistingSettings();
       console.log('Initializing settings listeners');
       window.settingsModule.initializeSettingsListeners();
+      await window.settingsModule.ensureChatSessionPath();
     } else {
       console.error('Settings module not found');
     }

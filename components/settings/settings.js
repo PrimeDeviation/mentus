@@ -10,6 +10,9 @@ if (!window.SETTINGS) {
     ];
 }
 
+// Add this constant at the top of the file
+const DEFAULT_CHAT_SESSION_PATH = 'Mentus';
+
 function initializeSettingsListeners() {
     console.log('Initializing settings listeners');
     if (!Array.isArray(window.SETTINGS)) {
@@ -54,6 +57,9 @@ function initializeSettingsListeners() {
             }
         });
     }
+
+    // Add this at the end of the function
+    ensureChatSessionPath();
 }
 
 async function loadExistingSettings() {
@@ -69,7 +75,10 @@ async function loadExistingSettings() {
             if (input.type === 'checkbox') {
                 input.checked = result[setting] || false;
             } else {
-                const value = result[setting] ? atob(result[setting]) : '';
+                let value = result[setting] ? atob(result[setting]) : '';
+                if (setting === 'chat-session-path' && !value) {
+                    value = 'Mentus';
+                }
                 input.value = value;
                 updateApiKeyDisplay(setting, value);
             }
@@ -138,8 +147,12 @@ async function saveAllSettings() {
 async function getSetting(setting) {
     console.log(`Attempting to get setting: ${setting}`);
     const result = await chrome.storage.local.get(setting);
-    console.log(`Retrieved setting ${setting}:`, result[setting] ? 'Value exists' : 'No value');
-    return result[setting] ? atob(result[setting]) : null;
+    let value = result[setting] ? atob(result[setting]) : null;
+    if (setting === 'chat-session-path' && !value) {
+        value = 'Mentus';
+    }
+    console.log(`Retrieved setting ${setting}:`, value ? 'Value exists' : 'No value');
+    return value;
 }
 
 // Add this function to handle checkbox setting
@@ -151,6 +164,14 @@ function saveCheckboxSetting(setting, checked) {
     });
 }
 
+// Add this function to ensure the chat session path is set
+async function ensureChatSessionPath() {
+    const chatSessionPath = await getSetting('chat-session-path');
+    if (!chatSessionPath) {
+        await saveSetting('chat-session-path', 'Mentus');
+    }
+}
+
 // Export functions that need to be accessible from other components
 window.settingsModule = {
     getSetting,
@@ -158,7 +179,8 @@ window.settingsModule = {
     initializeSettingsListeners,
     updateApiKeyDisplay,
     saveSetting,
-    saveAllSettings
+    saveAllSettings,
+    ensureChatSessionPath
 };
 
 // Initialize settings when the script loads
@@ -179,7 +201,8 @@ window.settingsModule = {
     initializeSettingsListeners,
     updateApiKeyDisplay,
     saveSetting,
-    saveAllSettings
+    saveAllSettings,
+    ensureChatSessionPath
 };
 
 console.log('Settings module initialized and attached to window object');
